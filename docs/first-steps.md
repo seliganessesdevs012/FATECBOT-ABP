@@ -9,6 +9,7 @@ Bem-vindo ao FatecBot. Este documento tem um objetivo só: te deixar com o proje
 Leia [`application-overview.md`](./application-overview.md) agora. São 15 minutos que vão evitar muita confusão depois.
 
 Você vai sair sabendo:
+
 - O que é o FatecBot e o que ele faz
 - Quem são os três perfis do sistema (Aluno, Secretária, Admin)
 - Como a navegação do chatbot funciona por dentro
@@ -24,24 +25,23 @@ git clone <repositorio>
 cd fatecbot
 cp .env.example .env
 docker compose up --build
-docker compose exec backend pnpm db:seed
 ```
 
 Após subir, acesse:
 
-| O quê | URL |
-|---|---|
-| Frontend | http://localhost:5173 |
-| API | http://localhost:3333/api/v1 |
+| O quê    | URL                          |
+| -------- | ---------------------------- |
+| Frontend | http://localhost:5173        |
+| API      | http://localhost:3333/api/v1 |
 
 Para testar o login, use as credenciais abaixo — elas são criadas pelo seed:
 
-| Perfil | E-mail | Senha |
-|---|---|---|
-| Admin | `admin@fatec.sp.gov.br` | `admin123` |
-| Secretária | `secretaria@fatec.sp.gov.br` | `secretaria123` |
+| Perfil     | E-mail                       | Senha            |
+| ---------- | ---------------------------- | ---------------- |
+| Admin      | `admin@fatec.sp.gov.br`      | `Admin@123`      |
+| Secretária | `secretaria@fatec.sp.gov.br` | `Secretaria@123` |
 
-> Algo não subiu? Consulte [`troubleshooting.md`](./troubleshooting.md).
+> Algo não subiu? Consulte o [README principal](../README.md), o [README do frontend](../apps/frontend/README.md) e o [README do backend](../apps/backend/README.md).
 
 ---
 
@@ -71,7 +71,7 @@ Cada task diz exatamente quais arquivos ela possui, o que ela exporta e de quais
 
 ## Precisa de ajuda com a stack?
 
-A pasta [`knowledge-base/`](./knowledge-base/) tem guias rápidos sobre cada tecnologia usada no projeto — Prisma, TanStack Query, Zod, Zustand, Docker e mais. Consulte quando travar em algo específico.
+Os READMEs de [`../apps/frontend/`](../apps/frontend/README.md) e [`../apps/backend/`](../apps/backend/README.md) concentram hoje as referências práticas mais úteis sobre stack, rotas montadas e setup da Sprint 1. Consulte esses arquivos quando travar em algo específico.
 
 ---
 

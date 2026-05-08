@@ -8,5 +8,14 @@
     "test": "pnpm -r test",
     "lint": "pnpm -r lint",
     "build": "pnpm -r build"
+  },
+  "overrides": {
+    "axios": "1.6.8"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.2"
+  },
+  "dependencies": {
+    "zustand": "^5.0.12"
   }
 }

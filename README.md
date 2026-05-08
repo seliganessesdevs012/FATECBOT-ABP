@@ -7,7 +7,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/status-em%20desenvolvimento-yellow?style=for-the-badge" />
   <img src="https://img.shields.io/badge/node-%3E%3D20.x-brightgreen?style=for-the-badge&logo=node.js&logoColor=white" />
-  <img src="https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
   <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
   <img src="https://img.shields.io/badge/Docker-required-2496ED?style=for-the-badge&logo=docker&logoColor=white" />
   <img src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge" />
@@ -282,7 +282,7 @@ As estimativas de esforço foram definidas pela equipe em sessão de **Planning 
 
 | Sprint | Objetivos                                           | Documentação                              | Período    | Status       |
 | ------ | --------------------------------------------------- | ----------------------------------------- | ---------- | ------------ |
-| 1      | Estrutura base, autenticação, navegação do chatbot  | [Sprint 1 Docs](./docs/sprint1/README.md) | Iteração 1 | 🔵 Planejado |
+| 1      | Estrutura base, autenticação, navegação do chatbot  | [Sprint 1 Docs](./docs/sprint1/README.md) | Iteração 1 | 🟢 Entregue |
 | 2      | Painel Admin (CRUD nós), RBAC, perguntas            | [Sprint 2 Docs](./docs/sprint2/README.md) | Iteração 2 | 🔵 Planejado |
 | 3      | Painel Secretária, logs, satisfação, ajustes finais | [Sprint 3 Docs](./docs/sprint3/README.md) | Iteração 3 | 🔵 Planejado |
 
@@ -308,8 +308,6 @@ Um item do backlog está **pronto para entrar na sprint** quando:
 Um item está **concluído** quando:
 
 - Código implementado, revisado e aprovado em PR (mínimo 1 aprovação)
-- Testes unitários escritos e passando (Vitest)
-- CI/CD passando sem erros (lint, build, testes)
 - Funcionalidade validada no ambiente Docker (`docker compose up`)
 - Documentação técnica atualizada (README, Storybook ou TSDoc se aplicável)
 - Demonstrado e aceito pelo PO na Sprint Review
@@ -319,7 +317,7 @@ Um item está **concluído** quando:
 ## 💻 Tecnologias <a id="tecnologias"></a>
 
 <p align="center">
-  <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black" /></a>
+  <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black" /></a>
   <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" /></a>
   <a href="https://vitejs.dev/"><img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" /></a>
   <a href="https://tailwindcss.com/"><img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" /></a>
@@ -340,7 +338,7 @@ Um item está **concluído** quando:
 
 | Camada             | Tecnologia                        | Justificativa                                                                                                   |
 | ------------------ | --------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| **Frontend**       | React 18 + TypeScript             | Aderente ao escopo funcional da interface (RF01, RF05, RF07)                                                    |
+| **Frontend**       | React 19 + TypeScript             | Aderente ao escopo funcional da interface (RF01, RF05, RF07)                                                    |
 | **Build Tool**     | Vite                              | HMR rápido e integração nativa com React + TypeScript                                                           |
 | **Estilização**    | Tailwind CSS + shadcn/ui          | Componentização acessível e responsiva (RNF01)                                                                  |
 | **Backend**        | Node.js 20 + TypeScript + Express | API REST modular para requisitos de autenticação, autorização e regras de negócio (RF09, RF10, RF11)            |
@@ -435,13 +433,9 @@ fatecbot/
 │   ├── project-structure.md
 │   ├── project-standards.md
 │   ├── api-layer.md
-│   ├── state-management.md
-│   ├── testing.md
-│   ├── troubleshooting.md
 │   ├── sprint1/
 │   ├── sprint2/
 │   ├── sprint3/
-│   └── adr/               # Architecture Decision Records
 ├── docker-compose.yml
 ├── .env.example
 └── pnpm-workspace.yaml
@@ -460,8 +454,6 @@ fatecbot/
 | [`docs/project-structure.md`](./docs/project-structure.md)       | Estrutura de pastas comentada                            |
 | [`docs/project-standards.md`](./docs/project-standards.md)       | Convenções de commit, nomenclatura e linting             |
 | [`docs/api-layer.md`](./docs/api-layer.md)                       | Endpoints, exemplos de request/response                  |
-| [`docs/state-management.md`](./docs/state-management.md)         | Estratégia de estado com TanStack Query e Zustand        |
-| [`docs/testing.md`](./docs/testing.md)                           | Estratégia de testes e exemplos por camada               |
 | [`apps/frontend/README.md`](./apps/frontend/README.md)           | README específico do frontend                            |
 | [`apps/backend/README.md`](./apps/backend/README.md)             | README específico do backend                             |
 

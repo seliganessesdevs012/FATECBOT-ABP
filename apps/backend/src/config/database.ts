@@ -1,5 +1,11 @@
-import {PrismaClient} from '@prisma/client';
+import { PrismaPg } from "@prisma/adapter-pg";
+import * as prisma from "@prisma/client";
+import { Pool } from "pg";
 
-const db = new PrismaClient();
+import { env } from "./env";
 
-export {db};
+const pool = new Pool({ connectionString: env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const db = new prisma.PrismaClient({ adapter });
+
+export { db };

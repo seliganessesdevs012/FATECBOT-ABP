@@ -4,6 +4,11 @@
 > o modelo de dados, o fluxo de navegação do chatbot e a topologia de containers.
 > É o ponto de partida para qualquer novo membro da equipe entender o sistema como um todo.
 
+> **Nota de estado da Sprint 1:** no código atual, o fluxo público do chatbot, o login,
+> os guards de rota, `POST /api/v1/questions` e as páginas-base `/admin` e `/secretary`
+> estão presentes. CRUD administrativo, listagem/atualização de perguntas e visualização
+> de logs continuam documentados aqui como arquitetura-alvo para as próximas sprints.
+
 ***
 
 ## 📑 Índice
@@ -22,11 +27,11 @@
 O sistema implementa controle de acesso baseado em papéis (**RBAC — RF10**).
 Existem três perfis com escopos distintos:
 
-| Perfil                   | Autenticação |   Papel JWT   | O que pode fazer                                                                 |
-| ------------------------ | :----------: | :-----------: | -------------------------------------------------------------------------------- |
-| **Aluno / Visitante**    |  ❌ Pública  |       —       | Navegar no chatbot, enviar pergunta à secretaria, avaliar satisfação             |
-| **Secretária Acadêmica** |    ✅ JWT    | `SECRETARIA`  | Listar perguntas recebidas, atualizar status (aberta / respondida)               |
-| **Administrador**        |    ✅ JWT    |    `ADMIN`    | CRUD de nós e usuários da secretaria; visualizar logs de atendimento             |
+| Perfil                   | Autenticação |  Papel JWT   | O que pode fazer                                                     |
+| ------------------------ | :----------: | :----------: | -------------------------------------------------------------------- |
+| **Aluno / Visitante**    |  ❌ Pública  |      —       | Navegar no chatbot, enviar pergunta à secretaria, avaliar satisfação |
+| **Secretária Acadêmica** |    ✅ JWT    | `SECRETARIA` | Listar perguntas recebidas, atualizar status (aberta / respondida)   |
+| **Administrador**        |    ✅ JWT    |   `ADMIN`    | CRUD de nós e usuários da secretaria; visualizar logs de atendimento |
 
 > ⚠️ O controle de acesso **deve ser aplicado no backend** via middleware.
 > Proteção apenas no frontend (esconder botões) **não é suficiente** e viola o RF10/RF11.
@@ -79,42 +84,7 @@ orquestrados via `docker-compose.yml` com inicialização em comando único.
 
 ### Diagrama Entidade-Relacionamento
 
-```
-┌──────────────────────┐          ┌───────────────────────────┐
-│         User         │          │         ChatNode           │
-├──────────────────────┤          ├───────────────────────────┤
-│ id (Int) PK          │          │ id (Int) PK                │
-│ name                 │          │ title                      │
-│ email (unique)       │          │ slug (unique)              │
-│ password_hash        │          │ prompt                     │
-│ role (ENUM)          │          │ answer_summary (nullable)  │
-│ created_at           │          │ evidence_excerpt (nullable)│
-│ updated_at           │          │ evidence_source (nullable) │
-└──────────────────────┘          │ parent_id (FK → self)      │
-                                  │ display_order (Int)        │
-                                  │ is_active (Boolean)        │
-                                  │ created_at                 │
-                                  │ updated_at                 │
-                                  └───────────────────────────┘
 
-┌──────────────────────┐          ┌───────────────────────────┐
-│       Inquiry        │          │      InteractionLog        │
-├──────────────────────┤          ├───────────────────────────┤
-│ id (Int) PK          │          │ id (Int) PK                │
-│ requester_name       │          │ navigation_flow (JSON —    │
-│ question             │          │   array de slugs visitados)│
-│ requester_email      │          │ flag (ENUM, nullable)      │
-│ status (ENUM)        │          │   ATENDEU | NAO_ATENDEU    │
-│ attachment_name      │          │ inquiry_ids (JSON —        │
-│   (nullable)         │          │   array de Inquiry.id)     │
-│ attachment_mime_type │          │ created_at                 │
-│   (nullable)         │          └───────────────────────────┘
-│ attachment_data      │
-│   (nullable, bytes)  │
-│ created_at           │
-│ updated_at           │
-└──────────────────────┘
-```
 
 ### Descrição das entidades
 
@@ -136,29 +106,30 @@ O perfil Aluno não possui registro — acesso é público.
 Representa cada nó da árvore de navegação do chatbot (menus e respostas).
 Nós com filhos funcionam como menus; nós sem filhos são folhas e exibem `answer_summary`.
 
-| Campo              | Tipo    | Descrição                                                                 |
-| ------------------ | ------- | ------------------------------------------------------------------------- |
-| `id`               | Int     | Identificador único auto-incrementado                                     |
-| `title`            | String  | Texto do botão/opção exibido na lista de opções do nó pai                 |
-| `slug`             | String  | Identificador amigável único (ex: `aacc`, `datas-importantes`)            |
-| `prompt`           | String  | Pergunta ou instrução exibida pelo bot ao entrar neste nó                 |
-| `answer_summary`   | String? | Resposta objetiva exibida em nós folha (sem filhos)                       |
-| `evidence_excerpt` | String? | Trecho de evidência extraído de documento oficial                         |
-| `evidence_source`  | String? | Fonte da evidência (ex: "Regulamento Geral das Fatecs, Art. 38")          |
-| `parent_id`        | Int?    | Referência ao nó pai. `null` indica nó raiz                               |
-| `display_order`    | Int     | Ordenação dos filhos dentro do mesmo pai                                  |
+| Campo              | Tipo    | Descrição                                                        |
+| ------------------ | ------- | ---------------------------------------------------------------- |
+| `id`               | Int     | Identificador único auto-incrementado                            |
+| `title`            | String  | Texto do botão/opção exibido na lista de opções do nó pai        |
+| `slug`             | String  | Identificador amigável único (ex: `aacc`, `datas-importantes`)   |
+| `prompt`           | String  | Pergunta ou instrução exibida pelo bot ao entrar neste nó        |
+| `answer_summary`   | String? | Resposta objetiva exibida em nós folha (sem filhos)              |
+| `evidence_excerpt` | String? | Trecho de evidência extraído de documento oficial                |
+| `evidence_source`  | String? | Fonte da evidência (ex: "Regulamento Geral das Fatecs, Art. 38") |
+| `parent_id`        | Int?    | Referência ao nó pai. `null` indica nó raiz                      |
+| `display_order`    | Int     | Ordenação dos filhos dentro do mesmo pai                         |
 
-#### `InteractionLog`
+#### `SessionLog`
 
 Registra cada sessão de atendimento completa (RF08).
 
-| Campo              | Tipo   | Descrição                                                         |
-| ------------------ | ------ | ----------------------------------------------------------------- |
-| `navigation_flow`  | JSON   | Array de slugs visitados em ordem cronológica                     |
-| `flag`             | Enum?  | `ATENDEU`, `NAO_ATENDEU` ou `null` (não avaliado)                 |
-| `inquiry_ids`      | JSON   | Array de IDs de `Inquiry` originados nesta sessão (pode ser `[]`) |
+| Campo             | Tipo  | Descrição                                                          |
+| ----------------- | ----- | ------------------------------------------------------------------ |
+| `navigation_flow` | JSON  | Array de slugs visitados em ordem cronológica                      |
+| `flag`            | Enum? | `ATENDEU`, `NAO_ATENDEU` ou `null` (não avaliado)                  |
+| `feedback_history`| JSON? | Histórico de respostas avaliadas na mesma sessão, em ordem         |
+| `inquiry_ids`     | JSON  | Array de IDs de `Question` originados nesta sessão (pode ser `[]`) |
 
-#### `Inquiry`
+#### `Question`
 
 Pergunta enviada pelo aluno à Secretaria Acadêmica (RF05/RF06).
 
@@ -210,7 +181,7 @@ Exibe:
          │
          ▼
 [POST /api/v1/sessions/log]
-Salva InteractionLog com:
+Salva SessionLog com:
   - navigation_flow (array de slugs visitados)
   - flag (ATENDEU | NAO_ATENDEU | null)
   - created_at
@@ -255,8 +226,8 @@ Aplicável aos perfis **Secretária Acadêmica** e **Administrador** (RF09, RNF0
          │
          ▼
 [Redirecionamento por role]
-  ADMIN      → /admin/dashboard
-  SECRETARIA → /secretary/dashboard
+  ADMIN      → /admin
+  SECRETARIA → /secretary
          │
          ▼
 [A cada requisição a rota protegida]
@@ -281,14 +252,13 @@ Disponível ao fim de qualquer atendimento no chatbot (RF05/RF06).
 [POST /api/v1/questions]
   Body: { requester_name, question, requester_email, attachment? }
   → Valida e-mail e campos obrigatórios
-  → Persiste Inquiry com status: ABERTA
+  → Persiste Question com status: ABERTA
   → Se anexo presente: persiste attachment_name, attachment_mime_type, attachment_data
   → Resposta: 201 Created
          │
          ▼
-[Secretária acessa /secretary/questions]
-  → GET /api/v1/questions  (requer role: SECRETARIA)
-  → Lista perguntas com status ABERTA em destaque
+[Fluxo previsto para as próximas sprints]
+  → Área da secretária e gestão de perguntas permanecem documentadas como alvo de implementação
          │
          ▼
 [Secretária atualiza o status]
