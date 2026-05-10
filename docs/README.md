@@ -94,7 +94,7 @@ referência operacional daquela sprint.
 
 - [Arquivo editável (.asta)](uml/casos-de-uso.asta)
 
-![Diagrama de Casos de Uso](uml/casos-de-uso.PNG)
+![Diagrama de Casos de Uso](uml/casos-de-uso.jpg)
 
 ---
 
