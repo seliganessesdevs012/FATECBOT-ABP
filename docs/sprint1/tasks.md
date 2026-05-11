@@ -221,6 +221,8 @@
 
 ## Tabela de Rastreabilidade — Sprint 1
 
+**Link da tabela de atribuições:** [Tabela de atribuições](https://docs.google.com/spreadsheets/d/1pSj-2_RsHqxcnypaDYe_PIhw74WJXMK6gi8MiMOZ4MY/edit?usp=sharing)
+
 > 🎯 **Total Sprint 1: 121 pts** · 45 tasks
 
 | Task     | Tipo      | Módulo    | Nome                                                         | RFs                                                                        | RNFs          | Prioridade | Pts   |

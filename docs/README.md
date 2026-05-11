@@ -94,13 +94,15 @@ referência operacional daquela sprint.
 
 - [Arquivo editável (.asta)](uml/casos-de-uso.asta)
 
-![Diagrama de Casos de Uso](uml/casos-de-uso.PNG)
+![Diagrama de Casos de Uso](uml/casos-de-uso.jpg)
 
 ---
 
 ## 🗄️ Modelo Relacional — Banco de Dados
 
 ![Modelo Relacional](bd/Modelagem-Banco-Dados.jpeg)
+
+![Modelo do DBDesigner](bd/modelagem-banco-dados.xml)
 
 - [PDF do modelo](bd/Modelagem-Banco-Dados.pdf)
 

@@ -10,6 +10,8 @@
 
 ![Gráfico de Burndown da Sprint 1](./burndown.png)
 
+**Link do Burndown da Sprint 1:** [Link Google](https://docs.google.com/spreadsheets/d/1pSj-2_RsHqxcnypaDYe_PIhw74WJXMK6gi8MiMOZ4MY/edit?usp=sharing)
+
 🎥 **Vídeo de demonstração da Sprint 1:** [Assistir no YouTube/Drive](https://youtu.be/KwbX6P7E774)
 
 ***
