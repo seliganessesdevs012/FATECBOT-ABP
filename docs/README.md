@@ -102,6 +102,8 @@ referência operacional daquela sprint.
 
 ![Modelo Relacional](bd/Modelagem-Banco-Dados.jpeg)
 
+![Modelo do DBDesigner](bd/modelagem-banco-dados.xml)
+
 - [PDF do modelo](bd/Modelagem-Banco-Dados.pdf)
 
 ---
