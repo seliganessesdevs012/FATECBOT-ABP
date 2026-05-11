@@ -70,14 +70,14 @@ docs/
 
 ## 🏃 Sprints <a id="sprints"></a>
 
-Cada sprint possui uma subpasta própria. Quando existir `tasks.md`, ele é a
+Cada sprint possui uma subpasta própria. Quando existir `README.md`, ele é a
 referência operacional daquela sprint.
 
 | Sprint | Foco principal                                         | Documentos                                                            |
 | ------ | ------------------------------------------------------ | --------------------------------------------------------------------- |
-| 1      | Arquitetura base ponta a ponta                         | [`README.md`](./sprint1/README.md) · [`tasks.md`](./sprint1/tasks.md) |
-| 2      | Painel Admin, autenticação completa e RBAC             | [`README.md`](./sprint2/README.md) · [`tasks.md`](./sprint2/tasks.md) |
-| 3      | Painel da secretária, logs, satisfação e estabilização | [`README.md`](./sprint3/README.md) · [`tasks.md`](./sprint3/tasks.md) |
+| 1      | Arquitetura base ponta a ponta                         | [`README.md`](./sprint1/README.md) |
+| 2      | Painel Admin, autenticação completa e RBAC             | [`README.md`](./sprint2/README.md) |
+| 3      | Painel da secretária, logs, satisfação e estabilização | [`README.md`](./sprint3/README.md) |
 
 ---
 
@@ -101,6 +101,8 @@ referência operacional daquela sprint.
 ## 🗄️ Modelo Relacional — Banco de Dados
 
 ![Modelo Relacional](bd/Modelagem-Banco-Dados.jpeg)
+
+![Modelo do DBDesigner](bd/modelagem-banco-dados.xml)
 
 - [PDF do modelo](bd/Modelagem-Banco-Dados.pdf)
 
