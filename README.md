@@ -20,7 +20,7 @@
   <a href="#solucao">Solução</a> |
   <a href="#requisitos">Requisitos</a> |
   <a href="#user-stories">User Stories</a> |
-  <a href="#backlog">Backlog</a> |
+  <a href="#ADS">Acompanhamento das Sprints</a> |
   <a href="#dor">DoR</a> |
   <a href="#dod">DoD</a> |
   <a href="#tecnologias">Tecnologias</a> |
@@ -267,16 +267,7 @@ Essa abordagem garante rastreabilidade, confiabilidade da informação e reduç�
 
 ---
 
-## 📋 Backlog do Produto <a id="backlog"></a>
-
-### Processo de Estimativa
-
-As estimativas de esforço foram definidas pela equipe em sessão de **Planning Poker**, utilizando a escala Fibonacci (1 · 2 · 3 · 5 · 8 · 13). Itens considerados grandes ou pouco claros foram refinados e subdivididos pelo Product Owner antes de entrarem na sprint. O processo segue o fluxo definido pela disciplina:
-
-1. Mapeamento de necessidades pelo PO → definição das Backlogs
-2. Apresentação para o time → reunião de estimativa (Planning Poker)
-3. Subdivisão de itens grandes → definição e hierarquização das Sprints
-4. Refinamento contínuo a cada ciclo
+## 📋 Acompanhamento das Sprints <a id="ADS"></a>
 
 ### Sprints
 
@@ -287,7 +278,7 @@ As estimativas de esforço foram definidas pela equipe em sessão de **Planning 
 | 3      | Painel Secretária, logs, satisfação, ajustes finais | [Sprint 3 Docs](./docs/sprint3/README.md) | Iteração 3 | 🔵 Planejado |
 
 > 📝 Tasks detalhadas por sprint:
-> [Sprint 1 Tasks](./docs/sprint1/tasks.md) · [Sprint 2 Tasks](./docs/sprint2/tasks.md) · [Sprint 3 Tasks](./docs/sprint3/tasks.md)
+> [Sprint 1 Tasks](./docs/sprint1/README.md) · [Sprint 2 Tasks](./docs/sprint2/README.md) · [Sprint 3 Tasks](./docs/sprint3/README.md)
 
 ---
 

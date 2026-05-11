@@ -63,7 +63,7 @@ Leia [`project-standards.md`](./project-standards.md). Ele cobre as convenções
 
 Com o projeto rodando e a estrutura clara, abra o backlog da sprint atual:
 
-- **[`sprint1/tasks.md`](./sprint1/tasks.md)** — tarefas detalhadas com contratos de entrada e saída
+- **[`sprint1/README.md`](./sprint1/README.md)** — tarefas detalhadas com contratos de entrada e saída
 
 Cada task diz exatamente quais arquivos ela possui, o que ela exporta e de quais outras tasks ela depende. Leia o contrato da sua task antes de escrever qualquer código.
 
