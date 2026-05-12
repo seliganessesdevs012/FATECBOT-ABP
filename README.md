@@ -375,7 +375,7 @@ A aplicação estará disponível em:
 | Serviço     | URL                   |
 | ----------- | --------------------- |
 | Frontend    | http://localhost:5173 |
-| Backend API | http://localhost:3333 |
+| Backend API | http://localhost:3000 |
 | PostgreSQL  | localhost:5432        |
 
 ### Execução sem Docker (desenvolvimento local)
@@ -397,11 +397,11 @@ JWT_SECRET=troque_por_um_segredo_forte_aqui
 JWT_EXPIRES_IN=8h
 
 # ── Backend ─────────────────────────────────────────────
-PORT=3333
+PORT=3000
 NODE_ENV=development
 
 # ── Frontend ────────────────────────────────────────────
-VITE_API_URL=http://localhost:3333
+VITE_API_URL=http://localhost:3000
 VITE_ENABLE_DEVTOOLS=true
 ```
 
