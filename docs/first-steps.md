@@ -32,7 +32,7 @@ Após subir, acesse:
 | O quê    | URL                          |
 | -------- | ---------------------------- |
 | Frontend | http://localhost:5173        |
-| API      | http://localhost:3333/api/v1 |
+| API      | http://localhost:3000/api/v1 |
 
 Para testar o login, use as credenciais abaixo — elas são criadas pelo seed:
 

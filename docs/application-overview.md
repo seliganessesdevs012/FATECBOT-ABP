@@ -51,7 +51,7 @@ orquestrados via `docker-compose.yml` com inicialização em comando único.
 │  │              │ ──────────► │                  │             │
 │  │   frontend   │             │     backend      │             │
 │  │  (React/Vite)│ ◄────────── │  (Node/Express)  │             │
-│  │  :5173       │   JSON      │  :3333           │             │
+│  │  :5173       │   JSON      │  :3000           │             │
 │  └──────────────┘             └────────┬─────────┘             │
 │                                        │ Prisma                │
 │                                        │ Client                │
@@ -69,7 +69,7 @@ orquestrados via `docker-compose.yml` com inicialização em comando único.
 | Container  | Imagem base          | Porta | Função                                                 |
 | ---------- | -------------------- | :---: | ------------------------------------------------------ |
 | `frontend` | `node:20-alpine`     | 5173  | Serve a SPA React em modo dev (ou Nginx em prod)       |
-| `backend`  | `node:20-alpine`     | 3333  | API REST com Express + Prisma; valida JWT; aplica RBAC |
+| `backend`  | `node:20-alpine`     | 3000  | API REST com Express + Prisma; valida JWT; aplica RBAC |
 | `postgres` | `postgres:16-alpine` | 5432  | Banco de dados relacional; dados persistidos em volume |
 
 ### Comunicação
