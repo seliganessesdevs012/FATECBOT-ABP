@@ -33,8 +33,7 @@ docs/
 ├── assets/
 │   └── README.md                # Convenções de assets e diagramas da documentação
 ├── sprint1/
-│   ├── README.md
-│   └── tasks.md
+│   └── README.md
 ├── sprint2/
 │   └── README.md
 └── sprint3/
