@@ -38,10 +38,10 @@ export function useChatNavigation() {
     setHistory((prev) => {
       if (prev.length === 0) return prev;
 
-      const newHistory = [...prev];
-      const lastNodeId = newHistory.pop()!;
-      setCurrentNodeId(lastNodeId);
-      return newHistory;
+              const newHistory = [...prev];
+              const lastNodeId = newHistory.pop();
+              setCurrentNodeId(lastNodeId ?? null);
+              return newHistory;
     });
 
     setNavigationFlow((prev) =>
