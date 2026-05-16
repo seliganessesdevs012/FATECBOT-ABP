@@ -7,12 +7,12 @@ import { useNavigate } from "react-router-dom";
 import { useLogin } from "../hooks/useLogin";
 import type { LoginPayload } from "../types/auth.types";
 
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
+import { Input } from "../../../components/ui/input";
+import { Button } from "../../../components/ui/button";
+import { LoadingSpinner } from "../../../components/shared/LoadingSpinner";
 
-import jacareImg from "@/assets/admin_jacare.png";
-import fatecImg from "@/assets/login_fatec.png";
+import jacareImg from "../../../assets/admin_jacare.png";
+import fatecImg from "../../../assets/login_fatec.png";
 
 const schema = z.object({
   email: z.string().email(),

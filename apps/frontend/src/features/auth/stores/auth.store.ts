@@ -22,7 +22,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'fatecbot:auth',
-      getStorage: () => (typeof window !== 'undefined' ? localStorage : undefined),
+      storage: (typeof window !== 'undefined' ? localStorage : undefined) as any,
     }
   )
 );

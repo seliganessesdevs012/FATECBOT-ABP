@@ -2,9 +2,6 @@
   "compilerOptions": {
   "module": "esnext",
   "moduleResolution": "bundler",
-  "paths": {
-      "@/*": ["./src/*"]
-    }
   },
   "files": [],
   "references": [

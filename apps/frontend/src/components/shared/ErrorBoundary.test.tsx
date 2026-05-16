@@ -1,10 +1,15 @@
+import { expect } from "vitest";
 import { useState } from "react";
+import type { ReactElement } from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import * as matchers from "@testing-library/jest-dom/matchers";
 
 import { ErrorBoundary } from "./ErrorBoundary";
 
-function Bomb() {
+expect.extend(matchers);
+
+function Bomb(): ReactElement {
   throw new Error("kaboom");
 }
 

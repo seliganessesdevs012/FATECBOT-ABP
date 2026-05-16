@@ -2,7 +2,7 @@ import { QuestionsController } from "./questions.controller";
 import { NextFunction, Request, Response, Router } from "express";
 import {z } from "zod";
 
-const router = Router();
+const router: Router = Router();
 const controller = new QuestionsController();
 
 const createQuestionSchema = z.object({

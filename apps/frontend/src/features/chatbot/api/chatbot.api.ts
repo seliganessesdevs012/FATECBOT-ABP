@@ -1,4 +1,4 @@
-import { api } from "@/lib/axios";
+import { api } from "../../../lib/axios";
 import type {
     ChatNode,
     SessionRatingPayload,
@@ -6,7 +6,7 @@ import type {
     QuestionPayload,
     SubmitQuestionPayload,
 } from "../types/chatbot.types";
-import type { ApiResponse } from "@/types/api.types";
+import type { ApiResponse } from "../../../types/api.types";
 
 
 export async function getRootNode(){

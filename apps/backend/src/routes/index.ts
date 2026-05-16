@@ -5,7 +5,7 @@ import chatbotRoutes from '../modules/chatbot/chatbot.routes'
 import questionsRoutes from '../modules/questions/questions.routes'
 
 
-const router = Router()
+const router: Router = Router()
 
 router.use('/auth', authRoutes)
 router.use('/questions', questionsRoutes)
