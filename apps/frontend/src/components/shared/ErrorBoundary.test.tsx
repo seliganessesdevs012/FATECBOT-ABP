@@ -10,16 +10,19 @@ expect.extend(matchers);
 
 function Bomb() {
   throw new Error("kaboom");
+  return <div />;
 }
 
 describe("ErrorBoundary", () => {
   it("exibe fallback padrao quando captura erro", () => {
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const errorSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
 
     render(
       <ErrorBoundary>
         <Bomb />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(screen.getByRole("alert")).toBeInTheDocument();
@@ -30,7 +33,9 @@ describe("ErrorBoundary", () => {
 
   it("permite recuperar ao resetar a boundary", async () => {
     const user = userEvent.setup();
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const errorSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
 
     function Harness() {
       const [explode, setExplode] = useState(true);

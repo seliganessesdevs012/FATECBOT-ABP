@@ -10,6 +10,8 @@ import type { AuthUser } from "@/features/auth/types/auth.types";
 type AuthStateShape = {
   token: string | null;
   user: AuthUser | null;
+  setAuth: (token: string, user: AuthUser) => void;
+  clearAuth: () => void;
 };
 
 expect.extend(matchers);
@@ -20,9 +22,16 @@ vi.mock("@/features/auth/stores/auth.store", () => ({
 
 describe("ProtectedRoute", () => {
   it("redireciona para /login quando nao autenticado", () => {
+    const state: AuthStateShape = {
+      token: null,
+      user: null,
+      setAuth: vi.fn(),
+      clearAuth: vi.fn(),
+    };
+
     vi.mocked(useAuthStore).mockImplementation(
       (selector?: (state: AuthStateShape) => unknown) =>
-        selector ? selector({ token: null, user: null }) : null
+        selector ? selector(state) : state,
     );
 
     render(
@@ -33,7 +42,7 @@ describe("ProtectedRoute", () => {
           </Route>
           <Route path="/login" element={<div>Página de Login</div>} />
         </Routes>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText("Página de Login")).toBeInTheDocument();
@@ -41,19 +50,21 @@ describe("ProtectedRoute", () => {
   });
 
   it("renderiza as rotas filhas quando autenticado", () => {
+    const state: AuthStateShape = {
+      token: "valid-token",
+      user: {
+        id: 1,
+        name: "Admin",
+        email: "admin@fatec.sp.gov.br",
+        role: "ADMIN",
+      },
+      setAuth: vi.fn(),
+      clearAuth: vi.fn(),
+    };
+
     vi.mocked(useAuthStore).mockImplementation(
       (selector?: (state: AuthStateShape) => unknown) =>
-        selector
-          ? selector({
-              token: "valid-token",
-              user: {
-                id: 1,
-                name: "Admin",
-                email: "admin@fatec.sp.gov.br",
-                role: "ADMIN",
-              },
-            })
-          : null
+        selector ? selector(state) : state,
     );
 
     render(
@@ -63,7 +74,7 @@ describe("ProtectedRoute", () => {
             <Route path="/admin" element={<div>Painel Admin</div>} />
           </Route>
         </Routes>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText("Painel Admin")).toBeInTheDocument();
