@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 import type { ReactNode } from "react";
-import { useAuthStore } from "@/features/auth/stores/auth.store";
-import type { Role } from "@/types/common.types";
+import { useAuthStore } from "../../features/auth/stores/auth.store";
+import type { Role } from "../../types/common.types";
 
 type RoleGuardProps = {
   allowedRoles: Role[];

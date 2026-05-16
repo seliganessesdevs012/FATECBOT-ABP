@@ -1,4 +1,4 @@
-import type { Role } from "@/types/common.types";
+import type { Role } from "../../../types/common.types";
 
 export interface AuthUser {
   id: number;

@@ -4,25 +4,21 @@ import { render, screen } from "@testing-library/react";
 import * as matchers from "@testing-library/jest-dom/matchers";
 
 import { ProtectedRoute } from "./ProtectedRoute";
-import { useAuthStore } from "@/features/auth/stores/auth.store";
-import type { AuthUser } from "@/features/auth/types/auth.types";
+import { useAuthStore } from "../../features/auth/stores/auth.store";
+// import type { AuthUser } from "../../features/auth/types/auth.types";
 
-type AuthStateShape = {
-  token: string | null;
-  user: AuthUser | null;
-};
+// test-only shape omitted (useAny in mock implementations)
 
 expect.extend(matchers);
 
-vi.mock("@/features/auth/stores/auth.store", () => ({
+vi.mock("../../features/auth/stores/auth.store", () => ({
   useAuthStore: vi.fn(),
 }));
 
 describe("ProtectedRoute", () => {
   it("redireciona para /login quando nao autenticado", () => {
     vi.mocked(useAuthStore).mockImplementation(
-      (selector?: (state: AuthStateShape) => unknown) =>
-        selector ? selector({ token: null, user: null }) : null
+      (selector?: any) => (selector ? selector({ token: null, user: null }) : null)
     );
 
     render(
@@ -42,7 +38,7 @@ describe("ProtectedRoute", () => {
 
   it("renderiza as rotas filhas quando autenticado", () => {
     vi.mocked(useAuthStore).mockImplementation(
-      (selector?: (state: AuthStateShape) => unknown) =>
+      (selector?: any) =>
         selector
           ? selector({
               token: "valid-token",

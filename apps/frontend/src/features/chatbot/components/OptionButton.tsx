@@ -1,5 +1,5 @@
 // Botões de opções para o usuário escolher
-import { Button } from "@/components/ui/button";
+import { Button } from "../../../components/ui/button";
 import type { ChatNodeChild } from "../types/chatbot.types";
 
 interface OptionButtonProps {

@@ -3,8 +3,8 @@ import HomePage from "./routes";
 import LoginPage from "./routes/login";
 import AdminPage from "./routes/admin";
 import SecretaryPage from "./routes/secretary";
-import { ProtectedRoute } from "@/components/shared/ProtectedRoute";
-import { RoleGuard } from "@/components/shared/RoleGuard";
+import { ProtectedRoute } from "../components/shared/ProtectedRoute";
+import { RoleGuard } from "../components/shared/RoleGuard";
 
 export const router = createBrowserRouter([
   {

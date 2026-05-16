@@ -4,24 +4,21 @@ import { render, screen } from "@testing-library/react";
 import * as matchers from "@testing-library/jest-dom/matchers";
 
 import { RoleGuard } from "./RoleGuard";
-import { useAuthStore } from "@/features/auth/stores/auth.store";
-import type { AuthUser } from "@/features/auth/types/auth.types";
+import { useAuthStore } from "../../features/auth/stores/auth.store";
+// import type { AuthUser } from "../../features/auth/types/auth.types";
 
-type AuthStateShape = {
-  token: string | null;
-  user: AuthUser | null;
-};
+// test-only shape omitted (useAny in mock implementations)
 
 expect.extend(matchers);
 
-vi.mock("@/features/auth/stores/auth.store", () => ({
+vi.mock("../../features/auth/stores/auth.store", () => ({
   useAuthStore: vi.fn(),
 }));
 
 describe("RoleGuard", () => {
   it("renderiza a rota quando o role e permitido", () => {
     vi.mocked(useAuthStore).mockImplementation(
-      (selector?: (state: AuthStateShape) => unknown) =>
+      (selector?: any) =>
         selector
           ? selector({
               token: "valid-token",
@@ -50,7 +47,7 @@ describe("RoleGuard", () => {
 
   it("bloqueia acesso quando o role nao e permitido", () => {
     vi.mocked(useAuthStore).mockImplementation(
-      (selector?: (state: AuthStateShape) => unknown) =>
+      (selector?: any) =>
         selector
           ? selector({
               token: "valid-token",

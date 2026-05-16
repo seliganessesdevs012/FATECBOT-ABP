@@ -4,8 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useSubmitQuestion } from "../hooks/useSubmitQuestion";
 import type { QuestionFormData } from "../types/chatbot.types";
-import mascotImg from "@/assets/college_jacare.png";
-import { cn } from "@/lib/utils";
+import mascotImg from "../../../assets/college_jacare.png";
+import { cn } from "../../../lib/utils";
 
 const questionFormSchema = z.object({
   requester_name: z.string().min(3, "Nome deve ter no mínimo 3 caracteres"),
@@ -53,7 +53,7 @@ export function QuestionForm({
     formState: { errors },
     reset,
   } = useForm<QuestionFormData>({
-    resolver: zodResolver(questionFormSchema),
+    resolver: zodResolver(questionFormSchema) as any,
     mode: "onChange",
   });
 

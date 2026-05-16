@@ -2,8 +2,8 @@ import { useMemo, useState, type HTMLAttributes, type ReactNode } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { AlertCircle, AlertTriangle, Info } from "lucide-react";
 
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { cn } from "../../lib/utils";
+import { Button } from "../ui/button";
 
 const alertVariants = cva("rounded-lg border p-4", {
   variants: {
