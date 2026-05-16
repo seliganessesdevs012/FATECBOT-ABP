@@ -3,7 +3,7 @@ import {z} from "zod";
 import { AuthController } from "./auth.controller";
 
 
-const router = Router();
+const router: Router = Router();
 const controller = new AuthController();
 
 const loginSchema = z.object({

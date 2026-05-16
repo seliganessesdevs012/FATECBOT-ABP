@@ -2,7 +2,7 @@ import {Request, Response, NextFunction, Router} from 'express';
 import {ChatbotController} from './chatbot.controller';
 import {z} from 'zod';
 
-const router = Router();
+const router: Router = Router();
 const controller = new ChatbotController();
 
 const interactionLogSchema = z.object({
