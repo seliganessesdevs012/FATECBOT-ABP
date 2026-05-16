@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useSubmitQuestion } from "../hooks/useSubmitQuestion";
-import type { QuestionFormData } from "../types/chatbot.types";
 import mascotImg from "@/assets/college_jacare.png";
 import { cn } from "@/lib/utils";
 
@@ -12,23 +11,31 @@ const questionFormSchema = z.object({
   requester_email: z.string().email("Email inválido"),
   question: z.string().min(10, "Pergunta deve ter no mínimo 10 caracteres"),
   attachment: z
-    .union([z.instanceof(File), z.instanceof(FileList)])
-    .nullable()
-    .optional()
-    .transform((val) => {
-      if (!val) return undefined;
-      return val instanceof FileList ? val[0] : val;
-    })
-    .refine(
-      (file) => !file || file.size <= 5 * 1024 * 1024,
-      "Arquivo deve ter no máximo 5MB",
+    .preprocess(
+      (value) => {
+        if (value instanceof FileList) {
+          return value.length > 0 ? value[0] : undefined;
+        }
+        return value instanceof File ? value : undefined;
+      },
+      z
+        .instanceof(File)
+        .optional()
+        .refine(
+          (file) => !file || file.size <= 5 * 1024 * 1024,
+          "Arquivo deve ter no máximo 5MB",
+        )
+        .refine(
+          (file) =>
+            !file || ["application/pdf", "image/jpeg", "image/png"].includes(file.type),
+          "Arquivo deve ser PDF, JPEG ou PNG",
+        ),
     )
-    .refine(
-      (file) =>
-        !file || ["application/pdf", "image/jpeg", "image/png"].includes(file.type),
-      "Arquivo deve ser PDF, JPEG ou PNG",
-    ),
+    .optional(),
 });
+
+type QuestionFormValues = z.infer<typeof questionFormSchema>;
+const questionFormResolver = zodResolver(questionFormSchema) as Resolver<QuestionFormValues>;
 
 interface QuestionFormProps {
   onSuccess?: () => void;
@@ -52,12 +59,12 @@ export function QuestionForm({
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<QuestionFormData>({
-    resolver: zodResolver(questionFormSchema),
+  } = useForm<QuestionFormValues>({
+    resolver: questionFormResolver,
     mode: "onChange",
   });
 
-  const onSubmit = (data: QuestionFormData) => {
+  const onSubmit = (data: QuestionFormValues) => {
     submitQuestion(data, {
       onSuccess: () => {
         setIsSubmitted(true);

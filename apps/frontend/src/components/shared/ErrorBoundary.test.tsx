@@ -10,6 +10,7 @@ expect.extend(matchers);
 
 function Bomb() {
   throw new Error("kaboom");
+  return <div />;
 }
 
 describe("ErrorBoundary", () => {

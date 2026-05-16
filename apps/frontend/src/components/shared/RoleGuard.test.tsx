@@ -10,6 +10,8 @@ import type { AuthUser } from "@/features/auth/types/auth.types";
 type AuthStateShape = {
   token: string | null;
   user: AuthUser | null;
+  setAuth: (token: string, user: AuthUser) => void;
+  clearAuth: () => void;
 };
 
 expect.extend(matchers);
@@ -20,19 +22,21 @@ vi.mock("@/features/auth/stores/auth.store", () => ({
 
 describe("RoleGuard", () => {
   it("renderiza a rota quando o role e permitido", () => {
+    const state: AuthStateShape = {
+      token: "valid-token",
+      user: {
+        id: 1,
+        name: "Admin",
+        email: "admin@fatec.sp.gov.br",
+        role: "ADMIN",
+      },
+      setAuth: vi.fn(),
+      clearAuth: vi.fn(),
+    };
+
     vi.mocked(useAuthStore).mockImplementation(
       (selector?: (state: AuthStateShape) => unknown) =>
-        selector
-          ? selector({
-              token: "valid-token",
-              user: {
-                id: 1,
-                name: "Admin",
-                email: "admin@fatec.sp.gov.br",
-                role: "ADMIN",
-              },
-            })
-          : null
+        selector ? selector(state) : state
     );
 
     render(
@@ -49,19 +53,21 @@ describe("RoleGuard", () => {
   });
 
   it("bloqueia acesso quando o role nao e permitido", () => {
+    const state: AuthStateShape = {
+      token: "valid-token",
+      user: {
+        id: 1,
+        name: "Secretaria",
+        email: "secretaria@fatec.sp.gov.br",
+        role: "SECRETARIA",
+      },
+      setAuth: vi.fn(),
+      clearAuth: vi.fn(),
+    };
+
     vi.mocked(useAuthStore).mockImplementation(
       (selector?: (state: AuthStateShape) => unknown) =>
-        selector
-          ? selector({
-              token: "valid-token",
-              user: {
-                id: 1,
-                name: "Secretaria",
-                email: "secretaria@fatec.sp.gov.br",
-                role: "SECRETARIA",
-              },
-            })
-          : null
+        selector ? selector(state) : state
     );
 
     render(
