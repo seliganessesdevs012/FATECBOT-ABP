@@ -31,7 +31,7 @@ describe("ProtectedRoute", () => {
 
     vi.mocked(useAuthStore).mockImplementation(
       (selector?: (state: AuthStateShape) => unknown) =>
-        selector ? selector(state) : state
+        selector ? selector(state) : state,
     );
 
     render(
@@ -42,7 +42,7 @@ describe("ProtectedRoute", () => {
           </Route>
           <Route path="/login" element={<div>Página de Login</div>} />
         </Routes>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText("Página de Login")).toBeInTheDocument();
@@ -64,7 +64,7 @@ describe("ProtectedRoute", () => {
 
     vi.mocked(useAuthStore).mockImplementation(
       (selector?: (state: AuthStateShape) => unknown) =>
-        selector ? selector(state) : state
+        selector ? selector(state) : state,
     );
 
     render(
@@ -74,7 +74,7 @@ describe("ProtectedRoute", () => {
             <Route path="/admin" element={<div>Painel Admin</div>} />
           </Route>
         </Routes>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText("Painel Admin")).toBeInTheDocument();

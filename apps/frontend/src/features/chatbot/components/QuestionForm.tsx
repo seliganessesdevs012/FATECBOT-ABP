@@ -27,7 +27,8 @@ const questionFormSchema = z.object({
         )
         .refine(
           (file) =>
-            !file || ["application/pdf", "image/jpeg", "image/png"].includes(file.type),
+            !file ||
+            ["application/pdf", "image/jpeg", "image/png"].includes(file.type),
           "Arquivo deve ser PDF, JPEG ou PNG",
         ),
     )
@@ -35,7 +36,9 @@ const questionFormSchema = z.object({
 });
 
 type QuestionFormValues = z.infer<typeof questionFormSchema>;
-const questionFormResolver = zodResolver(questionFormSchema) as Resolver<QuestionFormValues>;
+const questionFormResolver = zodResolver(
+  questionFormSchema,
+) as Resolver<QuestionFormValues>;
 
 interface QuestionFormProps {
   onSuccess?: () => void;
@@ -111,7 +114,8 @@ export function QuestionForm({
               className="mx-auto h-56 w-56 object-contain"
             />
             <p className="mx-auto mt-3 max-w-[15rem] text-[11px] font-medium leading-relaxed text-[#847B70]">
-              Caso eu não consiga te ajudar, você pode enviar sua dúvida para a secretaria.
+              Caso eu não consiga te ajudar, você pode enviar sua dúvida para a
+              secretaria.
             </p>
 
             <button
@@ -204,7 +208,9 @@ export function QuestionForm({
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 disabled:bg-gray-100 disabled:text-gray-500"
               />
               {errors.question && (
-                <p className="text-xs text-red-600">{errors.question.message}</p>
+                <p className="text-xs text-red-600">
+                  {errors.question.message}
+                </p>
               )}
             </div>
 
@@ -235,7 +241,9 @@ export function QuestionForm({
                   Anexo
                 </label>
                 {attachmentName && (
-                  <span className="text-xs text-gray-600">{attachmentName}</span>
+                  <span className="text-xs text-gray-600">
+                    {attachmentName}
+                  </span>
                 )}
               </div>
               {errors.attachment && (

@@ -36,7 +36,7 @@ describe("RoleGuard", () => {
 
     vi.mocked(useAuthStore).mockImplementation(
       (selector?: (state: AuthStateShape) => unknown) =>
-        selector ? selector(state) : state
+        selector ? selector(state) : state,
     );
 
     render(
@@ -46,7 +46,7 @@ describe("RoleGuard", () => {
             <Route path="/admin" element={<div>Painel Admin</div>} />
           </Route>
         </Routes>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText("Painel Admin")).toBeInTheDocument();
@@ -67,7 +67,7 @@ describe("RoleGuard", () => {
 
     vi.mocked(useAuthStore).mockImplementation(
       (selector?: (state: AuthStateShape) => unknown) =>
-        selector ? selector(state) : state
+        selector ? selector(state) : state,
     );
 
     render(
@@ -78,7 +78,7 @@ describe("RoleGuard", () => {
             <Route path="/admin" element={<div>Painel Admin</div>} />
           </Route>
         </Routes>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText("Pagina Inicial")).toBeInTheDocument();
