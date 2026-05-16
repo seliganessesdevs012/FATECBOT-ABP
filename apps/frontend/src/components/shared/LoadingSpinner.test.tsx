@@ -1,6 +1,10 @@
+import { expect } from "vitest";
 import { render, screen } from "@testing-library/react";
+import * as matchers from "@testing-library/jest-dom/matchers";
 
 import { LoadingSpinner } from "./LoadingSpinner";
+
+expect.extend(matchers);
 
 describe("LoadingSpinner", () => {
   it("renderiza mensagem e semantica de loading", () => {

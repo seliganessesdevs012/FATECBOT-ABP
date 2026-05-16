@@ -1,8 +1,18 @@
+import { expect } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { render, screen } from "@testing-library/react";
+import * as matchers from "@testing-library/jest-dom/matchers";
 
 import { RoleGuard } from "./RoleGuard";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
+import type { AuthUser } from "@/features/auth/types/auth.types";
+
+type AuthStateShape = {
+  token: string | null;
+  user: AuthUser | null;
+};
+
+expect.extend(matchers);
 
 vi.mock("@/features/auth/stores/auth.store", () => ({
   useAuthStore: vi.fn(),
@@ -10,8 +20,19 @@ vi.mock("@/features/auth/stores/auth.store", () => ({
 
 describe("RoleGuard", () => {
   it("renderiza a rota quando o role e permitido", () => {
-    vi.mocked(useAuthStore).mockImplementation((selector?: any) =>
-      selector({ token: "valid-token", user: { id: 1, name: "Admin", email: "admin@fatec.sp.gov.br", role: "ADMIN" } })
+    vi.mocked(useAuthStore).mockImplementation(
+      (selector?: (state: AuthStateShape) => unknown) =>
+        selector
+          ? selector({
+              token: "valid-token",
+              user: {
+                id: 1,
+                name: "Admin",
+                email: "admin@fatec.sp.gov.br",
+                role: "ADMIN",
+              },
+            })
+          : null
     );
 
     render(
@@ -28,8 +49,19 @@ describe("RoleGuard", () => {
   });
 
   it("bloqueia acesso quando o role nao e permitido", () => {
-    vi.mocked(useAuthStore).mockImplementation((selector?: any) =>
-      selector({ token: "valid-token", user: { id: 1, name: "Secretaria", email: "secretaria@fatec.sp.gov.br", role: "SECRETARIA" } })
+    vi.mocked(useAuthStore).mockImplementation(
+      (selector?: (state: AuthStateShape) => unknown) =>
+        selector
+          ? selector({
+              token: "valid-token",
+              user: {
+                id: 1,
+                name: "Secretaria",
+                email: "secretaria@fatec.sp.gov.br",
+                role: "SECRETARIA",
+              },
+            })
+          : null
     );
 
     render(
