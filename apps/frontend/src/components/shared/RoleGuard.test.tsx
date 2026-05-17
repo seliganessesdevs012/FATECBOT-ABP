@@ -32,29 +32,21 @@ const createMockAuthState = (
 
 describe("RoleGuard", () => {
   it("renderiza a rota quando o role e permitido", () => {
+    const state: AuthStateShape = {
+      token: "valid-token",
+      user: {
+        id: 1,
+        name: "Admin",
+        email: "admin@fatec.sp.gov.br",
+        role: "ADMIN",
+      },
+      setAuth: vi.fn(),
+      clearAuth: vi.fn(),
+    };
+
     vi.mocked(useAuthStore).mockImplementation(
-      ((selector?: (state: MockAuthState) => unknown) =>
-        selector
-          ? selector(
-              createMockAuthState({
-              token: "valid-token",
-              user: {
-                id: 1,
-                name: "Admin",
-                email: "admin@fatec.sp.gov.br",
-                role: "ADMIN",
-              },
-              }),
-            )
-          : createMockAuthState({
-              token: "valid-token",
-              user: {
-                id: 1,
-                name: "Admin",
-                email: "admin@fatec.sp.gov.br",
-                role: "ADMIN",
-              },
-            })) as typeof useAuthStore,
+      (selector?: (state: AuthStateShape) => unknown) =>
+        selector ? selector(state) : state,
     );
 
     render(
@@ -64,36 +56,28 @@ describe("RoleGuard", () => {
             <Route path="/admin" element={<div>Painel Admin</div>} />
           </Route>
         </Routes>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText("Painel Admin")).toBeInTheDocument();
   });
 
   it("bloqueia acesso quando o role nao e permitido", () => {
+    const state: AuthStateShape = {
+      token: "valid-token",
+      user: {
+        id: 1,
+        name: "Secretaria",
+        email: "secretaria@fatec.sp.gov.br",
+        role: "SECRETARIA",
+      },
+      setAuth: vi.fn(),
+      clearAuth: vi.fn(),
+    };
+
     vi.mocked(useAuthStore).mockImplementation(
-      ((selector?: (state: MockAuthState) => unknown) =>
-        selector
-          ? selector(
-              createMockAuthState({
-              token: "valid-token",
-              user: {
-                id: 1,
-                name: "Secretaria",
-                email: "secretaria@fatec.sp.gov.br",
-                role: "SECRETARIA",
-              },
-              }),
-            )
-          : createMockAuthState({
-              token: "valid-token",
-              user: {
-                id: 1,
-                name: "Secretaria",
-                email: "secretaria@fatec.sp.gov.br",
-                role: "SECRETARIA",
-              },
-            })) as typeof useAuthStore,
+      (selector?: (state: AuthStateShape) => unknown) =>
+        selector ? selector(state) : state,
     );
 
     render(
@@ -104,7 +88,7 @@ describe("RoleGuard", () => {
             <Route path="/admin" element={<div>Painel Admin</div>} />
           </Route>
         </Routes>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText("Pagina Inicial")).toBeInTheDocument();

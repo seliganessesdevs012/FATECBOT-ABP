@@ -3,7 +3,6 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useSubmitQuestion } from "../hooks/useSubmitQuestion";
-import type { QuestionFormData } from "../types/chatbot.types";
 import mascotImg from "@/assets/college_jacare.png";
 import { cn } from "@/lib/utils";
 
@@ -12,22 +11,28 @@ const questionFormSchema = z.object({
   requester_email: z.string().email("Email inválido"),
   question: z.string().min(10, "Pergunta deve ter no mínimo 10 caracteres"),
   attachment: z
-    .union([z.instanceof(File), z.instanceof(FileList)])
-    .nullable()
-    .optional()
-    .transform((val) => {
-      if (!val) return undefined;
-      return val instanceof FileList ? val[0] : val;
-    })
-    .refine(
-      (file) => !file || file.size <= 5 * 1024 * 1024,
-      "Arquivo deve ter no máximo 5MB",
+    .preprocess(
+      (value) => {
+        if (value instanceof FileList) {
+          return value.length > 0 ? value[0] : undefined;
+        }
+        return value instanceof File ? value : undefined;
+      },
+      z
+        .instanceof(File)
+        .optional()
+        .refine(
+          (file) => !file || file.size <= 5 * 1024 * 1024,
+          "Arquivo deve ter no máximo 5MB",
+        )
+        .refine(
+          (file) =>
+            !file ||
+            ["application/pdf", "image/jpeg", "image/png"].includes(file.type),
+          "Arquivo deve ser PDF, JPEG ou PNG",
+        ),
     )
-    .refine(
-      (file) =>
-        !file || ["application/pdf", "image/jpeg", "image/png"].includes(file.type),
-      "Arquivo deve ser PDF, JPEG ou PNG",
-    ),
+    .optional(),
 });
 
 type QuestionFormInput = z.input<typeof questionFormSchema>;
@@ -103,7 +108,8 @@ export function QuestionForm({
               className="mx-auto h-56 w-56 object-contain"
             />
             <p className="mx-auto mt-3 max-w-[15rem] text-[11px] font-medium leading-relaxed text-[#847B70]">
-              Caso eu não consiga te ajudar, você pode enviar sua dúvida para a secretaria.
+              Caso eu não consiga te ajudar, você pode enviar sua dúvida para a
+              secretaria.
             </p>
 
             <button
@@ -196,7 +202,9 @@ export function QuestionForm({
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 disabled:bg-gray-100 disabled:text-gray-500"
               />
               {errors.question && (
-                <p className="text-xs text-red-600">{errors.question.message}</p>
+                <p className="text-xs text-red-600">
+                  {errors.question.message}
+                </p>
               )}
             </div>
 
@@ -227,7 +235,9 @@ export function QuestionForm({
                   Anexo
                 </label>
                 {attachmentName && (
-                  <span className="text-xs text-gray-600">{attachmentName}</span>
+                  <span className="text-xs text-gray-600">
+                    {attachmentName}
+                  </span>
                 )}
               </div>
               {errors.attachment && (
