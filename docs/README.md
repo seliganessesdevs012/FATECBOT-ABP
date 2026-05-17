@@ -113,7 +113,6 @@ referência operacional daquela sprint.
 
 ![Modelo do DBDesigner](bd/modelagem-banco-dados.xml)
 
-- [PDF do modelo](bd/Modelagem-Banco-Dados.pdf)
 
 ---
 
