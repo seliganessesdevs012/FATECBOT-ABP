@@ -1,4 +1,4 @@
-import mascotImg from "@/assets/login_jacare.png";
+import mascotImg from "../../../assets/login_jacare.png";
 import type { ChatSidebarHistoryItem } from "../types/chatbot.types";
 import { QuestionForm } from "./QuestionForm";
 

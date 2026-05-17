@@ -32,7 +32,7 @@ const createMockAuthState = (
 
 describe("RoleGuard", () => {
   it("renderiza a rota quando o role e permitido", () => {
-    const state: AuthStateShape = {
+    const state = createMockAuthState({
       token: "valid-token",
       user: {
         id: 1,
@@ -40,12 +40,10 @@ describe("RoleGuard", () => {
         email: "admin@fatec.sp.gov.br",
         role: "ADMIN",
       },
-      setAuth: vi.fn(),
-      clearAuth: vi.fn(),
-    };
+    });
 
     vi.mocked(useAuthStore).mockImplementation(
-      (selector?: (state: AuthStateShape) => unknown) =>
+      (selector?: (state: MockAuthState) => unknown) =>
         selector ? selector(state) : state,
     );
 
@@ -63,7 +61,7 @@ describe("RoleGuard", () => {
   });
 
   it("bloqueia acesso quando o role nao e permitido", () => {
-    const state: AuthStateShape = {
+    const state = createMockAuthState({
       token: "valid-token",
       user: {
         id: 1,
@@ -71,12 +69,10 @@ describe("RoleGuard", () => {
         email: "secretaria@fatec.sp.gov.br",
         role: "SECRETARIA",
       },
-      setAuth: vi.fn(),
-      clearAuth: vi.fn(),
-    };
+    });
 
     vi.mocked(useAuthStore).mockImplementation(
-      (selector?: (state: AuthStateShape) => unknown) =>
+      (selector?: (state: MockAuthState) => unknown) =>
         selector ? selector(state) : state,
     );
 

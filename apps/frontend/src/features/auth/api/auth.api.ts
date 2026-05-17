@@ -1,4 +1,4 @@
-import { api } from '@/lib/axios';
+import { api } from '../../../lib/axios';
 import type { LoginPayload, AuthUser } from '../types/auth.types';
 
 type LoginResponse = {
