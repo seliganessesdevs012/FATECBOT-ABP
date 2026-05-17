@@ -4,7 +4,7 @@
 > Cobre o CRUD de nós de navegação, usuários da secretaria
 > e a visualização de logs de atendimento (RF04, RF08).
 
-> **Nota de estado da Sprint 1:** esta feature permanece documentada como arquitetura-alvo. No código atual, os arquivos de `api/`, `hooks/` e `components/` desta pasta ainda estão como base para implementação futura.
+> **Nota de estado atual:** a camada de dados de nós já possui implementação funcional em `api/nodes.api.ts` e `hooks/useNodes.ts`. Os componentes visuais do painel admin e os fluxos de usuários e logs continuam documentados aqui como arquitetura-alvo das próximas tasks.
 
 ***
 
@@ -63,10 +63,10 @@ retornam Promises diretamente para serem consumidas pelos hooks do TanStack Quer
 ```ts
 // ✅ Padrão adotado em api/
 export const nodesApi = {
-  getAll: () => api.get<Node[]>('/nodes').then(res => res.data),
-  create: (data: CreateNodeDto) => api.post<Node>('/nodes', data).then(res => res.data),
-  update: (id: string, data: UpdateNodeDto) => api.patch<Node>(`/nodes/${id}`, data).then(res => res.data),
-  remove: (id: string) => api.delete(`/nodes/${id}`),
+  list: () => api.get<ApiResponse<NodeListItemDTO[]>>('/nodes').then(res => res.data.data),
+  create: (data: CreateNodePayload) => api.post<ApiResponse<NodeListItemDTO>>('/nodes', data).then(res => res.data.data),
+  update: (id: number, data: UpdateNodePayload) => api.patch<ApiResponse<NodeListItemDTO>>(`/nodes/${id}`, data).then(res => res.data.data),
+  remove: (id: number) => api.delete(`/nodes/${id}`),
 }
 
 // ❌ Nunca use axios diretamente nos hooks ou componentes
@@ -81,18 +81,27 @@ diretamente.
 ```ts
 // ✅ Padrão adotado em hooks/
 export function useNodes() {
-  return useQuery({
-    queryKey: ['nodes'],
-    queryFn: nodesApi.getAll,
-  })
-}
-
-export function useCreateNode() {
   const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: nodesApi.create,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['nodes'] }),
+
+  const query = useQuery({
+    queryKey: ['nodes'],
+    queryFn: nodesApi.list,
   })
+
+  const createNodeMutation = useMutation({
+    mutationFn: nodesApi.create,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['nodes'] })
+    },
+  })
+
+  return {
+    nodes: query.data ?? [],
+    isLoading: query.isLoading || createNodeMutation.isPending,
+    createNode: async dto => {
+      await createNodeMutation.mutateAsync(dto)
+    },
+  }
 }
 ```
 
@@ -104,7 +113,7 @@ representa um domínio visual independente com seu próprio `index.tsx`.
 ```tsx
 // ✅ Componente correto — consome hook, não chama api/ diretamente
 export function NodeForm({ onSuccess }: NodeFormProps) {
-  const { mutate: createNode, isPending } = useCreateNode()
+  const { createNode, isLoading } = useNodes()
   // ...
 }
 ```

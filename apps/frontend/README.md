@@ -295,7 +295,7 @@ O `auth.store.ts` (Zustand) é a fonte de verdade para o estado de autenticaçã
 
 ### `features/admin` — RF04
 
-Documentado como estrutura-alvo do painel do administrador. Na Sprint 1, a rota protegida `/admin` já existe, mas os fluxos de CRUD e logs permanecem para as próximas sprints.
+Documentado como estrutura-alvo do painel do administrador. No estado atual, a rota protegida `/admin` já existe e a camada de dados de nós (`nodesApi` + `useNodes`) está implementada; os componentes visuais de CRUD, usuários e logs permanecem para as próximas sprints.
 
 ### `features/secretary` — RF06
 

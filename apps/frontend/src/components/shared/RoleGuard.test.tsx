@@ -7,9 +7,11 @@ import { RoleGuard } from "./RoleGuard";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import type { AuthUser } from "@/features/auth/types/auth.types";
 
-type AuthStateShape = {
+type MockAuthState = {
   token: string | null;
   user: AuthUser | null;
+  setAuth: (token: string, user: AuthUser) => void;
+  clearAuth: () => void;
 };
 
 expect.extend(matchers);
@@ -18,12 +20,23 @@ vi.mock("@/features/auth/stores/auth.store", () => ({
   useAuthStore: vi.fn(),
 }));
 
+const createMockAuthState = (
+  overrides: Partial<MockAuthState> = {},
+): MockAuthState => ({
+  token: null,
+  user: null,
+  setAuth: vi.fn(),
+  clearAuth: vi.fn(),
+  ...overrides,
+});
+
 describe("RoleGuard", () => {
   it("renderiza a rota quando o role e permitido", () => {
     vi.mocked(useAuthStore).mockImplementation(
-      (selector?: (state: AuthStateShape) => unknown) =>
+      ((selector?: (state: MockAuthState) => unknown) =>
         selector
-          ? selector({
+          ? selector(
+              createMockAuthState({
               token: "valid-token",
               user: {
                 id: 1,
@@ -31,8 +44,17 @@ describe("RoleGuard", () => {
                 email: "admin@fatec.sp.gov.br",
                 role: "ADMIN",
               },
-            })
-          : null
+              }),
+            )
+          : createMockAuthState({
+              token: "valid-token",
+              user: {
+                id: 1,
+                name: "Admin",
+                email: "admin@fatec.sp.gov.br",
+                role: "ADMIN",
+              },
+            })) as typeof useAuthStore,
     );
 
     render(
@@ -50,9 +72,10 @@ describe("RoleGuard", () => {
 
   it("bloqueia acesso quando o role nao e permitido", () => {
     vi.mocked(useAuthStore).mockImplementation(
-      (selector?: (state: AuthStateShape) => unknown) =>
+      ((selector?: (state: MockAuthState) => unknown) =>
         selector
-          ? selector({
+          ? selector(
+              createMockAuthState({
               token: "valid-token",
               user: {
                 id: 1,
@@ -60,8 +83,17 @@ describe("RoleGuard", () => {
                 email: "secretaria@fatec.sp.gov.br",
                 role: "SECRETARIA",
               },
-            })
-          : null
+              }),
+            )
+          : createMockAuthState({
+              token: "valid-token",
+              user: {
+                id: 1,
+                name: "Secretaria",
+                email: "secretaria@fatec.sp.gov.br",
+                role: "SECRETARIA",
+              },
+            })) as typeof useAuthStore,
     );
 
     render(

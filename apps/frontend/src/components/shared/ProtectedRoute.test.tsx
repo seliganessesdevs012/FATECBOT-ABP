@@ -7,9 +7,11 @@ import { ProtectedRoute } from "./ProtectedRoute";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import type { AuthUser } from "@/features/auth/types/auth.types";
 
-type AuthStateShape = {
+type MockAuthState = {
   token: string | null;
   user: AuthUser | null;
+  setAuth: (token: string, user: AuthUser) => void;
+  clearAuth: () => void;
 };
 
 expect.extend(matchers);
@@ -18,11 +20,21 @@ vi.mock("@/features/auth/stores/auth.store", () => ({
   useAuthStore: vi.fn(),
 }));
 
+const createMockAuthState = (
+  overrides: Partial<MockAuthState> = {},
+): MockAuthState => ({
+  token: null,
+  user: null,
+  setAuth: vi.fn(),
+  clearAuth: vi.fn(),
+  ...overrides,
+});
+
 describe("ProtectedRoute", () => {
   it("redireciona para /login quando nao autenticado", () => {
     vi.mocked(useAuthStore).mockImplementation(
-      (selector?: (state: AuthStateShape) => unknown) =>
-        selector ? selector({ token: null, user: null }) : null
+      ((selector?: (state: MockAuthState) => unknown) =>
+        selector ? selector(createMockAuthState()) : createMockAuthState()) as typeof useAuthStore,
     );
 
     render(
@@ -42,9 +54,10 @@ describe("ProtectedRoute", () => {
 
   it("renderiza as rotas filhas quando autenticado", () => {
     vi.mocked(useAuthStore).mockImplementation(
-      (selector?: (state: AuthStateShape) => unknown) =>
+      ((selector?: (state: MockAuthState) => unknown) =>
         selector
-          ? selector({
+          ? selector(
+              createMockAuthState({
               token: "valid-token",
               user: {
                 id: 1,
@@ -52,8 +65,17 @@ describe("ProtectedRoute", () => {
                 email: "admin@fatec.sp.gov.br",
                 role: "ADMIN",
               },
-            })
-          : null
+              }),
+            )
+          : createMockAuthState({
+              token: "valid-token",
+              user: {
+                id: 1,
+                name: "Admin",
+                email: "admin@fatec.sp.gov.br",
+                role: "ADMIN",
+              },
+            })) as typeof useAuthStore,
     );
 
     render(
