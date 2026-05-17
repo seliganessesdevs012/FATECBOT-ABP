@@ -3,6 +3,7 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useSubmitQuestion } from "../hooks/useSubmitQuestion";
+import type { QuestionFormData } from "../types/chatbot.types";
 import mascotImg from "@/assets/college_jacare.png";
 import { cn } from "@/lib/utils";
 
@@ -64,7 +65,7 @@ export function QuestionForm({
     mode: "onChange",
   });
 
-  const onSubmit: SubmitHandler<QuestionFormData> = data => {
+  const onSubmit: SubmitHandler<QuestionFormData> = (data) => {
     submitQuestion(data, {
       onSuccess: () => {
         setIsSubmitted(true);
@@ -77,6 +78,9 @@ export function QuestionForm({
           reset();
           onSuccess?.();
         }, 2000);
+      },
+      onError: (error) => {
+        console.error("Erro ao enviar pergunta:", error);
       },
     });
   };

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Check, ThumbsDown, ThumbsUp } from "lucide-react";
 import { chatbotApi } from "../api/chatbot.api";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Button } from "../../../components/ui/button";
+import { cn } from "../../../lib/utils";
 
 interface SatisfactionRatingProps {
   navigation_flow: string[];

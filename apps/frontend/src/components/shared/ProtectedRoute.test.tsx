@@ -32,15 +32,10 @@ const createMockAuthState = (
 
 describe("ProtectedRoute", () => {
   it("redireciona para /login quando nao autenticado", () => {
-    const state: AuthStateShape = {
-      token: null,
-      user: null,
-      setAuth: vi.fn(),
-      clearAuth: vi.fn(),
-    };
+    const state = createMockAuthState();
 
     vi.mocked(useAuthStore).mockImplementation(
-      (selector?: (state: AuthStateShape) => unknown) =>
+      (selector?: (state: MockAuthState) => unknown) =>
         selector ? selector(state) : state,
     );
 
@@ -60,7 +55,7 @@ describe("ProtectedRoute", () => {
   });
 
   it("renderiza as rotas filhas quando autenticado", () => {
-    const state: AuthStateShape = {
+    const state = createMockAuthState({
       token: "valid-token",
       user: {
         id: 1,
@@ -68,12 +63,10 @@ describe("ProtectedRoute", () => {
         email: "admin@fatec.sp.gov.br",
         role: "ADMIN",
       },
-      setAuth: vi.fn(),
-      clearAuth: vi.fn(),
-    };
+    });
 
     vi.mocked(useAuthStore).mockImplementation(
-      (selector?: (state: AuthStateShape) => unknown) =>
+      (selector?: (state: MockAuthState) => unknown) =>
         selector ? selector(state) : state,
     );
 

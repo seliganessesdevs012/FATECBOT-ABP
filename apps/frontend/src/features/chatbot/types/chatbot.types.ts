@@ -1,4 +1,4 @@
-import type { Satisfaction } from "@/types/common.types";
+import type { Satisfaction } from "../../../types/common.types";
 
 export interface ChatNodeChild {
   id: number;
@@ -73,5 +73,5 @@ export interface QuestionPayload {
   attachment_name?: string;
   attachment_mime_type?: string;
   created_at: string;
-  status: "pending" | "answered" | "archived";
+  status: "ABERTA" | "RESPONDIDA";
 }

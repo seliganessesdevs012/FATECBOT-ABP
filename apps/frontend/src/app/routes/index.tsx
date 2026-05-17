@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import logoImg from "@/assets/login_jacare.png";
-import jacareImg from "@/assets/home_jacare.png";
-import fatecImg from "@/assets/login_fatec.png";
-import { ChatWindow } from "@/features/chatbot/components/ChatWindow";
+import logoImg from "../../assets/login_jacare.png";
+import jacareImg from "../../assets/home_jacare.png";
+import fatecImg from "../../assets/login_fatec.png";
+import { ChatWindow } from "../../features/chatbot/components/ChatWindow";
 
 const Home: React.FC = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
