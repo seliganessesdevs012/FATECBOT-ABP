@@ -7,7 +7,7 @@ import { RoleGuard } from "./RoleGuard";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import type { AuthUser } from "@/features/auth/types/auth.types";
 
-type AuthStateShape = {
+type MockAuthState = {
   token: string | null;
   user: AuthUser | null;
   setAuth: (token: string, user: AuthUser) => void;
@@ -19,6 +19,16 @@ expect.extend(matchers);
 vi.mock("@/features/auth/stores/auth.store", () => ({
   useAuthStore: vi.fn(),
 }));
+
+const createMockAuthState = (
+  overrides: Partial<MockAuthState> = {},
+): MockAuthState => ({
+  token: null,
+  user: null,
+  setAuth: vi.fn(),
+  clearAuth: vi.fn(),
+  ...overrides,
+});
 
 describe("RoleGuard", () => {
   it("renderiza a rota quando o role e permitido", () => {

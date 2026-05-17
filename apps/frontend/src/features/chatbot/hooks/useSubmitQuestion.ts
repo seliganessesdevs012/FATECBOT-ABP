@@ -1,8 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
+
 import { chatbotApi } from "../api/chatbot.api";
 import type {
   QuestionFormData,
-  QuestionPayload,
   SubmitQuestionPayload,
 } from "../types/chatbot.types";
 
@@ -43,13 +43,6 @@ export function useSubmitQuestion() {
       }
 
       return chatbotApi.submitQuestion(payload);
-    },
-    onSuccess: (data: QuestionPayload) => {
-      // Optionally invalidate queries here if needed
-      console.log("Question submitted successfully:", data);
-    },
-    onError: (error: Error) => {
-      console.error("Failed to submit question:", error.message);
     },
   });
 }

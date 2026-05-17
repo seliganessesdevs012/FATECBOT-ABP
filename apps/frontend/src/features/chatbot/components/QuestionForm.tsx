@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm, type Resolver } from "react-hook-form";
+import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useSubmitQuestion } from "../hooks/useSubmitQuestion";
@@ -35,10 +35,7 @@ const questionFormSchema = z.object({
     .optional(),
 });
 
-type QuestionFormValues = z.infer<typeof questionFormSchema>;
-const questionFormResolver = zodResolver(
-  questionFormSchema,
-) as Resolver<QuestionFormValues>;
+type QuestionFormInput = z.input<typeof questionFormSchema>;
 
 interface QuestionFormProps {
   onSuccess?: () => void;
@@ -62,12 +59,12 @@ export function QuestionForm({
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<QuestionFormValues>({
-    resolver: questionFormResolver,
+  } = useForm<QuestionFormInput, undefined, QuestionFormData>({
+    resolver: zodResolver(questionFormSchema),
     mode: "onChange",
   });
 
-  const onSubmit = (data: QuestionFormValues) => {
+  const onSubmit: SubmitHandler<QuestionFormData> = data => {
     submitQuestion(data, {
       onSuccess: () => {
         setIsSubmitted(true);
@@ -80,9 +77,6 @@ export function QuestionForm({
           reset();
           onSuccess?.();
         }, 2000);
-      },
-      onError: (error) => {
-        console.error("Erro ao enviar pergunta:", error);
       },
     });
   };

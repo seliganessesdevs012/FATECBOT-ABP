@@ -1,6 +1,6 @@
-import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
-import type { AuthUser } from "../types/auth.types";
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import type { AuthUser } from '../types/auth.types';
 
 type AuthState = {
   token: string | null;
