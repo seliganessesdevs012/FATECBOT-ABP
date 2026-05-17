@@ -16,6 +16,7 @@
 - [Sprints](#sprints)
 - [Regras de contribuição](#regras-de-contribuicao)
 - [Diagramas de caso de uso](#-diagrama-de-casos-de-uso)
+- [Diagramas de classe](#-diagrama-de-classe)
 - [Modelo Relacional - Banco de dados](#️-modelo-relacional--banco-de-dados)
 
 ---
@@ -96,6 +97,15 @@ referência operacional daquela sprint.
 ![Diagrama de Casos de Uso](uml/casos-de-uso.jpg)
 
 ---
+
+## 📐 Diagrama de Classe
+
+- [Arquivo editável (.asta)](uml/casos-de-classe.asta)
+
+![Diagrama de Classe](uml/diagrama-de-classe.jpg)
+
+---
+
 
 ## 🗄️ Modelo Relacional — Banco de Dados
 
