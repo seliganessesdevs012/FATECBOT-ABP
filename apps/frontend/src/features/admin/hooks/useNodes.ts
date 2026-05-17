@@ -6,16 +6,27 @@ import {
   type NodeListItemDTO,
 } from "@/features/admin/api/nodes.api";
 
-export function useNodes(): {
+export interface UseNodesResult {
   nodes: NodeListItemDTO[];
   isLoading: boolean;
+  isError: boolean;
+  error: unknown;
+  refetch: () => Promise<unknown>;
   createNode: (dto: CreateNodePayload) => Promise<void>;
   updateNode: (id: number, dto: Partial<CreateNodePayload>) => Promise<void>;
   deleteNode: (id: number) => Promise<void>;
-} {
+}
+
+export function useNodes(): UseNodesResult {
   const queryClient = useQueryClient();
 
-  const { data: nodes, isLoading: isQueryLoading } = useQuery({
+  const {
+    data: nodes,
+    isLoading: isQueryLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["nodes"],
     queryFn: nodesApi.list,
   });
@@ -71,6 +82,9 @@ export function useNodes(): {
   return {
     nodes: nodes ?? [],
     isLoading,
+    isError,
+    error,
+    refetch,
     createNode,
     updateNode,
     deleteNode,
