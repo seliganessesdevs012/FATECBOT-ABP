@@ -11,6 +11,7 @@ export class QuestionsController {
         requester_name: string;
         question: string;
         requester_email: string;
+        session_log_id?: number | null;
         attachment_name?: string | null;
         attachment_mime_type?: string | null;
         attachment_data?: string | null; // base64 string from frontend
@@ -28,6 +29,7 @@ export class QuestionsController {
         requester_name: body.requester_name,
         question: body.question,
         requester_email: body.requester_email,
+  session_log_id: body.session_log_id ?? null,
         attachment_name: body.attachment_name ?? null,
         attachment_mime_type: body.attachment_mime_type ?? null,
         attachment_data: body.attachment_data
