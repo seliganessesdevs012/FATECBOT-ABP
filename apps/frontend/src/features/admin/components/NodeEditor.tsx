@@ -37,10 +37,15 @@ const nodeEditorSchema = z
         "Use apenas letras minusculas, numeros e hifens",
       ),
     parent_id: z.string().min(1, "Selecione um no pai"),
-    display_order: z.coerce
-      .number()
-      .int("A ordem deve ser um numero inteiro")
-      .min(1, "A ordem deve ser maior ou igual a 1"),
+    display_order: z
+      .union([z.string(), z.number()])
+      .transform(value => Number(value))
+      .pipe(
+        z
+          .number()
+          .int("A ordem deve ser um numero inteiro")
+          .min(1, "A ordem deve ser maior ou igual a 1"),
+      ),
     prompt: z.string(),
     answer_summary: z.string(),
     evidence_excerpt: z.string(),
@@ -79,6 +84,9 @@ const nodeEditorSchema = z
   });
 
 type NodeEditorFormValues = z.infer<typeof nodeEditorSchema>;
+type NodeEditorFormInput = Omit<NodeEditorFormValues, "display_order"> & {
+  display_order: string | number;
+};
 
 interface ParentOption {
   value: string;
@@ -309,7 +317,7 @@ const NodeEditor = ({
     reset,
     setValue,
     formState: { errors, dirtyFields },
-  } = useForm<NodeEditorFormValues>({
+  } = useForm<NodeEditorFormInput, unknown, NodeEditorFormValues>({
     resolver: zodResolver(nodeEditorSchema),
     mode: "onChange",
     defaultValues: initialCreateValues,
