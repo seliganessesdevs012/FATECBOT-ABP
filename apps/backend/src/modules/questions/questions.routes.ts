@@ -8,6 +8,7 @@ const controller = new QuestionsController();
 const createQuestionSchema = z.object({
     requester_name: z.string().min(1),
     requester_email: z.string().email(),
+    session_log_id: z.number().int().positive().optional(),
     question: z.string().min(1),
     attachment_name: z.string().min(1).optional(),
     attachment_mime_type: z.string().min(1).optional(),
