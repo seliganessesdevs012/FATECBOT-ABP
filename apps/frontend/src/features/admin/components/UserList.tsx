@@ -160,12 +160,12 @@ const UserList = ({ className }: UserListProps) => {
       <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-foreground">
-            Usuarios da secretaria
+            Usuarios internos
           </h2>
           <p className="text-sm text-muted-foreground">Total: {total}</p>
         </div>
         <Button type="button" onClick={() => setIsCreateOpen(true)}>
-          Novo usuario
+          Novo acesso
         </Button>
       </header>
 
@@ -255,10 +255,10 @@ const UserList = ({ className }: UserListProps) => {
             <div className="flex items-start justify-between">
               <div className="space-y-1">
                 <h3 className="text-lg font-semibold text-foreground">
-                  Criar usuario
+                  Criar acesso interno
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  Usuarios criados aqui terao perfil SECRETARIA.
+                  Neste fluxo, o backend cria usuarios com perfil SECRETARIA.
                 </p>
               </div>
               <Button
@@ -336,7 +336,7 @@ const UserList = ({ className }: UserListProps) => {
                   Cancelar
                 </Button>
                 <Button type="submit" disabled={isCreateBusy}>
-                  {isCreateBusy ? "Salvando..." : "Criar usuario"}
+                  {isCreateBusy ? "Salvando..." : "Criar acesso"}
                 </Button>
               </div>
             </form>

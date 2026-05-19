@@ -1,10 +1,6 @@
-import { useMemo, useState, type ReactElement } from "react";
+import { useMemo, useState } from "react";
 import { isAxiosError } from "axios";
 import {
-  ChevronDown,
-  ChevronRight,
-  FileText,
-  FolderTree,
   Pencil,
   Plus,
   Trash2,
@@ -24,19 +20,6 @@ interface TreeNode extends NodeListItemDTO {
 export interface NodeTreeProps {
   className?: string;
   selectedNodeId?: number | null;
-  onSelectNode?: (node: NodeListItemDTO) => void;
-  onCreateNode?: (parent: NodeListItemDTO | null) => void;
-  onEditNode?: (node: NodeListItemDTO) => void;
-}
-
-interface RenderNodeParams {
-  node: TreeNode;
-  depth: number;
-  deletingId: number | null;
-  expandedNodeIds: Set<number>;
-  selectedNodeId?: number | null;
-  onToggleNode: (nodeId: number) => void;
-  onDeleteNode: (node: NodeListItemDTO) => Promise<void>;
   onSelectNode?: (node: NodeListItemDTO) => void;
   onCreateNode?: (parent: NodeListItemDTO | null) => void;
   onEditNode?: (node: NodeListItemDTO) => void;
@@ -91,6 +74,32 @@ const buildNodeTree = (nodes: NodeListItemDTO[]): TreeNode[] => {
   return roots.sort(sortNodes);
 };
 
+const buildLevels = (tree: TreeNode[]): TreeNode[][] => {
+  const levels: TreeNode[][] = [];
+
+  const visit = (nodes: TreeNode[], depth: number) => {
+    if (nodes.length === 0) {
+      return;
+    }
+
+    if (!levels[depth]) {
+      levels[depth] = [];
+    }
+
+    levels[depth].push(...nodes);
+
+    nodes.forEach(node => {
+      if (node.children.length > 0) {
+        visit(node.children, depth + 1);
+      }
+    });
+  };
+
+  visit(tree, 0);
+
+  return levels.map(level => level.slice().sort(sortNodes));
+};
+
 const getErrorMessage = (error: unknown, fallback: string): string => {
   if (isAxiosError(error)) {
     const data = error.response?.data;
@@ -111,174 +120,6 @@ const getErrorMessage = (error: unknown, fallback: string): string => {
   return fallback;
 };
 
-const renderNode = ({
-  node,
-  depth,
-  deletingId,
-  expandedNodeIds,
-  selectedNodeId,
-  onToggleNode,
-  onDeleteNode,
-  onSelectNode,
-  onCreateNode,
-  onEditNode,
-}: RenderNodeParams): ReactElement => {
-  const hasChildren = node.children.length > 0;
-  const isExpanded = hasChildren ? expandedNodeIds.has(node.id) : false;
-  const isDeleting = deletingId === node.id;
-  const isSelected = selectedNodeId === node.id;
-  const isDeleteBlocked = node.childrenCount > 0 || deletingId !== null;
-  const deleteHint =
-    node.childrenCount > 0
-      ? "Remova os filhos antes de excluir este no."
-      : undefined;
-
-  return (
-    <li key={node.id} className="space-y-3">
-      <div
-        className={cn(
-          "rounded-xl border border-border/70 bg-background px-4 py-4 shadow-sm transition-colors",
-          isSelected && "border-primary/40 bg-primary/5",
-        )}
-      >
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-start gap-2">
-              {hasChildren ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label={
-                    isExpanded
-                      ? `Recolher ${node.title}`
-                      : `Expandir ${node.title}`
-                  }
-                  aria-expanded={isExpanded}
-                  onClick={() => onToggleNode(node.id)}
-                >
-                  {isExpanded ? (
-                    <ChevronDown aria-hidden="true" />
-                  ) : (
-                    <ChevronRight aria-hidden="true" />
-                  )}
-                </Button>
-              ) : (
-                <span
-                  aria-hidden="true"
-                  className="inline-flex size-7 shrink-0"
-                />
-              )}
-
-              <button
-                type="button"
-                className="min-w-0 text-left"
-                onClick={() => onSelectNode?.(node)}
-              >
-                <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                  {hasChildren ? (
-                    <FolderTree className="size-4 text-primary" />
-                  ) : (
-                    <FileText className="size-4 text-muted-foreground" />
-                  )}
-                  <span className="truncate">{node.title}</span>
-                </div>
-                <p className="mt-1 truncate text-sm text-muted-foreground">
-                  /{node.slug}
-                </p>
-              </button>
-            </div>
-
-            <div className="mt-3 flex flex-wrap gap-2 pl-9 text-xs">
-              <span className="rounded-full bg-muted px-2.5 py-1 font-medium text-muted-foreground">
-                Ordem {node.display_order}
-              </span>
-              <span className="rounded-full bg-muted px-2.5 py-1 font-medium text-muted-foreground">
-                {node.childrenCount} {node.childrenCount === 1 ? "filho" : "filhos"}
-              </span>
-              <span
-                className={cn(
-                  "rounded-full px-2.5 py-1 font-medium",
-                  node.is_active
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "bg-muted text-muted-foreground",
-                )}
-              >
-                {node.is_active ? "Ativo" : "Inativo"}
-              </span>
-              {node.parent_id === null ? (
-                <span className="rounded-full bg-primary/10 px-2.5 py-1 font-medium text-primary">
-                  Raiz
-                </span>
-              ) : null}
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            {onCreateNode ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onCreateNode(node)}
-              >
-                <Plus aria-hidden="true" />
-                Adicionar filho
-              </Button>
-            ) : null}
-
-            {onEditNode ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onEditNode(node)}
-              >
-                <Pencil aria-hidden="true" />
-                Editar
-              </Button>
-            ) : null}
-
-            <Button
-              type="button"
-              variant="destructive"
-              size="sm"
-              title={deleteHint}
-              disabled={isDeleteBlocked}
-              onClick={() => onDeleteNode(node)}
-            >
-              <Trash2 aria-hidden="true" />
-              {isDeleting ? "Removendo..." : "Remover"}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {hasChildren && isExpanded ? (
-        <ul
-          className="space-y-3 border-l border-border/70 pl-4"
-          style={{ marginLeft: `${Math.max(depth, 0)}rem` }}
-        >
-          {node.children.map(child =>
-            renderNode({
-              node: child,
-              depth: depth + 1,
-              deletingId,
-              expandedNodeIds,
-              selectedNodeId,
-              onToggleNode,
-              onDeleteNode,
-              onSelectNode,
-              onCreateNode,
-              onEditNode,
-            }),
-          )}
-        </ul>
-      ) : null}
-    </li>
-  );
-};
-
 const NodeTree = ({
   className,
   selectedNodeId,
@@ -287,49 +128,16 @@ const NodeTree = ({
   onEditNode,
 }: NodeTreeProps) => {
   const { nodes, isLoading, isError, error, refetch, deleteNode } = useNodes();
-  const [collapsedNodeIds, setCollapsedNodeIds] = useState<Set<number>>(
-    () => new Set<number>(),
-  );
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
   const tree = useMemo(() => buildNodeTree(nodes), [nodes]);
-  const branchNodeIds = useMemo(
-    () => new Set(nodes.filter(node => node.childrenCount > 0).map(node => node.id)),
-    [nodes],
-  );
-  const expandedNodeIds = useMemo(() => {
-    const next = new Set<number>();
-
-    branchNodeIds.forEach(nodeId => {
-      if (!collapsedNodeIds.has(nodeId)) {
-        next.add(nodeId);
-      }
-    });
-
-    return next;
-  }, [branchNodeIds, collapsedNodeIds]);
+  const levels = useMemo(() => buildLevels(tree), [tree]);
+  const selectedNode =
+    nodes.find(node => node.id === selectedNodeId) ?? null;
 
   const totalRoots = tree.length;
   const activeNodes = nodes.filter(node => node.is_active).length;
-
-  const handleToggleNode = (nodeId: number) => {
-    setCollapsedNodeIds(current => {
-      const next = new Set(current);
-
-      if (!branchNodeIds.has(nodeId)) {
-        return next;
-      }
-
-      if (next.has(nodeId)) {
-        next.delete(nodeId);
-      } else {
-        next.add(nodeId);
-      }
-
-      return next;
-    });
-  };
 
   const handleDeleteNode = async (node: NodeListItemDTO): Promise<void> => {
     if (node.childrenCount > 0 || deletingId !== null) {
@@ -374,24 +182,54 @@ const NodeTree = ({
     );
   }
 
+  const isDeleteDisabled =
+    !selectedNode || selectedNode.childrenCount > 0 || deletingId !== null;
+  const primaryActionLabel = selectedNode
+    ? selectedNode.childrenCount > 0 || selectedNode.parent_id === null
+      ? "Adicionar opcao"
+      : "Adicionar resposta"
+    : "Novo no raiz";
+
   return (
-    <section className={cn("space-y-4", className)}>
-      <header className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <div className="space-y-1">
-          <h2 className="text-lg font-semibold text-foreground">
-            Arvore de navegacao
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            {nodes.length} nos cadastrados, {totalRoots} raizes e {activeNodes} ativos.
-          </p>
+    <section className={cn("space-y-6", className)}>
+      <header className="space-y-4">
+        <div className="flex justify-end">
+          {onCreateNode ? (
+            <button
+              type="button"
+              onClick={() => onCreateNode(null)}
+              className="inline-flex items-center gap-2 rounded-2xl border border-[#D8CFBF] bg-white px-4 py-2 text-sm font-semibold text-[#7D120D] transition-colors hover:bg-[#FBF5EB]"
+            >
+              <Plus className="size-4" aria-hidden="true" />
+              Novo no raiz
+            </button>
+          ) : null}
         </div>
 
-        {onCreateNode ? (
-          <Button type="button" onClick={() => onCreateNode(null)}>
-            <Plus aria-hidden="true" />
-            Novo no raiz
-          </Button>
-        ) : null}
+        <div className="space-y-3 text-center">
+          <div className="inline-flex items-center gap-3 rounded-full bg-white/80 px-4 py-2 shadow-[0_10px_24px_rgba(76,56,24,0.06)]">
+            <img
+              src="/care.svg"
+              alt="Caré"
+              className="h-8 w-8 rounded-full object-contain"
+            />
+            <h2 className="text-3xl font-black text-[#1C1C1C]">Caré</h2>
+          </div>
+
+          <div>
+            <p className="text-xl font-black italic text-[#1C1C1C]">
+              {selectedNode?.title ?? "O que voce deseja?"}
+            </p>
+            <p className="mt-2 text-sm text-[#6F675D]">
+              {nodes.length} nos cadastrados, {totalRoots} raizes e {activeNodes} ativos.
+            </p>
+            {selectedNode ? (
+              <p className="mt-1 text-xs font-medium uppercase tracking-[0.18em] text-[#8D7E6D]">
+                /{selectedNode.slug}
+              </p>
+            ) : null}
+          </div>
+        </div>
       </header>
 
       {actionError ? (
@@ -403,44 +241,141 @@ const NodeTree = ({
         />
       ) : null}
 
-      {tree.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border bg-muted/20 px-6 py-10 text-center">
-          <p className="text-sm font-medium text-foreground">
+      {levels.length === 0 ? (
+        <div className="rounded-[30px] border border-dashed border-[#D8CFBF] bg-white/60 px-6 py-12 text-center">
+          <p className="text-base font-semibold text-[#1C1C1C]">
             Nenhum no foi cadastrado ate o momento.
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Quando existirem nos, a hierarquia completa aparecera aqui.
+          <p className="mt-2 text-sm text-[#6F675D]">
+            Crie o primeiro item para montar a arvore de atendimento do Caré.
           </p>
-
           {onCreateNode ? (
-            <div className="mt-4">
-              <Button type="button" onClick={() => onCreateNode(null)}>
-                <Plus aria-hidden="true" />
-                Criar primeiro no
-              </Button>
-            </div>
+            <button
+              type="button"
+              onClick={() => onCreateNode(null)}
+              className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-[#7D120D] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#5F0D09]"
+            >
+              <Plus className="size-4" aria-hidden="true" />
+              Criar primeiro no
+            </button>
           ) : null}
         </div>
-      ) : (
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
-          <ul className="space-y-3">
-            {tree.map(node =>
-              renderNode({
-                node,
-                depth: 0,
-                deletingId,
-                expandedNodeIds,
-                selectedNodeId,
-                onToggleNode: handleToggleNode,
-                onDeleteNode: handleDeleteNode,
-                onSelectNode,
-                onCreateNode,
-                onEditNode,
-              }),
-            )}
-          </ul>
+      ) : null}
+
+      {levels.length > 0 ? (
+        <div className="space-y-6 rounded-[32px] border border-[#E6DDCD] bg-[#EEE8DB]/85 px-4 py-6 shadow-[0_22px_45px_rgba(76,56,24,0.05)] lg:px-6">
+          {levels.map((levelNodes, index) => (
+            <div
+              key={`level-${index + 1}`}
+              className="grid gap-3 lg:grid-cols-[90px_minmax(0,1fr)] lg:items-start"
+            >
+              <p className="pt-5 text-sm font-medium italic text-[#2B2B2B]">
+                Nivel {index + 1}
+              </p>
+
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+                {levelNodes.map(node => {
+                  const isSelected = selectedNodeId === node.id;
+
+                  return (
+                    <button
+                      key={node.id}
+                      type="button"
+                      onClick={() => onSelectNode?.(node)}
+                      className={cn(
+                        "min-h-[78px] rounded-[20px] border px-4 py-4 text-left shadow-[0_14px_30px_rgba(76,56,24,0.04)] transition-all",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D120D]/35",
+                        isSelected
+                          ? "border-[#E5D9CB] bg-white text-[#1C1C1C]"
+                          : "border-transparent bg-[#D7D7D7]/80 text-[#2E2E2E] hover:bg-[#CECECE]",
+                        !node.is_active && "opacity-60",
+                      )}
+                      aria-pressed={isSelected}
+                    >
+                      <span className="block text-[0.96rem] font-semibold italic leading-tight">
+                        {node.title}
+                      </span>
+                      <span className="mt-3 block text-[0.68rem] uppercase tracking-[0.16em] text-[#786E62]">
+                        {node.childrenCount > 0
+                          ? `${node.childrenCount} opcoes`
+                          : "Resposta final"}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+
+          <div className="flex flex-col gap-3 border-t border-[#DFD3C1] pt-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                title={
+                  selectedNode?.childrenCount
+                    ? "Remova os filhos antes de excluir este no."
+                    : undefined
+                }
+                disabled={isDeleteDisabled}
+                onClick={() => {
+                  if (selectedNode) {
+                    void handleDeleteNode(selectedNode);
+                  }
+                }}
+              >
+                <Trash2 aria-hidden="true" />
+                {deletingId === selectedNode?.id ? "Removendo..." : "Deletar"}
+              </Button>
+
+              {selectedNode ? (
+                <span className="text-xs font-medium uppercase tracking-[0.16em] text-[#7F776D]">
+                  Selecionado: {selectedNode.title}
+                </span>
+              ) : (
+                <span className="text-xs font-medium uppercase tracking-[0.16em] text-[#7F776D]">
+                  Selecione um no para editar ou expandir o fluxo
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-wrap justify-end gap-3">
+              {onCreateNode ? (
+                <button
+                  type="button"
+                  onClick={() => onCreateNode(selectedNode)}
+                  className="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-[#7D120D] shadow-[0_12px_24px_rgba(76,56,24,0.05)] transition-colors hover:bg-[#FBF5EB]"
+                >
+                  <Plus className="size-4" aria-hidden="true" />
+                  {primaryActionLabel}
+                </button>
+              ) : null}
+
+              {onEditNode ? (
+                <button
+                  type="button"
+                  disabled={!selectedNode}
+                  onClick={() => {
+                    if (selectedNode) {
+                      onEditNode(selectedNode);
+                    }
+                  }}
+                  className={cn(
+                    "inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-[#7D120D] shadow-[0_12px_24px_rgba(76,56,24,0.05)] transition-colors",
+                    selectedNode
+                      ? "hover:bg-[#FBF5EB]"
+                      : "cursor-not-allowed opacity-45",
+                  )}
+                >
+                  <Pencil className="size-4" aria-hidden="true" />
+                  Editar
+                </button>
+              ) : null}
+            </div>
+          </div>
         </div>
-      )}
+      ) : null}
     </section>
   );
 };

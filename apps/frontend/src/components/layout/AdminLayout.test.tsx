@@ -63,13 +63,22 @@ describe("AdminLayout", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getAllByText("Ana Admin")).toHaveLength(2);
+    expect(screen.getByText("Ana")).toBeInTheDocument();
     expect(screen.getByText("Administrador")).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: /visao geral \/admin/i }),
+      screen.getByRole("link", { name: /dashboard/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /^care$/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /^usuarios$/i }),
     ).toBeInTheDocument();
     expect(screen.getByText("Conteudo protegido")).toBeInTheDocument();
-    expect(screen.getAllByText("Pagina entra na TASK-058")).toHaveLength(2);
+    expect(
+      screen.getByText("Pagina entra em sprint posterior"),
+    ).toBeInTheDocument();
+    expect(screen.getAllByText("Disponivel em sprint futura")).toHaveLength(2);
   });
 
   it("encerra a sessao e navega para login ao clicar em sair", async () => {

@@ -1,15 +1,20 @@
 import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
+  Bot,
   LayoutDashboard,
+  Menu,
+  Settings,
   LogOut,
   ScrollText,
   ShieldCheck,
-  TreePine,
+  Ticket,
   Users,
 } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 
+import fatecImg from "@/assets/login_fatec.png";
+import mascotImg from "@/assets/login_jacare.png";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { cn } from "@/lib/utils";
@@ -28,33 +33,45 @@ export interface AdminLayoutProps {
   title: string;
   description?: string;
   navigationItems?: AdminNavigationItem[];
+  hidePageHeader?: boolean;
+  contentClassName?: string;
 }
 
 const DEFAULT_NAVIGATION_ITEMS: AdminNavigationItem[] = [
   {
-    label: "Visao geral",
+    label: "Dashboard",
     to: "/admin",
     icon: LayoutDashboard,
-  },
-  {
-    label: "Nos do chatbot",
-    to: "/admin/nodes",
-    icon: TreePine,
-    helperText: "Pagina entra na TASK-058",
-    disabled: true,
   },
   {
     label: "Usuarios",
     to: "/admin/users",
     icon: Users,
-    helperText: "Pagina entra na TASK-058",
+  },
+  {
+    label: "Care",
+    to: "/admin/nodes",
+    icon: Bot,
+  },
+  {
+    label: "Tickets",
+    to: "/admin/tickets",
+    icon: Ticket,
+    helperText: "Disponivel em sprint futura",
     disabled: true,
   },
   {
-    label: "Logs",
+    label: "Historico",
     to: "/admin/logs",
     icon: ScrollText,
     helperText: "Pagina entra em sprint posterior",
+    disabled: true,
+  },
+  {
+    label: "Configuracoes",
+    to: "/admin/settings",
+    icon: Settings,
+    helperText: "Disponivel em sprint futura",
     disabled: true,
   },
 ];
@@ -62,20 +79,6 @@ const DEFAULT_NAVIGATION_ITEMS: AdminNavigationItem[] = [
 const ROLE_COPY: Record<Role, string> = {
   ADMIN: "Administrador",
   SECRETARIA: "Secretaria academica",
-};
-
-const getInitials = (name: string): string => {
-  const parts = name
-    .split(" ")
-    .map(part => part.trim())
-    .filter(Boolean)
-    .slice(0, 2);
-
-  if (parts.length === 0) {
-    return "FB";
-  }
-
-  return parts.map(part => part[0]?.toUpperCase() ?? "").join("");
 };
 
 const isItemActive = (pathname: string, itemPath: string): boolean => {
@@ -91,6 +94,8 @@ export function AdminLayout({
   title,
   description,
   navigationItems = DEFAULT_NAVIGATION_ITEMS,
+  hidePageHeader = false,
+  contentClassName,
 }: AdminLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -110,45 +115,40 @@ export function AdminLayout({
   };
 
   return (
-    <div className="min-h-screen bg-[#F3EFE5] text-slate-900">
-      <div className="mx-auto flex min-h-screen max-w-[1600px] flex-col lg:flex-row lg:p-4">
-        <aside className="w-full border-b border-[#D9D0C1] bg-[#F6F1E7] px-5 py-6 lg:min-h-[calc(100vh-2rem)] lg:w-[320px] lg:rounded-[32px] lg:border lg:px-6 lg:py-7 lg:shadow-[0_25px_70px_rgba(92,53,12,0.08)]">
-          <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#B20000] text-lg font-black text-white shadow-[0_18px_30px_rgba(178,0,0,0.2)]">
-              FB
-            </div>
-
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#B20000]">
-                FatecBot
-              </p>
-              <h1 className="mt-1 text-2xl font-black text-[#1C262E]">
-                Painel interno
-              </h1>
-            </div>
-          </div>
-
-          <div className="mt-6 rounded-[24px] border border-[#E6DCCD] bg-white/75 p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#1C262E] text-sm font-bold text-white">
-                {getInitials(userName)}
+    <div className="min-h-screen bg-[#ECE5D6] text-[#454545]">
+      <div className="flex min-h-screen flex-col lg:flex-row">
+        <aside className="flex w-full flex-col bg-[#FBFBFB] lg:min-h-screen lg:w-[222px] lg:border-r lg:border-[#E9E2D5]">
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex min-w-0 items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-[#A5B59A] bg-[#E8E2D1]">
+                <img
+                  src={mascotImg}
+                  alt="Mascote"
+                  className="h-8 w-8 object-contain scale-x-[-1]"
+                />
               </div>
 
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-[#1C262E]">
-                  {userName}
+                <p className="truncate text-[0.95rem] font-black text-[#454545]">
+                  {userName.split(" ")[0] ?? "Usuario"}
                 </p>
-                <p className="truncate text-xs text-[#6E6252]">{userEmail}</p>
+                <p className="truncate text-[0.72rem] text-[#7B766E]">
+                  {roleLabel}
+                </p>
               </div>
             </div>
 
-            <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#EAF3EE] px-3 py-1 text-xs font-semibold text-[#2E6A4F]">
-              <ShieldCheck className="size-3.5" aria-hidden="true" />
-              {roleLabel}
-            </div>
+            <button
+              type="button"
+              aria-label="Menu do painel"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-[#454545]"
+            >
+              <Menu className="size-7" aria-hidden="true" />
+            </button>
           </div>
 
-          <nav className="mt-8 space-y-2" aria-label="Navegacao do painel">
+          <nav className="flex flex-1 flex-col justify-between px-5 py-8" aria-label="Navegacao do painel">
+            <div className="space-y-4">
             {navigationItems.map(item => {
               const Icon = item.icon;
               const isActive = isItemActive(location.pathname, item.to);
@@ -157,15 +157,19 @@ export function AdminLayout({
                 return (
                   <div
                     key={item.to}
-                    className="rounded-[22px] border border-dashed border-[#D8CEC0] bg-white/55 px-4 py-3 text-[#8B7C69]"
+                    className="rounded-xl px-2 py-2 text-[#666666] opacity-65"
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[#EEE5D6] text-[#7B6D5C]">
+                    <div className="flex items-center gap-2.5">
+                      <span className="inline-flex h-5 w-5 items-center justify-center text-[#575757]">
                         <Icon className="size-4" aria-hidden="true" />
                       </span>
                       <div className="min-w-0">
-                        <p className="font-semibold">{item.label}</p>
-                        <p className="text-xs">{item.helperText ?? "Em breve"}</p>
+                        <p className="text-[0.98rem] font-black italic">{item.label}</p>
+                        {item.helperText ? (
+                          <p className="text-[0.68rem] leading-tight text-[#8A857E]">
+                            {item.helperText}
+                          </p>
+                        ) : null}
                       </div>
                     </div>
                   </div>
@@ -177,91 +181,87 @@ export function AdminLayout({
                   key={item.to}
                   to={item.to}
                   className={cn(
-                    "group flex items-center gap-3 rounded-[22px] border px-4 py-3 transition-all",
+                    "group flex items-center gap-2.5 rounded-xl px-2 py-2 transition-colors",
                     isActive
-                      ? "border-[#B20000] bg-[#B20000] text-white shadow-[0_18px_36px_rgba(178,0,0,0.22)]"
-                      : "border-transparent bg-white/70 text-[#2B2B2B] hover:border-[#E0C6C0] hover:bg-white",
+                      ? "text-[#3B3B3B]"
+                      : "text-[#575757] hover:text-[#2E2E2E]",
                   )}
                 >
                   <span
                     className={cn(
-                      "inline-flex h-10 w-10 items-center justify-center rounded-2xl transition-colors",
+                      "inline-flex h-5 w-5 items-center justify-center",
                       isActive
-                        ? "bg-white/18 text-white"
-                        : "bg-[#F0E6D8] text-[#B20000] group-hover:bg-[#F8EEEC]",
+                        ? "text-[#3F3F3F]"
+                        : "text-[#5A5A5A]",
                     )}
                   >
                     <Icon className="size-4" aria-hidden="true" />
                   </span>
 
-                  <div className="min-w-0">
-                    <p className="font-semibold">{item.label}</p>
-                    <p
-                      className={cn(
-                        "text-xs",
-                        isActive ? "text-white/80" : "text-[#7B6D5C]",
-                      )}
-                    >
-                      {item.to}
-                    </p>
-                  </div>
+                  <p className="text-[0.98rem] font-black italic">{item.label}</p>
                 </NavLink>
               );
             })}
-          </nav>
+            </div>
 
-          <div className="mt-8 rounded-[24px] bg-[#1C262E] p-4 text-[#F4EDE2]">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#F2C7C3]">
-              Estado da sprint
-            </p>
-            <p className="mt-2 text-sm leading-relaxed text-[#F7F2EB]">
-              Layout administrativo ativo. As paginas de gestao entram nas
-              proximas tasks de integracao.
-            </p>
-          </div>
-        </aside>
-
-        <div className="min-w-0 flex-1 lg:px-4">
-          <div className="flex min-h-full flex-col lg:rounded-[32px] lg:border lg:border-[#DDD2C4] lg:bg-[#FCFBF8] lg:shadow-[0_25px_70px_rgba(92,53,12,0.08)]">
-            <header className="border-b border-[#E7DED1] bg-[#FCFBF8]/90 px-5 py-5 backdrop-blur lg:rounded-t-[32px] lg:px-8">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#B20000]">
-                    {currentSection}
-                  </p>
-                  <h2 className="mt-2 text-3xl font-black text-[#1C262E]">
-                    {title}
-                  </h2>
-                  {description ? (
-                    <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[#6E6252]">
-                      {description}
-                    </p>
-                  ) : null}
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="hidden rounded-[20px] border border-[#E6DCCD] bg-white px-4 py-2 text-right sm:block">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8C7E6C]">
-                      Sessao ativa
-                    </p>
-                    <p className="mt-1 text-sm font-semibold text-[#1C262E]">
-                      {userName}
-                    </p>
-                  </div>
-
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="size-4" aria-hidden="true" />
-                    Sair
-                  </Button>
+            <div className="space-y-3 px-2">
+              <div className="rounded-2xl bg-[#F6F2E8] px-3 py-3 text-[0.72rem] text-[#7B766E]">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="size-3.5" aria-hidden="true" />
+                  <span>{userEmail}</span>
                 </div>
               </div>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleLogout}
+                className="w-full justify-center"
+              >
+                <LogOut className="size-4" aria-hidden="true" />
+                Sair
+              </Button>
+            </div>
+          </nav>
+        </aside>
+
+        <div className="min-w-0 flex-1 bg-[#EEE9DA]">
+          <div className="flex min-h-screen flex-col">
+            <header className="flex items-start justify-between px-4 py-3 lg:px-5">
+              <div>
+                {!hidePageHeader ? (
+                  <>
+                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#8C7E6C]">
+                      {currentSection}
+                    </p>
+                    <h2 className="mt-1 text-2xl font-black text-[#33383D]">
+                      {title}
+                    </h2>
+                    {description ? (
+                      <p className="mt-1 max-w-2xl text-sm leading-relaxed text-[#6F6A62]">
+                        {description}
+                      </p>
+                    ) : null}
+                  </>
+                ) : (
+                  <div className="h-10" />
+                )}
+              </div>
+
+              <img
+                src={fatecImg}
+                alt="Fatec"
+                className="w-20 object-contain opacity-95 lg:w-24"
+              />
             </header>
 
-            <main className="flex-1 px-5 py-5 lg:px-8 lg:py-8">{children}</main>
+            <main
+              className={cn(
+                "flex-1 px-4 pb-4 lg:px-5 lg:pb-5",
+                contentClassName,
+              )}
+            >
+              {children}
+            </main>
           </div>
         </div>
       </div>

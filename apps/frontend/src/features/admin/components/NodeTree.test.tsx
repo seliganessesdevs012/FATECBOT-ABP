@@ -73,15 +73,15 @@ describe("NodeTree", () => {
 
     render(<NodeTree />);
 
-    expect(screen.getByText("Arvore de navegacao")).not.toBeNull();
+    expect(screen.getByText("Caré")).not.toBeNull();
+    expect(screen.getByText("Nivel 1")).not.toBeNull();
+    expect(screen.getByText("Nivel 2")).not.toBeNull();
     expect(
       screen.getByText("4 nos cadastrados, 2 raizes e 3 ativos."),
     ).not.toBeNull();
     expect(screen.getByText("Cursos")).not.toBeNull();
-    expect(screen.getByText("/cursos")).not.toBeNull();
-    expect(screen.getByText("2 filhos")).not.toBeNull();
-    expect(screen.getAllByText("Raiz").length).toBe(2);
-    expect(screen.getByText("Inativo")).not.toBeNull();
+    expect(screen.getByText("2 opcoes")).not.toBeNull();
+    expect(screen.getAllByText("Resposta final").length).toBe(3);
     expect(screen.getByText("Geoprocessamento")).not.toBeNull();
   });
 
@@ -109,6 +109,7 @@ describe("NodeTree", () => {
 
     render(
       <NodeTree
+        selectedNodeId={11}
         onSelectNode={onSelectNode}
         onCreateNode={onCreateNode}
         onEditNode={onEditNode}
@@ -119,7 +120,7 @@ describe("NodeTree", () => {
       screen.getByRole("button", { name: /calendario academico/i }),
     );
     await user.click(screen.getByRole("button", { name: /novo no raiz/i }));
-    await user.click(screen.getByRole("button", { name: /adicionar filho/i }));
+    await user.click(screen.getByRole("button", { name: /adicionar opcao/i }));
     await user.click(screen.getByRole("button", { name: /editar/i }));
 
     expect(onSelectNode).toHaveBeenCalledWith(
@@ -166,14 +167,21 @@ describe("NodeTree", () => {
       }),
     );
 
-    render(<NodeTree />);
+    const { rerender } = render(<NodeTree selectedNodeId={21} />);
 
-    const removeButtons = screen.getAllByRole("button", { name: /remover/i });
+    const deleteButtonWithParent = screen.getByRole("button", {
+      name: /deletar/i,
+    });
 
-    expect(removeButtons[0].hasAttribute("disabled")).toBe(true);
-    expect(removeButtons[1].hasAttribute("disabled")).toBe(false);
+    expect(deleteButtonWithParent.hasAttribute("disabled")).toBe(true);
 
-    await user.click(removeButtons[1]);
+    rerender(<NodeTree selectedNodeId={22} />);
+
+    const deleteButtonLeaf = screen.getByRole("button", { name: /deletar/i });
+
+    expect(deleteButtonLeaf.hasAttribute("disabled")).toBe(false);
+
+    await user.click(deleteButtonLeaf);
 
     expect(confirmSpy).toHaveBeenCalledWith(
       'Remover o no "Estagio"? Esta acao nao pode ser desfeita.',
