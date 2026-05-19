@@ -1,48 +1,54 @@
-import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { questionsApi } from '@/features/secretary/api/questions.api';
-import type { PaginatedResponse } from '@/types/api.types';
-import type { QuestionResponseDTO } from '@/features/secretary/types/questions.types';
-import type { InquiryStatus } from '@/types/common.types';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+
+import { questionsApi } from "@/features/secretary/api/questions.api";
+import type { PaginatedResponse } from "@/types/api.types";
+import type { InquiryStatus } from "@/types/common.types";
+
+import type { QuestionResponseDTO } from "../types/questions.types";
 
 export type ListParams = { status?: InquiryStatus; limit?: number };
+
+interface UpdateQuestionStatusInput {
+  id: number;
+  status: InquiryStatus;
+}
+
+const QUESTIONS_QUERY_KEY = ["questions"] as const;
 
 export function useQuestions(params?: ListParams) {
   const queryClient = useQueryClient();
   const limit = params?.limit ?? 10;
   const status = params?.status;
+  const queryKey = [...QUESTIONS_QUERY_KEY, { status, limit }] as const;
 
-  const queryKey = ['questions', { status, limit }];
-
-  const query = useInfiniteQuery<PaginatedResponse<QuestionResponseDTO>>(
+  const query = useInfiniteQuery({
     queryKey,
-    async ({ pageParam = 1 }) => {
-      return questionsApi.list({ status, page: pageParam, limit });
+    initialPageParam: 1,
+    queryFn: ({ pageParam }): Promise<PaginatedResponse<QuestionResponseDTO>> =>
+      questionsApi.list({ status, page: pageParam, limit }),
+    getNextPageParam: lastPage => {
+      const loadedItems = lastPage.meta.page * lastPage.meta.limit;
+      return loadedItems < lastPage.meta.total
+        ? lastPage.meta.page + 1
+        : undefined;
     },
-    {
-      getNextPageParam: (lastPage) => {
-        // assume meta: { page, lastPage }
-        const meta = (lastPage as any).meta;
-        if (!meta) return undefined;
-        return meta.page < meta.lastPage ? meta.page + 1 : undefined;
-      },
-      keepPreviousData: true,
-      staleTime: 1000 * 30,
-    }
-  );
+    staleTime: 1000 * 30,
+  });
 
-  const updateStatusMutation = useMutation(
-    async ({ id, status }: { id: number; status: InquiryStatus }) =>
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ id, status }: UpdateQuestionStatusInput) =>
       questionsApi.updateStatus(id, status),
-    {
-      onSuccess: () => {
-        // Invalidate queries so UI refetches updated list
-        queryClient.invalidateQueries(queryKey);
-        queryClient.invalidateQueries(['questions']); // broader invalidate
-      },
-    }
-  );
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey });
+      await queryClient.invalidateQueries({ queryKey: QUESTIONS_QUERY_KEY });
+    },
+  });
 
-  const items = query.data?.pages.flatMap(p => (p as any).data ?? []) ?? [];
+  const items = query.data?.pages.flatMap(page => page.data) ?? [];
 
   return {
     items,
@@ -54,7 +60,7 @@ export function useQuestions(params?: ListParams) {
     refetch: query.refetch,
     updateStatus: updateStatusMutation.mutateAsync,
     updateStatusState: {
-      isLoading: updateStatusMutation.isLoading,
+      isLoading: updateStatusMutation.isPending,
       isError: updateStatusMutation.isError,
     },
   };
