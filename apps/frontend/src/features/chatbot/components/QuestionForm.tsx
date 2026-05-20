@@ -42,12 +42,14 @@ interface QuestionFormProps {
   onSuccess?: () => void;
   variant?: "default" | "sidebar";
   className?: string;
+  sessionLogId?: number | null;
 }
 
 export function QuestionForm({
   onSuccess,
   variant = "default",
   className,
+  sessionLogId = null,
 }: QuestionFormProps) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [attachmentName, setAttachmentName] = useState<string | null>(null);
@@ -66,7 +68,8 @@ export function QuestionForm({
   });
 
   const onSubmit: SubmitHandler<QuestionFormData> = (data) => {
-    submitQuestion(data, {
+    // include optional session_log_id when submitting
+    submitQuestion({ ...data, session_log_id: sessionLogId }, {
       onSuccess: () => {
         setIsSubmitted(true);
         setTimeout(() => {

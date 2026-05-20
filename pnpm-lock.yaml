@@ -86,7 +86,7 @@ importers:
         specifier: ^5.95.2
         version: 5.100.5(react@19.2.5)
       axios:
-        specifier: 1.6.8
+        specifier: ^1.6.8
         version: 1.6.8
       class-variance-authority:
         specifier: ^0.7.1
