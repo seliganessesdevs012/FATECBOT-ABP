@@ -63,6 +63,7 @@ export interface SubmitQuestionPayload {
   attachment_name?: string;
   attachment_mime_type?: string;
   attachment_data?: string;
+  session_log_id?: number;
 }
 
 export interface QuestionPayload {
