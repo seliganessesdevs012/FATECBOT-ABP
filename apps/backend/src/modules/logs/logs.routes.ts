@@ -9,12 +9,13 @@ import { z } from "zod";
 const router = Router();
 const controller = new LogsController();
 
+
 const logsQuerySchema = z.object({
   flag: z.enum(["ATENDEU", "NAO_ATENDEU"]).optional(),
   from: z.string().optional(),
   to: z.string().optional(),
-  page: z.coerce.number().int().positive().optional(),
-  limit: z.coerce.number().int().positive().optional(),
+  page: z.coerce.number().int().positive().default(1), // Define um valor padrão para `page`
+  limit: z.coerce.number().int().positive().default(20), // Define um valor padrão para `limit`
 });
 
 
