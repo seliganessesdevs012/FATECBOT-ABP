@@ -19,13 +19,10 @@ const logsQuerySchema = z.object({
 
 
 
-function validateLogsQuery(
-  req: Request,
-  _res: Response,
-  next: NextFunction
-) {
+function validateLogsQuery(req: Request, _res: Response, next: NextFunction) {
   try {
-    req.query = logsQuerySchema.parse(req.query);
+    const validatedQuery = logsQuerySchema.parse(req.query); 
+    (req as any).validatedQuery = validatedQuery; 
     next();
   } catch (error) {
     next(error);
