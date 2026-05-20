@@ -25,7 +25,10 @@ const envSchema = z.object({
   VITE_ENABLE_DEVTOOLS: z
     .enum(['true', 'false'])
     .default('false'),
-})
+  VITE_USE_MOCKS: z
+    .enum(['true', 'false'])
+    .default('false'),
+  })
 
 const parsed = envSchema.safeParse(import.meta.env)
 

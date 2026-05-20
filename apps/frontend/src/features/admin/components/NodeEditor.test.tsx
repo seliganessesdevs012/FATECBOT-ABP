@@ -173,7 +173,43 @@ describe("NodeEditor", () => {
     expect(
       screen.getByText("Preencha o prompt ou o resumo da resposta"),
     ).not.toBeNull();
-    expect(screen.getByText("Informe a fonte da evidencia")).not.toBeNull();
+    expect(screen.getByText("Selecione o arquivo da evidencia")).not.toBeNull();
+  });
+
+  it("usa o nome do PDF selecionado como referencia da evidencia", async () => {
+    const user = userEvent.setup();
+    const createNode = vi.fn().mockResolvedValue(undefined);
+
+    vi.mocked(useNodes).mockReturnValue(
+      createUseNodesResult({
+        createNode,
+        nodes: [],
+      }),
+    );
+
+    renderWithQueryClient(<NodeEditor />);
+
+    const file = new File(["pdf"], "regulamento-geral.pdf", {
+      type: "application/pdf",
+    });
+
+    await user.type(screen.getByLabelText("Titulo"), "Fluxo com evidencia");
+    await user.type(
+      screen.getByLabelText("Resumo da resposta"),
+      "Resumo com documento oficial.",
+    );
+    await user.type(screen.getByLabelText("Trecho da evidencia"), "Art. 76");
+    await user.upload(screen.getByLabelText("Arquivo da evidencia"), file);
+    await user.click(screen.getByRole("button", { name: /criar no/i }));
+
+    await waitFor(() => {
+      expect(createNode).toHaveBeenCalledWith(
+        expect.objectContaining({
+          evidence_excerpt: "Art. 76",
+          evidence_source: "regulamento-geral.pdf",
+        }),
+      );
+    });
   });
 
   it("carrega os detalhes do no em edicao e envia apenas os campos editaveis", async () => {
@@ -186,7 +222,7 @@ describe("NodeEditor", () => {
       prompt: null,
       answer_summary: "Resumo atual.",
       evidence_excerpt: "Art. 76",
-      evidence_source: "Regulamento Geral",
+      evidence_source: "regulamento-geral.pdf",
       parent_id: 1,
       display_order: 2,
       is_active: true,
@@ -250,7 +286,7 @@ describe("NodeEditor", () => {
         prompt: null,
         answer_summary: "Resumo revisado com nova orientacao.",
         evidence_excerpt: "Art. 76",
-        evidence_source: "Regulamento Geral",
+        evidence_source: "regulamento-geral.pdf",
         display_order: 2,
         is_active: true,
       });

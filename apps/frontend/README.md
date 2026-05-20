@@ -164,6 +164,9 @@ VITE_API_URL=http://localhost:3333
 
 # Habilita React Query Devtools (true em dev, false em produção)
 VITE_ENABLE_DEVTOOLS=true
+ 
+# Ativa o backend mockado no frontend para desenvolver sem API real
+VITE_USE_MOCKS=false
 ```
 
 > Todas as variáveis de ambiente do frontend são **públicas por natureza** —

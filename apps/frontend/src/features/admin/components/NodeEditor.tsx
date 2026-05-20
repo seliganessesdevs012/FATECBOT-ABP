@@ -50,6 +50,18 @@ const nodeEditorSchema = z
     answer_summary: z.string(),
     evidence_excerpt: z.string(),
     evidence_source: z.string(),
+    evidence_file: z
+      .preprocess(value => {
+        if (value instanceof FileList) {
+          return value.length > 0 ? value[0] : undefined;
+        }
+
+        return value instanceof File ? value : undefined;
+      }, z.instanceof(File).optional())
+      .refine(
+        file => !file || file.type === "application/pdf",
+        "Selecione um arquivo PDF",
+      ),
     is_active: z.boolean(),
   })
   .superRefine((values, ctx) => {
@@ -70,7 +82,7 @@ const nodeEditorSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["evidence_source"],
-        message: "Informe a fonte da evidencia",
+        message: "Selecione o arquivo da evidencia",
       });
     }
 
@@ -84,7 +96,7 @@ const nodeEditorSchema = z
   });
 
 type NodeEditorFormValues = z.infer<typeof nodeEditorSchema>;
-type NodeEditorFormInput = Omit<NodeEditorFormValues, "display_order"> & {
+type NodeEditorFormInput = Omit<z.input<typeof nodeEditorSchema>, "display_order"> & {
   display_order: string | number;
 };
 
@@ -111,6 +123,7 @@ const EMPTY_FORM_VALUES: Omit<
   answer_summary: "",
   evidence_excerpt: "",
   evidence_source: "",
+  evidence_file: undefined,
   is_active: true,
 };
 
@@ -214,6 +227,7 @@ const toFormValues = (node: ChatNode): NodeEditorFormValues => ({
   answer_summary: node.answer_summary ?? "",
   evidence_excerpt: node.evidence_excerpt ?? "",
   evidence_source: node.evidence_source ?? "",
+  evidence_file: undefined,
   is_active: node.is_active,
 });
 
@@ -294,6 +308,7 @@ const NodeEditor = ({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const previousParentNodeIdRef = useRef<number | null>(parentNodeId);
+  const evidenceFileInputRef = useRef<HTMLInputElement | null>(null);
 
   const nodeDetailsQuery = useQuery({
     queryKey: ["admin", "nodes", "editor", nodeId],
@@ -330,6 +345,10 @@ const NodeEditor = ({
   const watchedParentId = useWatch({
     control,
     name: "parent_id",
+  });
+  const watchedEvidenceSource = useWatch({
+    control,
+    name: "evidence_source",
   });
 
   const selectedParentId = parseParentId(watchedParentId ?? ROOT_PARENT_VALUE);
@@ -399,6 +418,9 @@ const NodeEditor = ({
   const handleReset = () => {
     setSubmitError(null);
     setSuccessMessage(null);
+    if (evidenceFileInputRef.current) {
+      evidenceFileInputRef.current.value = "";
+    }
 
     if (onCancel) {
       onCancel();
@@ -411,6 +433,35 @@ const NodeEditor = ({
     }
 
     reset(initialCreateValues);
+  };
+
+  const handleEvidenceFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+
+    setValue("evidence_source", file?.name ?? "", {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+  };
+
+  const clearEvidenceFile = () => {
+    if (evidenceFileInputRef.current) {
+      evidenceFileInputRef.current.value = "";
+    }
+
+    setValue("evidence_file", undefined, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+    setValue("evidence_source", "", {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
   };
 
   const onSubmit: SubmitHandler<NodeEditorFormValues> = async values => {
@@ -721,25 +772,81 @@ const NodeEditor = ({
           </div>
 
           <div className="space-y-1">
-            <Label htmlFor="node-evidence-source">Fonte da evidencia</Label>
-            <Input
-              id="node-evidence-source"
-              type="text"
-              placeholder="Ex.: Regulamento Geral das Fatecs, art. 76"
-              aria-invalid={Boolean(errors.evidence_source)}
-              disabled={isBusy}
-              {...register("evidence_source")}
-            />
-            {errors.evidence_source ? (
-              <p className="text-xs text-destructive">
-                {errors.evidence_source.message}
-              </p>
-            ) : (
-              <p className="text-xs text-muted-foreground">
-                Identifique de onde o trecho foi extraido para manter a
-                rastreabilidade.
-              </p>
-            )}
+            <input type="hidden" {...register("evidence_source")} />
+            <Label htmlFor="node-evidence-file">Arquivo da evidencia</Label>
+            <div className="space-y-3 rounded-xl border border-border/70 bg-muted/15 p-4">
+              <input
+                id="node-evidence-file"
+                type="file"
+                accept=".pdf,application/pdf"
+                aria-invalid={Boolean(errors.evidence_source || errors.evidence_file)}
+                disabled={isBusy}
+                className="hidden"
+                {...register("evidence_file", {
+                  onChange: handleEvidenceFileChange,
+                })}
+                ref={element => {
+                  register("evidence_file").ref(element);
+                  evidenceFileInputRef.current = element;
+                }}
+              />
+
+              <div className="flex flex-wrap items-center gap-3">
+                <label
+                  htmlFor="node-evidence-file"
+                  className={cn(
+                    "inline-flex cursor-pointer items-center rounded-lg px-3 py-2 text-sm font-semibold transition-colors",
+                    isBusy
+                      ? "cursor-not-allowed bg-muted text-muted-foreground"
+                      : "bg-[#7D120D] text-white hover:bg-[#5F0D09]",
+                  )}
+                >
+                  Selecionar PDF
+                </label>
+
+                {watchedEvidenceSource ? (
+                  <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-[#4B443B]">
+                    {watchedEvidenceSource}
+                  </span>
+                ) : (
+                  <span className="text-xs text-muted-foreground">
+                    Nenhum arquivo selecionado
+                  </span>
+                )}
+
+                {watchedEvidenceSource ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={isBusy}
+                    onClick={clearEvidenceFile}
+                  >
+                    Remover arquivo
+                  </Button>
+                ) : null}
+              </div>
+
+              {errors.evidence_source ? (
+                <p className="text-xs text-destructive">
+                  {errors.evidence_source.message}
+                </p>
+              ) : null}
+
+              {errors.evidence_file ? (
+                <p className="text-xs text-destructive">
+                  {errors.evidence_file.message}
+                </p>
+              ) : null}
+
+              {!errors.evidence_source && !errors.evidence_file ? (
+                <p className="text-xs text-muted-foreground">
+                  Anexe preferencialmente um PDF institucional. No estado atual,
+                  o sistema salva o nome do arquivo como referencia do
+                  documento.
+                </p>
+              ) : null}
+            </div>
           </div>
         </div>
 
