@@ -5,11 +5,13 @@ import { QuestionForm } from "./QuestionForm";
 interface ChatSidebarProps {
   historyItems: ChatSidebarHistoryItem[];
   onHistoryItemClick: (messageId: string) => void;
+  sessionLogId?: number | null;
 }
 
 export function ChatSidebar({
   historyItems,
   onHistoryItemClick,
+  sessionLogId = null,
 }: ChatSidebarProps) {
   return (
     <aside className="flex h-full min-h-0 flex-col overflow-y-auto rounded-[28px] border border-[#D8D1C0] bg-[#FAFAFA] shadow-[0_20px_50px_rgba(92,53,12,0.08)]">
@@ -66,7 +68,7 @@ export function ChatSidebar({
       </div>
 
       <div className="border-t border-[#ECE4D6] p-5 pt-3">
-        <QuestionForm variant="sidebar" />
+        <QuestionForm variant="sidebar" sessionLogId={sessionLogId} />
       </div>
     </aside>
   );

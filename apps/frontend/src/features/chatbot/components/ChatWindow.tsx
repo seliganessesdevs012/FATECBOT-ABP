@@ -181,6 +181,7 @@ export function ChatWindow() {
           <ChatSidebar
             historyItems={historyItems}
             onHistoryItemClick={handleHistoryItemClick}
+            sessionLogId={sessionLogId}
           />
         </div>
 
