@@ -32,3 +32,12 @@ export interface CreateInteractionLogDTO {
     node_id: number;
     session_log_id?: number;
 }
+
+export interface InteractionLogDTO {
+  id: number;
+  session_log_id?: number | null;
+  node_id: number;
+  flag: "ATENDEU" | "NAO_ATENDEU";
+  navigation_flow: string[];
+  recorded_at: string; // ISO 8601
+}

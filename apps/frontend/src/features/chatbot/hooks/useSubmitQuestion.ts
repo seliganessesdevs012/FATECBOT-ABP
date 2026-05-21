@@ -29,7 +29,9 @@ async function fileToBase64(file: File): Promise<string> {
 
 export function useSubmitQuestion() {
   return useMutation({
-    mutationFn: async (formData: QuestionFormData) => {
+    mutationFn: async (
+      formData: QuestionFormData & { session_log_id?: number | null },
+    ) => {
       const payload: SubmitQuestionPayload = {
         requester_name: formData.requester_name,
         requester_email: formData.requester_email,
@@ -40,6 +42,10 @@ export function useSubmitQuestion() {
         payload.attachment_name = formData.attachment.name;
         payload.attachment_mime_type = formData.attachment.type;
         payload.attachment_data = await fileToBase64(formData.attachment);
+      }
+
+      if (formData.session_log_id != null) {
+        payload.session_log_id = formData.session_log_id;
       }
 
       return chatbotApi.submitQuestion(payload);
