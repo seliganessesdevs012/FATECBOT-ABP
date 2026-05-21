@@ -6,7 +6,7 @@ import { authorize } from "../../middlewares/rbac.middleware";
 import { z } from "zod";
 
 
-const router = Router();
+const router: Router = Router();
 const controller = new LogsController();
 
 
