@@ -23,9 +23,11 @@ const createUserSchema = z.object({
   name: z.string().min(3, "Nome deve ter no minimo 3 caracteres"),
   email: z.string().email("Email invalido"),
   password: z.string().min(6, "Senha deve ter no minimo 6 caracteres"),
+  role: z.enum(["ADMIN", "SECRETARIA"]),
 });
 
 type CreateUserFormData = z.infer<typeof createUserSchema>;
+type RoleFilter = "ALL" | "ADMIN" | "SECRETARIA";
 
 const USERS_QUERY_KEY = ["admin", "users"] as const;
 const DEFAULT_PAGE = 1;
@@ -56,6 +58,8 @@ const getErrorMessage = (error: unknown, fallback: string): string => {
 const UserList = ({ className }: UserListProps) => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>("ALL");
   const queryClient = useQueryClient();
 
   const listQuery = useQuery({
@@ -98,6 +102,16 @@ const UserList = ({ className }: UserListProps) => {
 
   const users = listQuery.data?.data ?? [];
   const total = listQuery.data?.meta?.total ?? users.length;
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+  const filteredUsers = users.filter((user) => {
+    const matchesRole = roleFilter === "ALL" || user.role === roleFilter;
+    const matchesSearch =
+      normalizedSearch.length === 0 ||
+      user.name.toLowerCase().includes(normalizedSearch) ||
+      user.email.toLowerCase().includes(normalizedSearch);
+
+    return matchesRole && matchesSearch;
+  });
   const isCreateBusy = createUserMutation.isPending;
 
   const createErrorMessage = createUserMutation.isError
@@ -116,7 +130,6 @@ const UserList = ({ className }: UserListProps) => {
   const handleCreate = (data: CreateUserFormData) => {
     const payload: CreateUserPayload = {
       ...data,
-      role: "SECRETARIA",
     };
 
     createUserMutation.mutate(payload);
@@ -141,6 +154,11 @@ const UserList = ({ className }: UserListProps) => {
     setIsCreateOpen(false);
   };
 
+  const clearFilters = () => {
+    setSearchTerm("");
+    setRoleFilter("ALL");
+  };
+
   if (listQuery.isLoading) {
     return <LoadingSpinner message="Carregando usuarios..." />;
   }
@@ -162,12 +180,54 @@ const UserList = ({ className }: UserListProps) => {
           <h2 className="text-lg font-semibold text-foreground">
             Usuarios internos
           </h2>
-          <p className="text-sm text-muted-foreground">Total: {total}</p>
+          <p className="text-sm text-muted-foreground">
+            Exibindo {filteredUsers.length} de {total} usuarios
+          </p>
         </div>
         <Button type="button" onClick={() => setIsCreateOpen(true)}>
           Novo acesso
         </Button>
       </header>
+
+      <div className="rounded-lg border border-border bg-card p-4">
+        <div className="grid gap-3 md:grid-cols-[minmax(0,1.8fr)_220px_auto] md:items-end">
+          <div className="space-y-1">
+            <Label htmlFor="users-search">Buscar</Label>
+            <Input
+              id="users-search"
+              type="search"
+              placeholder="Buscar por nome ou email"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="users-role-filter">Perfil</Label>
+            <select
+              id="users-role-filter"
+              value={roleFilter}
+              onChange={(event) =>
+                setRoleFilter(event.target.value as RoleFilter)
+              }
+              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              <option value="ALL">Todos</option>
+              <option value="ADMIN">Admin</option>
+              <option value="SECRETARIA">Secretaria</option>
+            </select>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={clearFilters}
+            disabled={searchTerm.length === 0 && roleFilter === "ALL"}
+          >
+            Limpar filtros
+          </Button>
+        </div>
+      </div>
 
       {createErrorMessage ? (
         <ErrorAlert
@@ -187,9 +247,11 @@ const UserList = ({ className }: UserListProps) => {
         />
       ) : null}
 
-      {users.length === 0 ? (
+      {filteredUsers.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border bg-muted/20 px-6 py-10 text-center text-sm text-muted-foreground">
-          Nenhum usuario cadastrado ate o momento.
+          {users.length === 0
+            ? "Nenhum usuario cadastrado ate o momento."
+            : "Nenhum usuario corresponde aos filtros aplicados."}
         </div>
       ) : (
         <div className="overflow-hidden rounded-lg border border-border bg-card">
@@ -205,7 +267,7 @@ const UserList = ({ className }: UserListProps) => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {users.map((user) => (
+                {filteredUsers.map((user) => (
                   <tr
                     key={user.id}
                     className="transition-colors hover:bg-muted/30"
@@ -258,7 +320,7 @@ const UserList = ({ className }: UserListProps) => {
                   Criar acesso interno
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  Neste fluxo, o backend cria usuarios com perfil SECRETARIA.
+                  Escolha se o novo acesso sera administrativo ou operacional.
                 </p>
               </div>
               <Button
@@ -324,6 +386,30 @@ const UserList = ({ className }: UserListProps) => {
                     {errors.password.message}
                   </p>
                 ) : null}
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="user-role">Perfil de acesso</Label>
+                <select
+                  id="user-role"
+                  aria-invalid={Boolean(errors.role)}
+                  disabled={isCreateBusy}
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+                  {...register("role")}
+                  defaultValue="SECRETARIA"
+                >
+                  <option value="SECRETARIA">Secretaria</option>
+                  <option value="ADMIN">Admin</option>
+                </select>
+                {errors.role ? (
+                  <p className="text-xs text-destructive">
+                    {errors.role.message}
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Admin pode gerenciar o painel; secretaria atua no fluxo operacional.
+                  </p>
+                )}
               </div>
 
               <div className="flex justify-end gap-2 pt-2">

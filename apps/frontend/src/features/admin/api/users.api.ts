@@ -16,7 +16,7 @@ export interface CreateUserPayload {
   name: string;
   email: string;
   password: string;
-  role: "SECRETARIA";
+  role: Role;
 }
 
 export interface ListUsersParams {

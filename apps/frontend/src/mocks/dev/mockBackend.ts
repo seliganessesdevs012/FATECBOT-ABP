@@ -277,6 +277,13 @@ let mockNodes: MockNodeRecord[] = [
 
 let mockUsers: MockAdminUser[] = [
   {
+    id: 1,
+    name: "Administrador",
+    email: "admin@fatec.sp.gov.br",
+    role: "ADMIN",
+    created_at: "2026-04-01T09:00:00.000Z",
+  },
+  {
     id: 2,
     name: "Secretaria Academica 1",
     email: "secretaria1@fatec.sp.gov.br",
@@ -586,7 +593,7 @@ export const mockBackend = {
     async create(payload: {
       name: string;
       email: string;
-      role: "SECRETARIA";
+      role: Role;
     }): Promise<{ success: true; data: MockAdminUser }> {
       await wait();
 

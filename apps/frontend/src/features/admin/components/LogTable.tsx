@@ -1,68 +1,64 @@
-import React, { useState } from 'react';
-import { useLogs } from '../hooks/useLogs';
-import type { InteractionLogDTO } from '../types/logs.types';
+import { useState } from "react";
 
-function formatDuration(seconds?: number) {
-  if (!seconds && seconds !== 0) return '-';
-  const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-  const s = Math.floor(seconds % 60).toString().padStart(2, '0');
-  return `${m}:${s}`;
+import { useLogs } from "../hooks/useLogs";
+
+function formatNavigationFlow(flow: string[]) {
+  if (flow.length === 0) {
+    return "-";
+  }
+
+  return flow.join(" -> ");
 }
 
-function shortSessionId(id: number) {
-  return id.toString().slice(-6);
-}
+export default function LogTable() {
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
+  const [flag, setFlag] = useState<"ATENDEU" | "NAO_ATENDEU" | undefined>();
+  const [from, setFrom] = useState<string | undefined>();
+  const [to, setTo] = useState<string | undefined>();
 
-export const LogTable: React.FC = () => {
-  const {
-    data,
-    meta,
-    isLoading,
-    isError,
+  const { logs, meta, isLoading, isError, refetch } = useLogs({
     page,
-    setPage,
     limit,
-    setLimit,
-    filters,
-    setFilters,
-    refetch,
-  } = useLogs();
+    flag,
+    from,
+    to,
+  });
 
-  const [flag, setFlag] = useState<'ATENDEU' | 'NAO_ATENDEU' | undefined>(
-    (filters.flag as 'ATENDEU' | 'NAO_ATENDEU' | undefined) ?? undefined
-  );
-  const [from, setFrom] = useState<string | undefined>(filters.from);
-  const [to, setTo] = useState<string | undefined>(filters.to);
-
-  const applyFilters = () => {
-    setFilters({ flag, from, to });
-  };
+  const totalPages = Math.max(1, Math.ceil(meta.total / meta.limit));
 
   const clearFilters = () => {
     setFlag(undefined);
     setFrom(undefined);
     setTo(undefined);
-    setFilters({});
+    setPage(1);
   };
 
-  if (isLoading) return <div>Carregando logs...</div>;
-  if (isError) return <div>Erro ao carregar logs. Tente novamente.</div>;
+  if (isLoading) {
+    return <div>Carregando logs...</div>;
+  }
 
-  const totalPages = meta ? Math.max(1, Math.ceil(meta.total / (meta.limit || limit))) : 1;
+  if (isError) {
+    return <div>Erro ao carregar logs. Tente novamente.</div>;
+  }
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2 items-end">
+      <div className="flex flex-wrap items-end gap-2">
         <div>
-          <label className="block text-sm">Satisfação</label>
+          <label className="block text-sm">Satisfacao</label>
           <select
-            value={flag ?? ''}
-            onChange={(e) => setFlag((e.target.value as 'ATENDEU' | 'NAO_ATENDEU') || undefined)}
-            className="border rounded px-2 py-1"
+            value={flag ?? ""}
+            onChange={event => {
+              const nextFlag = event.target.value as "ATENDEU" | "NAO_ATENDEU" | "";
+              setPage(1);
+              setFlag(nextFlag || undefined);
+            }}
+            className="rounded border px-2 py-1"
           >
             <option value="">Todos</option>
             <option value="ATENDEU">Atendeu</option>
-            <option value="NAO_ATENDEU">Não atendeu</option>
+            <option value="NAO_ATENDEU">Nao atendeu</option>
           </select>
         </div>
 
@@ -70,31 +66,44 @@ export const LogTable: React.FC = () => {
           <label className="block text-sm">De</label>
           <input
             type="date"
-            value={from ?? ''}
-            onChange={(e) => setFrom(e.target.value || undefined)}
-            className="border rounded px-2 py-1"
+            value={from ?? ""}
+            onChange={event => {
+              setPage(1);
+              setFrom(event.target.value || undefined);
+            }}
+            className="rounded border px-2 py-1"
           />
         </div>
 
         <div>
-          <label className="block text-sm">Até</label>
+          <label className="block text-sm">Ate</label>
           <input
             type="date"
-            value={to ?? ''}
-            onChange={(e) => setTo(e.target.value || undefined)}
-            className="border rounded px-2 py-1"
+            value={to ?? ""}
+            onChange={event => {
+              setPage(1);
+              setTo(event.target.value || undefined);
+            }}
+            className="rounded border px-2 py-1"
           />
         </div>
 
         <div className="flex gap-2">
-          <button onClick={applyFilters} className="bg-blue-600 text-white px-3 py-1 rounded">
-            Aplicar
-          </button>
-          <button onClick={clearFilters} className="border px-3 py-1 rounded">
-            Limpar
-          </button>
-          <button onClick={() => refetch()} className="border px-3 py-1 rounded">
+          <button
+            type="button"
+            onClick={() => {
+              void refetch();
+            }}
+            className="rounded border px-3 py-1"
+          >
             Atualizar
+          </button>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="rounded border px-3 py-1"
+          >
+            Limpar
           </button>
         </div>
       </div>
@@ -102,73 +111,73 @@ export const LogTable: React.FC = () => {
       <table className="w-full table-auto border-collapse">
         <thead>
           <tr className="text-left">
-            <th className="border-b py-2">Sessão</th>
+            <th className="border-b py-2">Sessao</th>
             <th className="border-b py-2">Caminho</th>
-            <th className="border-b py-2">Satisfação</th>
-            <th className="border-b py-2">Duração</th>
-            <th className="border-b py-2">Perguntas vinculadas</th>
+            <th className="border-b py-2">Satisfacao</th>
             <th className="border-b py-2">Registrado em</th>
           </tr>
         </thead>
         <tbody>
-          {data.length === 0 ? (
+          {logs.length === 0 ? (
             <tr>
-              <td colSpan={6} className="py-4 text-center">Nenhum log encontrado</td>
+              <td colSpan={4} className="py-4 text-center">
+                Nenhum log encontrado
+              </td>
             </tr>
           ) : (
-            data.map((row: InteractionLogDTO) => (
-              <tr key={row.id} className="odd:bg-white even:bg-slate-50">
-                <td className="py-2">{shortSessionId(row.id)}</td>
-                <td className="py-2" title={row.navigation_flow.join(' → ')}>
-                  {row.navigation_flow.slice(0, 3).join(' → ') || '-'}
-                  {row.navigation_flow.length > 3 ? ' …' : ''}
+            logs.map(log => (
+              <tr key={log.id} className="odd:bg-white even:bg-slate-50">
+                <td className="py-2">{log.id}</td>
+                <td className="py-2" title={formatNavigationFlow(log.navigation_flow)}>
+                  {formatNavigationFlow(log.navigation_flow)}
                 </td>
                 <td className="py-2">
-                  {row.flag === 'ATENDEU' ? (
-                    <span className="text-green-600 font-medium">Atendeu</span>
+                  {log.flag === "ATENDEU" ? (
+                    <span className="font-medium text-green-600">Atendeu</span>
                   ) : (
-                    <span className="text-red-600 font-medium">Não atendeu</span>
+                    <span className="font-medium text-red-600">Nao atendeu</span>
                   )}
                 </td>
-                <td className="py-2">{formatDuration(row.duration_seconds)}</td>
                 <td className="py-2">
-                  {(row.linked_questions ?? []).map((q) => (
-                    <span key={q.id} className="inline-block bg-slate-100 text-sm px-2 py-0.5 mr-1 rounded">
-                      {q.title ?? `#${q.id}`}
-                    </span>
-                  ))}
+                  {new Date(log.created_at).toLocaleString()}
                 </td>
-                <td className="py-2">{row.recorded_at ? new Date(row.recorded_at).toLocaleString() : '-'}</td>
               </tr>
             ))
           )}
         </tbody>
       </table>
 
-      <div className="flex items-center justify-between mt-4">
+      <div className="mt-4 flex items-center justify-between">
         <div>
           <button
-            onClick={() => setPage(Math.max(1, page - 1))}
+            type="button"
+            onClick={() => setPage(current => Math.max(1, current - 1))}
             disabled={page <= 1}
-            className="border px-3 py-1 rounded mr-2 disabled:opacity-50"
+            className="mr-2 rounded border px-3 py-1 disabled:opacity-50"
           >
             Anterior
           </button>
           <button
-            onClick={() => setPage(Math.min(totalPages, page + 1))}
+            type="button"
+            onClick={() => setPage(current => Math.min(totalPages, current + 1))}
             disabled={page >= totalPages}
-            className="border px-3 py-1 rounded disabled:opacity-50"
+            className="rounded border px-3 py-1 disabled:opacity-50"
           >
-            Próxima
+            Proxima
           </button>
         </div>
 
         <div className="flex items-center gap-2">
-          <span> Página {meta?.page ?? page} de {totalPages} </span>
+          <span>
+            Pagina {meta.page} de {totalPages}
+          </span>
           <select
             value={limit}
-            onChange={(e) => setLimit(Number(e.target.value))}
-            className="border px-2 py-1 rounded"
+            onChange={event => {
+              setPage(1);
+              setLimit(Number(event.target.value));
+            }}
+            className="rounded border px-2 py-1"
           >
             <option value={10}>10</option>
             <option value={20}>20</option>
@@ -178,6 +187,4 @@ export const LogTable: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default LogTable;
+}
