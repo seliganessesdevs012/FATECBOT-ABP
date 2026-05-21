@@ -141,6 +141,44 @@ _Componente de avaliação de satisfação, mostrando os estados: neutro, gostei
 
 _Formulário para envio de dúvida à secretária, com campos para nome, e-mail, dúvida e anexo. Inclui feedback visual de sucesso após o envio._
 
+### 7. Dashboard - Admin
+
+![Dashboard Admin](designer/dashboard-admin.PNG)
+
+_Dashboard com estatisticas essenciais sobre os usos do chatbot._
+
+### 8. Users list
+
+#### Default
+
+![Users list](designer/users-default.PNG)
+
+#### Novo usuário
+
+![Users list - New user](designer/users-new-user.PNG)
+
+#### Editar usuário
+
+![Users list - Edit user](designer/users-edit-user.PNG)
+
+_Lista de usuários com variações de criação e edição de usuário._
+
+### 9. Nodes
+
+#### Default
+
+![Nodes](designer/nodes-default.PNG)
+
+#### Novo nó
+
+![Nodes - New node](designer/nodes-new-node.PNG)
+
+#### Editar nó
+
+![Nodes - Edit node](designer/nodes-edit-node.PNG)
+
+_Lista de opções com variações de criação e edição de nó._
+
 ---
 
 Dúvidas ou sugestões? Consulte o Figma ou entre em contato com o responsável pelo Design System.
