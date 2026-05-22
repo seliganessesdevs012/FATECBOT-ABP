@@ -143,7 +143,7 @@ _Formulário para envio de dúvida à secretária, com campos para nome, e-mail,
 
 ### 7. Dashboard - Admin
 
-![Dashboard Admin](designer/dashboard-admin.PNG)
+![Dashboard Admin](designer/dashboard-admin.png)
 
 _Dashboard com estatisticas essenciais sobre os usos do chatbot._
 
@@ -151,15 +151,15 @@ _Dashboard com estatisticas essenciais sobre os usos do chatbot._
 
 #### Default
 
-![Users list](designer/users-default.PNG)
+![Users list](designer/users-default.Ppng)
 
 #### Novo usuário
 
-![Users list - New user](designer/users-new-user.PNG)
+![Users list - New user](designer/users-new-user.png)
 
 #### Editar usuário
 
-![Users list - Edit user](designer/users-edit-user.PNG)
+![Users list - Edit user](designer/users-edit-user.png)
 
 _Lista de usuários com variações de criação e edição de usuário._
 
@@ -167,17 +167,47 @@ _Lista de usuários com variações de criação e edição de usuário._
 
 #### Default
 
-![Nodes](designer/nodes-default.PNG)
+![Nodes](designer/nodes-default.png)
 
 #### Novo nó
 
-![Nodes - New node](designer/nodes-new-node.PNG)
+![Nodes - New node](designer/nodes-new-node.png)
 
 #### Editar nó
 
-![Nodes - Edit node](designer/nodes-edit-node.PNG)
+![Nodes - Edit node](designer/nodes-edit-node.png)
 
 _Lista de opções com variações de criação e edição de nó._
+
+### 10. Dashboard - Secretaria
+
+![Dashboard - Scretaria](designer/dashboard-secretaria.png)
+
+_Dashboard com estatisticas essenciais aos membros da secretaria sobre os usos do chatbot._
+
+### 11. Tickets
+
+#### Default
+
+![Tickets](designer/tickets-default.png)
+
+#### Detalhes
+
+![Tickets  - Detalhes](designer/tickets-details.png)
+
+_Lista de tickets com variação de detalhes._
+
+### 12. Histórico
+
+#### Default
+
+![Histórico](designer/historico-default.png)
+
+#### Detalhes
+
+![Histórico  - Detalhes](designer/historico-details.png)
+
+_Lista de histórico de nós utilizados com avaliação final e variação de detalhes._
 
 ---
 
