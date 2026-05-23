@@ -22,174 +22,144 @@ const createUseNodesResult = (
   ...overrides,
 });
 
+const sampleNodes = [
+  {
+    id: 1,
+    title: "Nao sou aluno",
+    slug: "nao-sou-aluno",
+    parent_id: null,
+    display_order: 1,
+    is_active: true,
+    childrenCount: 2,
+  },
+  {
+    id: 2,
+    title: "DSM",
+    slug: "dsm",
+    parent_id: null,
+    display_order: 2,
+    is_active: true,
+    childrenCount: 1,
+  },
+  {
+    id: 3,
+    title: "Informacoes sobre como ingressar",
+    slug: "nao-aluno-ingresso",
+    parent_id: 1,
+    display_order: 1,
+    is_active: true,
+    childrenCount: 1,
+  },
+  {
+    id: 4,
+    title: "Como realizar a matricula?",
+    slug: "nao-aluno-matricula",
+    parent_id: 1,
+    display_order: 2,
+    is_active: true,
+    childrenCount: 0,
+  },
+  {
+    id: 5,
+    title: "Vestibular e prazos",
+    slug: "nao-aluno-vestibular",
+    parent_id: 3,
+    display_order: 1,
+    is_active: true,
+    childrenCount: 0,
+  },
+] as const;
+
 describe("NodeTree", () => {
-  afterEach(() => {
-    vi.clearAllMocks();
+  beforeEach(() => {
+    Object.defineProperty(Element.prototype, "scrollIntoView", {
+      configurable: true,
+      value: vi.fn(),
+    });
   });
 
-  it("renderiza a hierarquia com contadores e metadados dos nos", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("comeca mostrando apenas os nos raiz sem selecionar nada automaticamente", () => {
+    const onSelectNode = vi.fn();
+
     vi.mocked(useNodes).mockReturnValue(
       createUseNodesResult({
-        nodes: [
-          {
-            id: 1,
-            title: "Cursos",
-            slug: "cursos",
-            parent_id: null,
-            display_order: 2,
-            is_active: true,
-            childrenCount: 2,
-          },
-          {
-            id: 2,
-            title: "DSM",
-            slug: "dsm",
-            parent_id: 1,
-            display_order: 2,
-            is_active: true,
-            childrenCount: 0,
-          },
-          {
-            id: 3,
-            title: "Geoprocessamento",
-            slug: "geo",
-            parent_id: 1,
-            display_order: 1,
-            is_active: false,
-            childrenCount: 0,
-          },
-          {
-            id: 4,
-            title: "Institucional",
-            slug: "institucional",
-            parent_id: null,
-            display_order: 1,
-            is_active: true,
-            childrenCount: 0,
-          },
-        ],
+        nodes: [...sampleNodes],
       }),
     );
 
-    render(<NodeTree />);
+    render(<NodeTree onSelectNode={onSelectNode} />);
 
-    expect(screen.getByText("Caré")).not.toBeNull();
     expect(screen.getByText("Nivel 1")).not.toBeNull();
-    expect(screen.getByText("Nivel 2")).not.toBeNull();
-    expect(
-      screen.getByText("4 nos cadastrados, 2 raizes e 3 ativos."),
-    ).not.toBeNull();
-    expect(screen.getByText("Cursos")).not.toBeNull();
-    expect(screen.getByText("2 opcoes")).not.toBeNull();
-    expect(screen.getAllByText("Resposta final").length).toBe(3);
-    expect(screen.getByText("Geoprocessamento")).not.toBeNull();
+    expect(screen.getByText("Nao sou aluno")).not.toBeNull();
+    expect(screen.getByText("DSM")).not.toBeNull();
+    expect(screen.queryByText("Nivel 2")).toBeNull();
+    expect(onSelectNode).not.toHaveBeenCalled();
   });
 
-  it("dispara callbacks de selecao, criacao e edicao", async () => {
+  it("abre o proximo nivel quando o usuario seleciona um no raiz", async () => {
     const user = userEvent.setup();
     const onSelectNode = vi.fn();
-    const onCreateNode = vi.fn();
-    const onEditNode = vi.fn();
 
     vi.mocked(useNodes).mockReturnValue(
       createUseNodesResult({
-        nodes: [
-          {
-            id: 11,
-            title: "Calendario academico",
-            slug: "calendario",
-            parent_id: null,
-            display_order: 1,
-            is_active: true,
-            childrenCount: 0,
-          },
-        ],
+        nodes: [...sampleNodes],
       }),
     );
 
-    render(
-      <NodeTree
-        selectedNodeId={11}
-        onSelectNode={onSelectNode}
-        onCreateNode={onCreateNode}
-        onEditNode={onEditNode}
-      />,
-    );
+    render(<NodeTree onSelectNode={onSelectNode} />);
 
-    await user.click(
-      screen.getByRole("button", { name: /calendario academico/i }),
-    );
-    await user.click(screen.getByRole("button", { name: /novo no raiz/i }));
-    await user.click(screen.getByRole("button", { name: /adicionar opcao/i }));
-    await user.click(screen.getByRole("button", { name: /editar/i }));
+    await user.click(screen.getByRole("button", { name: /nao sou aluno/i }));
 
     expect(onSelectNode).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 11, title: "Calendario academico" }),
-    );
-    expect(onCreateNode).toHaveBeenNthCalledWith(1, null);
-    expect(onCreateNode).toHaveBeenNthCalledWith(
-      2,
-      expect.objectContaining({ id: 11, title: "Calendario academico" }),
-    );
-    expect(onEditNode).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 11, title: "Calendario academico" }),
+      expect.objectContaining({ id: 1, title: "Nao sou aluno" }),
     );
   });
 
-  it("bloqueia remocao de no com filhos e remove no folha apos confirmacao", async () => {
-    const user = userEvent.setup();
-    const deleteNode = vi.fn().mockResolvedValue(undefined);
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
-
+  it("mostra os filhos do caminho selecionado em niveis sucessivos", () => {
     vi.mocked(useNodes).mockReturnValue(
       createUseNodesResult({
-        deleteNode,
-        nodes: [
-          {
-            id: 21,
-            title: "Cursos",
-            slug: "cursos",
-            parent_id: null,
-            display_order: 1,
-            is_active: true,
-            childrenCount: 1,
-          },
-          {
-            id: 22,
-            title: "Estagio",
-            slug: "estagio",
-            parent_id: 21,
-            display_order: 1,
-            is_active: true,
-            childrenCount: 0,
-          },
-        ],
+        nodes: [...sampleNodes],
       }),
     );
 
-    const { rerender } = render(<NodeTree selectedNodeId={21} />);
+    render(<NodeTree selectedNodeId={3} />);
 
-    const deleteButtonWithParent = screen.getByRole("button", {
-      name: /deletar/i,
-    });
-
-    expect(deleteButtonWithParent.hasAttribute("disabled")).toBe(true);
-
-    rerender(<NodeTree selectedNodeId={22} />);
-
-    const deleteButtonLeaf = screen.getByRole("button", { name: /deletar/i });
-
-    expect(deleteButtonLeaf.hasAttribute("disabled")).toBe(false);
-
-    await user.click(deleteButtonLeaf);
-
-    expect(confirmSpy).toHaveBeenCalledWith(
-      'Remover o no "Estagio"? Esta acao nao pode ser desfeita.',
-    );
-    expect(deleteNode).toHaveBeenCalledWith(22);
+    expect(screen.getByText("Nivel 2")).not.toBeNull();
+    expect(screen.getByText("Nivel 3")).not.toBeNull();
+    expect(screen.getAllByText("Informacoes sobre como ingressar").length).toBeGreaterThan(0);
+    expect(screen.getByText("Vestibular e prazos")).not.toBeNull();
   });
 
-  it("mostra erro da query com acao de tentar novamente", async () => {
+  it("permite buscar um no globalmente e selecionar o resultado", async () => {
+    const user = userEvent.setup();
+    const onSelectNode = vi.fn();
+
+    vi.mocked(useNodes).mockReturnValue(
+      createUseNodesResult({
+        nodes: [...sampleNodes],
+      }),
+    );
+
+    render(<NodeTree onSelectNode={onSelectNode} />);
+
+    await user.type(
+      screen.getByPlaceholderText(/buscar no por titulo ou slug/i),
+      "matricula",
+    );
+    await user.click(
+      screen.getByRole("button", { name: /como realizar a matricula/i }),
+    );
+
+    expect(onSelectNode).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 4, title: "Como realizar a matricula?" }),
+    );
+  });
+
+  it("exibe erro da consulta com acao para tentar novamente", async () => {
     const user = userEvent.setup();
     const refetch = vi.fn().mockResolvedValue(undefined);
 
@@ -203,9 +173,7 @@ describe("NodeTree", () => {
 
     render(<NodeTree />);
 
-    expect(screen.getByText("Erro ao carregar a arvore")).not.toBeNull();
-    expect(screen.getByText("Falha ao buscar nos")).not.toBeNull();
-
+    expect(screen.getByText("Erro ao carregar a estrutura")).not.toBeNull();
     await user.click(screen.getByRole("button", { name: /tentar novamente/i }));
 
     expect(refetch).toHaveBeenCalledTimes(1);

@@ -2,8 +2,9 @@ import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   Bot,
+  ChevronLeft,
+  ChevronRight,
   LayoutDashboard,
-  Menu,
   Settings,
   LogOut,
   ScrollText,
@@ -16,6 +17,7 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import fatecImg from "@/assets/login_fatec.png";
 import mascotImg from "@/assets/login_jacare.png";
 import { Button } from "@/components/ui/button";
+import { useAdminShellStore } from "@/features/admin/stores/admin-shell.store";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { cn } from "@/lib/utils";
 import type { Role } from "@/types/common.types";
@@ -57,15 +59,11 @@ const DEFAULT_NAVIGATION_ITEMS: AdminNavigationItem[] = [
     label: "Tickets",
     to: "/admin/tickets",
     icon: Ticket,
-    helperText: "Disponivel em sprint futura",
-    disabled: true,
   },
   {
     label: "Historico",
     to: "/admin/logs",
     icon: ScrollText,
-    helperText: "Pagina entra em sprint posterior",
-    disabled: true,
   },
   {
     label: "Configuracoes",
@@ -101,6 +99,10 @@ export function AdminLayout({
   const navigate = useNavigate();
   const user = useAuthStore(state => state.user);
   const clearAuth = useAuthStore(state => state.clearAuth);
+  const isSidebarCollapsed = useAdminShellStore(
+    state => state.isSidebarCollapsed,
+  );
+  const toggleSidebar = useAdminShellStore(state => state.toggleSidebar);
 
   const roleLabel = user?.role ? ROLE_COPY[user.role] : "Area protegida";
   const userName = user?.name ?? "Usuario autenticado";
@@ -117,7 +119,12 @@ export function AdminLayout({
   return (
     <div className="min-h-screen bg-[#ECE5D6] text-[#454545]">
       <div className="flex min-h-screen flex-col lg:flex-row">
-        <aside className="flex w-full flex-col bg-[#FBFBFB] lg:min-h-screen lg:w-[222px] lg:border-r lg:border-[#E9E2D5]">
+        <aside
+          className={cn(
+            "flex w-full flex-col bg-[#FBFBFB] lg:min-h-screen lg:border-r lg:border-[#E9E2D5]",
+            isSidebarCollapsed ? "lg:w-[88px]" : "lg:w-[222px]",
+          )}
+        >
           <div className="flex items-center justify-between px-4 py-3">
             <div className="flex min-w-0 items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-[#A5B59A] bg-[#E8E2D1]">
@@ -128,7 +135,7 @@ export function AdminLayout({
                 />
               </div>
 
-              <div className="min-w-0">
+              <div className={cn("min-w-0", isSidebarCollapsed && "lg:hidden")}>
                 <p className="truncate text-[0.95rem] font-black text-[#454545]">
                   {userName.split(" ")[0] ?? "Usuario"}
                 </p>
@@ -140,14 +147,37 @@ export function AdminLayout({
 
             <button
               type="button"
-              aria-label="Menu do painel"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-[#454545]"
+              aria-label={
+                isSidebarCollapsed
+                  ? "Expandir barra lateral"
+                  : "Recolher barra lateral"
+              }
+              title={
+                isSidebarCollapsed
+                  ? "Expandir barra lateral"
+                  : "Recolher barra lateral"
+              }
+              onClick={toggleSidebar}
+              className={cn(
+                "inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl text-[#454545] transition-colors hover:bg-[#F3EEE3] active:bg-[#E9E1D4]",
+                isSidebarCollapsed && "lg:h-9 lg:w-9",
+              )}
             >
-              <Menu className="size-7" aria-hidden="true" />
+              {isSidebarCollapsed ? (
+                <ChevronRight className="size-5" aria-hidden="true" />
+              ) : (
+                <ChevronLeft className="size-5" aria-hidden="true" />
+              )}
             </button>
           </div>
 
-          <nav className="flex flex-1 flex-col justify-between px-5 py-8" aria-label="Navegacao do painel">
+          <nav
+            className={cn(
+              "flex flex-1 flex-col justify-between py-8",
+              isSidebarCollapsed ? "px-3" : "px-5",
+            )}
+            aria-label="Navegacao do painel"
+          >
             <div className="space-y-4">
             {navigationItems.map(item => {
               const Icon = item.icon;
@@ -157,13 +187,16 @@ export function AdminLayout({
                 return (
                   <div
                     key={item.to}
-                    className="rounded-xl px-2 py-2 text-[#666666] opacity-65"
+                    className={cn(
+                      "rounded-xl px-2 py-2 text-[#666666] opacity-65",
+                      isSidebarCollapsed && "lg:flex lg:justify-center",
+                    )}
                   >
                     <div className="flex items-center gap-2.5">
                       <span className="inline-flex h-5 w-5 items-center justify-center text-[#575757]">
                         <Icon className="size-4" aria-hidden="true" />
                       </span>
-                      <div className="min-w-0">
+                      <div className={cn("min-w-0", isSidebarCollapsed && "lg:hidden")}>
                         <p className="text-[0.98rem] font-black italic">{item.label}</p>
                         {item.helperText ? (
                           <p className="text-[0.68rem] leading-tight text-[#8A857E]">
@@ -180,11 +213,14 @@ export function AdminLayout({
                 <NavLink
                   key={item.to}
                   to={item.to}
+                  aria-label={item.label}
+                  title={isSidebarCollapsed ? item.label : undefined}
                   className={cn(
-                    "group flex items-center gap-2.5 rounded-xl px-2 py-2 transition-colors",
+                    "group flex cursor-pointer items-center gap-2.5 rounded-xl px-2 py-2 transition-colors active:bg-[#ECE4D7]",
+                    isSidebarCollapsed && "lg:justify-center",
                     isActive
-                      ? "text-[#3B3B3B]"
-                      : "text-[#575757] hover:text-[#2E2E2E]",
+                      ? "bg-[#F3EEE3] text-[#3B3B3B]"
+                      : "text-[#575757] hover:bg-[#F7F2E9] hover:text-[#2E2E2E]",
                   )}
                 >
                   <span
@@ -198,14 +234,26 @@ export function AdminLayout({
                     <Icon className="size-4" aria-hidden="true" />
                   </span>
 
-                  <p className="text-[0.98rem] font-black italic">{item.label}</p>
+                  <p
+                    className={cn(
+                      "text-[0.98rem] font-black italic",
+                      isSidebarCollapsed && "lg:hidden",
+                    )}
+                  >
+                    {item.label}
+                  </p>
                 </NavLink>
               );
             })}
             </div>
 
-            <div className="space-y-3 px-2">
-              <div className="rounded-2xl bg-[#F6F2E8] px-3 py-3 text-[0.72rem] text-[#7B766E]">
+            <div className={cn("space-y-3 px-2", isSidebarCollapsed && "lg:px-0")}>
+              <div
+                className={cn(
+                  "rounded-2xl bg-[#F6F2E8] px-3 py-3 text-[0.72rem] text-[#7B766E]",
+                  isSidebarCollapsed && "lg:hidden",
+                )}
+              >
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="size-3.5" aria-hidden="true" />
                   <span>{userEmail}</span>
@@ -215,10 +263,14 @@ export function AdminLayout({
                 type="button"
                 variant="destructive"
                 onClick={handleLogout}
-                className="w-full justify-center"
+                className={cn(
+                  "w-full justify-center",
+                  isSidebarCollapsed && "lg:w-auto lg:px-3",
+                )}
+                title={isSidebarCollapsed ? "Sair" : undefined}
               >
                 <LogOut className="size-4" aria-hidden="true" />
-                Sair
+                <span className={cn(isSidebarCollapsed && "lg:hidden")}>Sair</span>
               </Button>
             </div>
           </nav>

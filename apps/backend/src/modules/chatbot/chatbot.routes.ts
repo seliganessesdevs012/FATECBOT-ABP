@@ -24,6 +24,7 @@ function validateInteractionLog(req: Request, res: Response, next: NextFunction)
 
 router.get('/nodes/root', (req, res, next) => controller.getRootNode(req, res, next));
 router.get('/nodes/:id', (req, res, next) => controller.getNodeById(req, res, next));
+router.get('/nodes/:id/evidence', (req, res, next) => controller.downloadEvidence(req, res, next));
 router.post('/sessions/log', validateInteractionLog, (req, res, next) => controller.createInteractionLog(req, res, next));
 
 export default router;

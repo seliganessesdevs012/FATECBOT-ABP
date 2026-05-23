@@ -43,6 +43,25 @@ interface MockSessionLog {
   navigation_flow: string[];
   flag: Satisfaction;
   created_at: string;
+  questions: Array<{
+    id: number;
+    question: string;
+    status: InquiryStatus;
+  }>;
+}
+
+interface MockDashboardMetrics {
+  unansweredTickets: number;
+  positiveRateLast7Days: number;
+  positiveRateAllTime: number;
+  averageClicks: number;
+  recentSessionsAnalyzed: number;
+  totalSessions: number;
+  clickDistribution: Array<{
+    clicks: number;
+    sessions: number;
+    percentage: number;
+  }>;
 }
 
 const MOCK_DELAY_MS = 120;
@@ -345,48 +364,56 @@ const mockLogs: MockSessionLog[] = [
     navigation_flow: ["root", "ja-sou-aluno", "aacc"],
     flag: "ATENDEU",
     created_at: "2026-05-19T10:30:00.000Z",
+    questions: [],
   },
   {
     id: 2,
     navigation_flow: ["root", "ja-sou-aluno", "estagio", "documentacao-estagio"],
     flag: "NAO_ATENDEU",
     created_at: "2026-05-19T09:45:00.000Z",
+    questions: [],
   },
   {
     id: 3,
     navigation_flow: ["root", "ainda-nao-sou-aluno", "como-ingressar"],
     flag: "ATENDEU",
     created_at: "2026-05-18T17:05:00.000Z",
+    questions: [],
   },
   {
     id: 4,
     navigation_flow: ["root", "ja-sou-aluno", "estagio", "duracao-minima-estagio"],
     flag: "ATENDEU",
     created_at: "2026-05-18T13:20:00.000Z",
+    questions: [],
   },
   {
     id: 5,
     navigation_flow: ["root", "ainda-nao-sou-aluno", "documentos-matricula"],
     flag: "ATENDEU",
     created_at: "2026-05-17T15:40:00.000Z",
+    questions: [],
   },
   {
     id: 6,
     navigation_flow: ["root", "ja-sou-aluno", "horario-aulas"],
     flag: "ATENDEU",
     created_at: "2026-05-16T08:00:00.000Z",
+    questions: [],
   },
   {
     id: 7,
     navigation_flow: ["root", "ainda-nao-sou-aluno", "prazos-importantes"],
     flag: "NAO_ATENDEU",
     created_at: "2026-05-14T18:10:00.000Z",
+    questions: [],
   },
   {
     id: 8,
     navigation_flow: ["root", "bolsas-e-auxilios"],
     flag: "ATENDEU",
     created_at: "2026-05-10T12:10:00.000Z",
+    questions: [],
   },
 ];
 
@@ -473,6 +500,73 @@ const isDateInRange = (value: string, from?: string, to?: string): boolean => {
 const buildMockToken = (role: Role): string =>
   `mock-${role.toLowerCase()}-${Date.now()}`;
 
+const toClicksCount = (navigationFlow: string[]): number =>
+  Math.min(8, Math.max(1, navigationFlow.length - 1));
+
+const calculateRate = (positiveTotal: number, total: number): number => {
+  if (total === 0) {
+    return 0;
+  }
+
+  return Math.round((positiveTotal / total) * 100);
+};
+
+const getDateDaysAgo = (daysAgo: number): Date => {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  date.setDate(date.getDate() - daysAgo);
+
+  return date;
+};
+
+const buildDashboardMetrics = (): MockDashboardMetrics => {
+  const recentFrom = getDateDaysAgo(6);
+  const recentLogs = mockLogs.filter(log => new Date(log.created_at) >= recentFrom);
+  const latestLogs = mockLogs
+    .slice()
+    .sort((left, right) => right.created_at.localeCompare(left.created_at))
+    .slice(0, 200);
+  const recentSessionsAnalyzed = latestLogs.length;
+  const totalClicks = latestLogs.reduce(
+    (total, log) => total + toClicksCount(log.navigation_flow),
+    0,
+  );
+
+  return {
+    unansweredTickets: mockQuestions.filter(question => question.status === "ABERTA")
+      .length,
+    positiveRateLast7Days: calculateRate(
+      recentLogs.filter(log => log.flag === "ATENDEU").length,
+      recentLogs.length,
+    ),
+    positiveRateAllTime: calculateRate(
+      mockLogs.filter(log => log.flag === "ATENDEU").length,
+      mockLogs.length,
+    ),
+    averageClicks:
+      recentSessionsAnalyzed === 0
+        ? 0
+        : Number((totalClicks / recentSessionsAnalyzed).toFixed(1)),
+    recentSessionsAnalyzed,
+    totalSessions: mockLogs.length,
+    clickDistribution: Array.from({ length: 8 }, (_, index) => {
+      const clicks = index + 1;
+      const sessions = latestLogs.filter(
+        log => toClicksCount(log.navigation_flow) === clicks,
+      ).length;
+
+      return {
+        clicks,
+        sessions,
+        percentage:
+          recentSessionsAnalyzed === 0
+            ? 0
+            : Math.round((sessions / recentSessionsAnalyzed) * 100),
+      };
+    }),
+  };
+};
+
 export const mockBackend = {
   auth: {
     async login(
@@ -519,6 +613,9 @@ export const mockBackend = {
       answer_summary: string | null;
       evidence_excerpt: string | null;
       evidence_source: string | null;
+      evidence_file_name?: string | null;
+      evidence_file_mime_type?: string | null;
+      evidence_file_data?: string | null;
       parent_id: number | null;
       display_order: number;
       is_active?: boolean;
@@ -532,7 +629,7 @@ export const mockBackend = {
         prompt: payload.prompt,
         answer_summary: payload.answer_summary,
         evidence_excerpt: payload.evidence_excerpt,
-        evidence_source: payload.evidence_source,
+        evidence_source: payload.evidence_file_name ?? payload.evidence_source,
         parent_id: payload.parent_id,
         display_order: payload.display_order,
         is_active: payload.is_active ?? true,
@@ -548,7 +645,11 @@ export const mockBackend = {
 
     async update(
       id: number,
-      payload: Partial<MockNodeRecord>,
+      payload: Partial<MockNodeRecord> & {
+        evidence_file_name?: string | null;
+        evidence_file_mime_type?: string | null;
+        evidence_file_data?: string | null;
+      },
     ): Promise<{ success: true; data: MockNodeListItem }> {
       await wait();
 
@@ -556,6 +657,7 @@ export const mockBackend = {
       const next: MockNodeRecord = {
         ...current,
         ...payload,
+        evidence_source: payload.evidence_file_name ?? payload.evidence_source ?? current.evidence_source,
         id: current.id,
         parent_id: current.parent_id,
       };
@@ -676,10 +778,28 @@ export const mockBackend = {
       const filtered = mockLogs
         .filter(log => (params.flag ? log.flag === params.flag : true))
         .filter(log => isDateInRange(log.created_at, params.from, params.to))
+        .map(log => ({
+          ...log,
+          questions: mockQuestions
+            .filter(question => question.session_log_id === log.id)
+            .map(question => ({
+              id: question.id,
+              question: question.question,
+              status: question.status,
+            })),
+        }))
         .slice()
         .sort((left, right) => right.created_at.localeCompare(left.created_at));
 
       return paginate(filtered, params.page, params.limit);
+    },
+  },
+
+  dashboard: {
+    async getMetrics(): Promise<MockDashboardMetrics> {
+      await wait();
+
+      return buildDashboardMetrics();
     },
   },
 };

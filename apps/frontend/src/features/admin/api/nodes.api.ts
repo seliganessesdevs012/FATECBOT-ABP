@@ -21,6 +21,9 @@ export interface CreateNodePayload {
   answer_summary: string | null;
   evidence_excerpt: string | null;
   evidence_source: string | null;
+  evidence_file_name?: string | null;
+  evidence_file_mime_type?: string | null;
+  evidence_file_data?: string | null;
   parent_id: number | null;
   display_order: number;
   is_active?: boolean;
@@ -33,6 +36,9 @@ export interface UpdateNodePayload {
   answer_summary?: string | null;
   evidence_excerpt?: string | null;
   evidence_source?: string | null;
+  evidence_file_name?: string | null;
+  evidence_file_mime_type?: string | null;
+  evidence_file_data?: string | null;
   parent_id?: number | null;
   display_order?: number;
   is_active?: boolean;
@@ -81,6 +87,13 @@ export const nodesApi = {
 
     const response = await api.patch<NodeResponse>(`/nodes/${id}`, payload);
     return response.data.data;
+  },
+  downloadEvidence: async (id: number): Promise<Blob> => {
+    const response = await api.get(`/nodes/${id}/evidence`, {
+      responseType: "blob",
+    });
+
+    return response.data as Blob;
   },
   remove: async (id: number): Promise<void> => {
     if (env.VITE_USE_MOCKS === "true") {

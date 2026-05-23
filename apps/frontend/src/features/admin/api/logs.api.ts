@@ -2,13 +2,20 @@ import { api } from "@/lib/axios";
 import { env } from "@/config/env";
 import { mockBackend } from "@/mocks/dev/mockBackend";
 import type { PaginatedResponse } from "@/types/api.types";
-import type { Satisfaction } from "@/types/common.types";
+import type { InquiryStatus, Satisfaction } from "@/types/common.types";
+
+export interface SessionLogLinkedQuestionDTO {
+  id: number;
+  question: string;
+  status: InquiryStatus;
+}
 
 export interface SessionLogListItemDTO {
   id: number;
   navigation_flow: string[];
   flag: Satisfaction;
   created_at: string;
+  questions: SessionLogLinkedQuestionDTO[];
 }
 
 export interface ListLogsParams {

@@ -257,7 +257,7 @@ const UserList = ({ className }: UserListProps) => {
         <div className="overflow-hidden rounded-lg border border-border bg-card">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
+              <thead className="bg-[var(--brand-secondary-soft)] text-xs uppercase text-[var(--brand-secondary)]">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium">Nome</th>
                   <th className="px-4 py-3 text-left font-medium">Email</th>
