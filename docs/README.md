@@ -18,6 +18,7 @@
 - [Diagramas de caso de uso](#-diagrama-de-casos-de-uso)
 - [Diagramas de classe](#-diagrama-de-classe)
 - [Modelo Relacional - Banco de dados](#️-modelo-relacional--banco-de-dados)
+- [Documentos de Testes](#-documento-teste)
 
 ---
 
@@ -112,6 +113,13 @@ referência operacional daquela sprint.
 ![Modelo Relacional](bd/Modelagem-Banco-Dados.jpeg)
 
 ![Modelo do DBDesigner](bd/modelagem-banco-dados.xml)
+
+
+---
+
+## 📄 Documentação de Testes <a id="documento-teste"></a>
+
+![Testes de navegação do chatbot](https://docs.google.com/document/d/1BneZiRN3zZgkRhjiEBJm2Aukdc_H8ZFYlHdnDEa4l1U/edit?usp=sharing)
 
 
 ---
