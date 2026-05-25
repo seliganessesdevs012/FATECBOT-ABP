@@ -1,32 +1,40 @@
-// ...existing code...
-import { api } from '../../../lib/axios';
-import type { PaginatedResponse } from '../../../types/api.types';
-import type { InteractionLogDTO } from '../types/logs.types';
+import { api } from "@/lib/axios";
+import { env } from "@/config/env";
+import { mockBackend } from "@/mocks/dev/mockBackend";
+import type { PaginatedResponse } from "@/types/api.types";
+import type { InquiryStatus, Satisfaction } from "@/types/common.types";
 
+export interface SessionLogLinkedQuestionDTO {
+  id: number;
+  question: string;
+  status: InquiryStatus;
+}
 
-export type ListLogsParams = {
-  flag?: 'ATENDEU' | 'NAO_ATENDEU';
-  from?: string; 
-  to?: string;   
+export interface SessionLogListItemDTO {
+  id: number;
+  navigation_flow: string[];
+  flag: Satisfaction;
+  created_at: string;
+  questions: SessionLogLinkedQuestionDTO[];
+}
+
+export interface ListLogsParams {
+  flag?: Satisfaction;
+  from?: string;
+  to?: string;
   page?: number;
   limit?: number;
-};
+}
+
+export type LogsListResponse = PaginatedResponse<SessionLogListItemDTO>;
 
 export const logsApi = {
-  async list(params: ListLogsParams = {}): Promise<PaginatedResponse<InteractionLogDTO>> {
-    const { page = 1, limit = 20, ...rest } = params;
-    // tipagem mais restrita para evitar 'any'
-    const query: Record<string, string | number> = { ...(rest as Record<string, string | number>), page, limit };
+  async list(params: ListLogsParams = {}): Promise<LogsListResponse> {
+    if (env.VITE_USE_MOCKS === "true") {
+      return mockBackend.logs.list(params);
+    }
 
-    // remove undefined/null/empty
-    Object.keys(query).forEach((k) => {
-      if (query[k] === undefined || query[k] === null || query[k] === '') {
-        delete query[k];
-      }
-    });
-
-    const response = await api.get<PaginatedResponse<InteractionLogDTO>>('/api/v1/logs', { params: query });
+    const response = await api.get<LogsListResponse>("/logs", { params });
     return response.data;
   },
 };
-// ...existing code...

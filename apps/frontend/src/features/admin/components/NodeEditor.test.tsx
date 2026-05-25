@@ -55,7 +55,7 @@ describe("NodeEditor", () => {
     vi.clearAllMocks();
   });
 
-  it("preenche slug automaticamente e cria um novo filho com o pai selecionado", async () => {
+  it("cria um novo no de resposta final com slug automatico e pai selecionado", async () => {
     const user = userEvent.setup();
     const createNode = vi.fn().mockResolvedValue(undefined);
     const onSuccess = vi.fn();
@@ -115,13 +115,13 @@ describe("NodeEditor", () => {
       "Aproveitamento de Estudos",
     );
     await user.type(
-      screen.getByLabelText("Resumo da resposta"),
+      screen.getByLabelText("Resposta final"),
       "Resposta objetiva para o aluno.",
     );
 
-    expect(
-      (screen.getByLabelText("Slug") as HTMLInputElement).value,
-    ).toBe("aproveitamento-de-estudos");
+    expect((screen.getByLabelText("Slug") as HTMLInputElement).value).toBe(
+      "aproveitamento-de-estudos",
+    );
     expect(
       (screen.getByLabelText("Ordem de exibicao") as HTMLInputElement).value,
     ).toBe("3");
@@ -145,40 +145,72 @@ describe("NodeEditor", () => {
     expect(onSuccess).toHaveBeenCalledTimes(1);
   });
 
-  it("valida conteudo minimo e consistencia da evidencia antes de salvar", async () => {
+  it("valida o campo essencial do tipo menu antes de salvar", async () => {
     const user = userEvent.setup();
 
     vi.mocked(useNodes).mockReturnValue(
       createUseNodesResult({
-        nodes: [
-          {
-            id: 1,
-            title: "Cursos",
-            slug: "cursos",
-            parent_id: null,
-            display_order: 1,
-            is_active: true,
-            childrenCount: 0,
-          },
-        ],
+        nodes: [],
       }),
     );
 
     renderWithQueryClient(<NodeEditor />);
 
     await user.type(screen.getByLabelText("Titulo"), "Novo fluxo");
-    await user.type(screen.getByLabelText("Trecho da evidencia"), "Art. 76");
     await user.click(screen.getByRole("button", { name: /criar no/i }));
 
     expect(
-      screen.getByText("Preencha o prompt ou o resumo da resposta"),
+      screen.getByText("Informe a pergunta exibida neste menu"),
     ).not.toBeNull();
-    expect(screen.getByText("Informe a fonte da evidencia")).not.toBeNull();
   });
 
-  it("carrega os detalhes do no em edicao e envia apenas os campos editaveis", async () => {
+  it("limpa os campos de menu e usa o nome do PDF ao criar um no de resposta", async () => {
+    const user = userEvent.setup();
+    const createNode = vi.fn().mockResolvedValue(undefined);
+
+    vi.mocked(useNodes).mockReturnValue(
+      createUseNodesResult({
+        createNode,
+        nodes: [],
+      }),
+    );
+
+    renderWithQueryClient(<NodeEditor />);
+
+    await user.click(screen.getByRole("button", { name: /resposta final/i }));
+    await user.type(screen.getByLabelText("Titulo"), "Fluxo com evidencia");
+    await user.type(
+      screen.getByLabelText("Resposta final"),
+      "Resumo com documento oficial.",
+    );
+    await user.type(screen.getByLabelText("Trecho da evidencia"), "Art. 76");
+
+    const file = new File(["pdf"], "regulamento-geral.pdf", {
+      type: "application/pdf",
+    });
+
+    await user.upload(screen.getByLabelText("Arquivo da evidencia"), file);
+    await user.click(screen.getByRole("button", { name: /criar no/i }));
+
+    await waitFor(() => {
+      expect(createNode).toHaveBeenCalledWith(
+        expect.objectContaining({
+          prompt: null,
+          answer_summary: "Resumo com documento oficial.",
+          evidence_excerpt: "Art. 76",
+          evidence_source: "regulamento-geral.pdf",
+          evidence_file_name: "regulamento-geral.pdf",
+          evidence_file_mime_type: "application/pdf",
+          evidence_file_data: expect.any(String),
+        }),
+      );
+    });
+  });
+
+  it("carrega um no folha em edicao e permite trocar para menu", async () => {
     const user = userEvent.setup();
     const updateNode = vi.fn().mockResolvedValue(undefined);
+
     vi.mocked(nodesApi.getById).mockResolvedValue({
       id: 4,
       title: "Aproveitamento",
@@ -186,7 +218,7 @@ describe("NodeEditor", () => {
       prompt: null,
       answer_summary: "Resumo atual.",
       evidence_excerpt: "Art. 76",
-      evidence_source: "Regulamento Geral",
+      evidence_source: "regulamento-geral.pdf",
       parent_id: 1,
       display_order: 2,
       is_active: true,
@@ -227,17 +259,14 @@ describe("NodeEditor", () => {
       ).toBe("Aproveitamento");
     });
 
-    expect(nodesApi.getById).toHaveBeenCalledWith(4);
-    expect(
-      (screen.getByLabelText("No pai") as HTMLInputElement).value,
-    ).toBe("Cursos");
+    await user.click(screen.getByRole("button", { name: /menu de opcoes/i }));
 
-    await user.clear(screen.getByLabelText("Titulo"));
-    await user.type(screen.getByLabelText("Titulo"), "Aproveitamento atualizado");
-    await user.clear(screen.getByLabelText("Resumo da resposta"));
+    expect(screen.getByLabelText("Pergunta exibida")).not.toBeNull();
+    expect(screen.queryByLabelText("Resposta final")).toBeNull();
+
     await user.type(
-      screen.getByLabelText("Resumo da resposta"),
-      "Resumo revisado com nova orientacao.",
+      screen.getByLabelText("Pergunta exibida"),
+      "O que deseja consultar agora?",
     );
     await user.click(
       screen.getByRole("button", { name: /salvar alteracoes/i }),
@@ -245,15 +274,71 @@ describe("NodeEditor", () => {
 
     await waitFor(() => {
       expect(updateNode).toHaveBeenCalledWith(4, {
-        title: "Aproveitamento atualizado",
+        title: "Aproveitamento",
         slug: "aproveitamento",
-        prompt: null,
-        answer_summary: "Resumo revisado com nova orientacao.",
-        evidence_excerpt: "Art. 76",
-        evidence_source: "Regulamento Geral",
+        prompt: "O que deseja consultar agora?",
+        answer_summary: null,
+        evidence_excerpt: null,
+        evidence_source: null,
         display_order: 2,
         is_active: true,
       });
     });
+  });
+
+  it("trava o tipo como menu quando o no ja possui filhos", async () => {
+    vi.mocked(nodesApi.getById).mockResolvedValue({
+      id: 7,
+      title: "Estagio",
+      slug: "estagio",
+      prompt: "Sobre qual parte do estagio voce quer saber?",
+      answer_summary: null,
+      evidence_excerpt: null,
+      evidence_source: null,
+      parent_id: 1,
+      display_order: 3,
+      is_active: true,
+      children: [{ id: 8, title: "Comprovacao", slug: "comprovacao", display_order: 1 }],
+    });
+
+    vi.mocked(useNodes).mockReturnValue(
+      createUseNodesResult({
+        nodes: [
+          {
+            id: 1,
+            title: "Cursos",
+            slug: "cursos",
+            parent_id: null,
+            display_order: 1,
+            is_active: true,
+            childrenCount: 1,
+          },
+          {
+            id: 7,
+            title: "Estagio",
+            slug: "estagio",
+            parent_id: 1,
+            display_order: 3,
+            is_active: true,
+            childrenCount: 2,
+          },
+        ],
+      }),
+    );
+
+    renderWithQueryClient(<NodeEditor nodeId={7} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Pergunta exibida")).not.toBeNull();
+    });
+
+    expect(
+      screen.getByText("Este no ja possui filhos, entao permanece como menu."),
+    ).not.toBeNull();
+    expect(
+      (
+        screen.getByRole("button", { name: /resposta final/i }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
   });
 });

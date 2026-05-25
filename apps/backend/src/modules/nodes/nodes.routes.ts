@@ -3,7 +3,6 @@ import { NodesController } from './nodes.controller';
 import { authenticate } from '@/middlewares/auth.middleware';
 import { authorize } from '@/middlewares/rbac.middleware';
 import {z} from 'zod';
-import { request } from 'node:http';
 
 const router: Router = Router();
 const controller = new NodesController();
@@ -18,6 +17,9 @@ const createNodeSchema = z.object({
       answer_summary: z.string().nullable().optional(),
       evidence_excerpt: z.string().nullable().optional(),
       evidence_source: z.string().nullable().optional(),
+      evidence_file_name: z.string().min(1).nullable().optional(),
+      evidence_file_mime_type: z.string().min(1).nullable().optional(),
+      evidence_file_data: z.string().min(1).nullable().optional(),
       parent_id: z.number().nullable().optional(),
       display_order: z.number(),
       is_active: z.boolean().optional(),
@@ -43,6 +45,7 @@ function validateUpdateNode(req: Request, res: Response, next: NextFunction) {
 }
 
 router.get('/', (req, res, next) => controller.listNodes(req, res, next));
+router.get('/:id/evidence', (req, res, next) => controller.downloadEvidence(req, res, next));
 router.post('/', validateCreateNode,(req, res, next) => controller.createNode(req, res, next));
 router.patch('/:id', validateUpdateNode, (req, res, next) => controller.updateNode(req, res, next));
 router.delete('/:id', (req, res, next) => controller.deleteNode(req, res, next)); 

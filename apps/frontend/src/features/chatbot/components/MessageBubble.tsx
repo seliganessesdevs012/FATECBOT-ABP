@@ -1,4 +1,3 @@
-// Bolha de mensagem do bot/usuário
 import type { ChatMessage } from "../types/chatbot.types";
 
 interface MessageBubbleProps {
@@ -6,15 +5,18 @@ interface MessageBubbleProps {
 }
 
 function normalizeMessageText(text: string): string {
-  if (!text) return "";
+  if (!text) {
+    return "";
+  }
 
-  const withLineBreaks = text
+  return text
+    .replace(/\r\n?/g, "\n")
     .replace(/<\s*br\s*\/?\s*>/gi, "\n")
-    .replace(/<\/(div|p|li|ul|ol|h[1-6])\s*>/gi, "\n");
-
-  const stripped = withLineBreaks.replace(/<[^>]+>/g, "");
-
-  return stripped
+    .replace(/<\s*li\s*>/gi, "\n- ")
+    .replace(/<\s*\/li\s*>/gi, "")
+    .replace(/<\s*(ul|ol)\s*>/gi, "\n")
+    .replace(/<\/(div|p|li|ul|ol|h[1-6])\s*>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
     .replace(/&nbsp;/gi, " ")
     .replace(/&amp;/gi, "&")
     .replace(/&lt;/gi, "<")
@@ -29,7 +31,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
 
   return (
     <div
-      className={`rounded-xl px-6 py-3 font-bold wrap-break-word whitespace-pre-line ${isUser ? "bg-[#B20000] text-white text-right" : "bg-[#FAFAFA] text-left"}`}
+      className={`rounded-xl px-6 py-3 font-bold break-words whitespace-pre-wrap ${isUser ? "bg-[#B20000] text-white text-right" : "bg-[#FAFAFA] text-left"}`}
     >
       {text}
     </div>

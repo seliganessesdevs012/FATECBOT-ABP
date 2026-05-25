@@ -1,54 +1,59 @@
-import { useState, useMemo, useCallback } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import type { InteractionLogDTO } from '../types/logs.types';
-import type { PaginatedResponse } from '../../../types/api.types';
-import type { ListLogsParams } from '../api/logs.api';
-import { logsApi } from '../api/logs.api';
+import { useQuery } from "@tanstack/react-query";
 
-export type UseLogsReturn = {
-  data: InteractionLogDTO[];
-  meta?: { total: number; page: number; limit: number };
+import {
+  logsApi,
+  type ListLogsParams,
+  type SessionLogListItemDTO,
+} from "@/features/admin/api/logs.api";
+
+export interface UseLogsResult {
+  logs: SessionLogListItemDTO[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+  };
   isLoading: boolean;
   isError: boolean;
-  page: number;
-  setPage: (p: number) => void;
-  limit: number;
-  setLimit: (l: number) => void;
-  filters: Partial<ListLogsParams>;
-  setFilters: (f: Partial<ListLogsParams>) => void;
-  refetch: () => void;
-};
+  error: unknown;
+  refetch: () => Promise<unknown>;
+}
 
-export function useLogs(initialFilters: Partial<ListLogsParams> = {}, initialPage = 1, initialLimit = 20): UseLogsReturn {
-  const [page, setPage] = useState<number>(initialPage);
-  const [limit, setLimit] = useState<number>(initialLimit);
-  const [filters, setFiltersState] = useState<Partial<ListLogsParams>>(initialFilters);
+const DEFAULT_PAGE = 1;
+const DEFAULT_LIMIT = 20;
 
-  const queryKey = useMemo(() => ['logs', filters, page, limit], [filters, page, limit]);
+export function useLogs(params: ListLogsParams = {}): UseLogsResult {
+  const normalizedParams = {
+    page: params.page ?? DEFAULT_PAGE,
+    limit: params.limit ?? DEFAULT_LIMIT,
+    flag: params.flag,
+    from: params.from,
+    to: params.to,
+  };
 
-    const query = useQuery({
-      queryKey,
-      queryFn: () => logsApi.list({ ...(filters as ListLogsParams), page, limit }),
-    });
-
-  const setFilters = useCallback((f: Partial<ListLogsParams>) => {
-    setFiltersState(prev => ({ ...prev, ...f }));
-    setPage(1); // reset page when filters change
-  }, []);
-
-  const resp = query.data as PaginatedResponse<InteractionLogDTO> | undefined;
+  const query = useQuery({
+    queryKey: [
+      "admin",
+      "logs",
+      normalizedParams.page,
+      normalizedParams.limit,
+      normalizedParams.flag ?? "all",
+      normalizedParams.from ?? "all",
+      normalizedParams.to ?? "all",
+    ],
+    queryFn: () => logsApi.list(normalizedParams),
+  });
 
   return {
-    data: resp?.data ?? [],
-    meta: resp?.meta,
+    logs: query.data?.data ?? [],
+    meta: query.data?.meta ?? {
+      total: 0,
+      page: normalizedParams.page,
+      limit: normalizedParams.limit,
+    },
     isLoading: query.isLoading,
     isError: query.isError,
-    page,
-    setPage,
-    limit,
-    setLimit,
-    filters,
-    setFilters,
-    refetch: () => query.refetch(),
+    error: query.error,
+    refetch: query.refetch,
   };
 }

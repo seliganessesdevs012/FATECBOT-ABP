@@ -27,6 +27,8 @@ export interface ChatMessage {
   text: string;
   nodeId?: number;
   nodeTitle?: string;
+  evidenceExcerpt?: string | null;
+  evidenceSource?: string | null;
   availableOptions?: ChatNodeChild[];
   selectedOptionId?: number;
   navigationFlow?: string[];

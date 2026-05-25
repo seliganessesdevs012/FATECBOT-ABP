@@ -1,10 +1,13 @@
-import LogTable from '../../../features/admin/components/LogTable';
+import { AdminLayout } from "@/components/layout/AdminLayout";
+import LogTable from "@/features/admin/components/LogTable";
 
 export default function AdminLogsPage() {
-	return (
-		<div className="p-4">
-			<h1 className="text-2xl font-semibold mb-4">Logs da sessão</h1>
-			<LogTable />
-		</div>
-	);
+  return (
+    <AdminLayout
+      title="Historico de atendimentos"
+      description="Visualize o fluxo percorrido nas sessoes, a satisfacao registrada e as perguntas vinculadas."
+    >
+      <LogTable />
+    </AdminLayout>
+  );
 }

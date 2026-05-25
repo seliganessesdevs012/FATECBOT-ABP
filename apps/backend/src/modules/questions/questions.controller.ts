@@ -48,7 +48,11 @@ export class QuestionsController {
   async listQuestions(request: Request, response: Response, next: NextFunction): Promise<void> {
     try {
       const questionsService = new QuestionsService();
-      const query = request.query as { status?: "ABERTA" | "RESPONDIDA"; page?: string; limit?: string };
+      const query = ((request as any).validatedQuery ?? request.query) as {
+        status?: "ABERTA" | "RESPONDIDA";
+        page?: string | number;
+        limit?: string | number;
+      };
       const result = await questionsService.listQuestions(query);
       response.status(200).json({ success: true, data: result.data, meta: result.meta });
     } catch (error) {

@@ -37,7 +37,7 @@ function validateCreateQuestion(req: Request, _res: Response, next: NextFunction
 
 function validateListQuestionsQuery(req: Request, _res: Response, next: NextFunction) {
     try {
-        req.query = listQuestionsQuerySchema.parse(req.query);
+        (req as any).validatedQuery = listQuestionsQuerySchema.parse(req.query);
         next();
     } catch (error) {
         next(error);
