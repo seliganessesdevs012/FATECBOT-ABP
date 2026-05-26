@@ -23,10 +23,14 @@ services:
       DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:?JWT_EXPIRES_IN is required}
+      NODE_EVIDENCE_DIR: /app/runtime-storage/node-evidence
+      QUESTION_ATTACHMENT_DIR: /app/runtime-storage/question-attachments
       PORT: ${PORT:-3000}
       NODE_ENV: ${NODE_ENV:-development}
     ports:
       - "${PORT:-3000}:${PORT:-3000}"
+    volumes:
+      - backend_storage:/app/runtime-storage
     depends_on:
       db:
         condition: service_healthy
@@ -50,3 +54,4 @@ services:
 
 volumes:
   postgres_data:
+  backend_storage:

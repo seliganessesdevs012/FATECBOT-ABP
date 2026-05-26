@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { authApi } from '../api/auth.api';
 import { useAuthStore } from '../stores/auth.store';
 import type { LoginPayload } from '../types/auth.types';
+import { PANEL_HOME_PATH } from '@/features/admin/config/panel-access';
 
 export const useLogin = () => {
   const setAuth = useAuthStore((s) => s.setAuth);
@@ -13,12 +14,7 @@ export const useLogin = () => {
 
     onSuccess: (data) => {
       setAuth(data.token, data.user);
-
-      if (data.user.role === 'ADMIN') {
-        navigate('/admin');
-      } else {
-        navigate('/secretary');
-      }
+      navigate(PANEL_HOME_PATH);
     },
   });
 

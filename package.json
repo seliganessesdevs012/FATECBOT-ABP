@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev:frontend": "pnpm --filter frontend dev",
-    "dev:backend": "pnpm --filter backend dev",
-    "test": "pnpm -r test",
-    "lint": "pnpm -r lint",
-    "build": "pnpm -r build"
+    "dev:frontend": "pnpm --dir apps/frontend dev",
+    "dev:backend": "pnpm --dir apps/backend dev",
+    "test": "pnpm --filter frontend test",
+    "lint": "pnpm --filter frontend lint",
+    "build": "pnpm --filter backend build && pnpm --filter frontend build"
   },
   "overrides": {
     "axios": "1.6.8"

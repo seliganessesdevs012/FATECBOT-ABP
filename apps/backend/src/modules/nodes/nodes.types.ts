@@ -5,6 +5,9 @@ export interface CreateNodeDTO  {
       answer_summary?: string | null;
       evidence_excerpt?: string | null;
       evidence_source?: string | null;
+      evidence_file_name?: string | null;
+      evidence_file_mime_type?: string | null;
+      evidence_file_data?: Uint8Array | null;
       parent_id: number | null;
       display_order: number;
       is_active?: boolean;
@@ -16,6 +19,9 @@ export interface UpdateNodeDTO {
       answer_summary?: string | null;
       evidence_excerpt?: string | null;
       evidence_source?: string | null;
+      evidence_file_name?: string | null;
+      evidence_file_mime_type?: string | null;
+      evidence_file_data?: Uint8Array | null;
       parent_id?: number | null;
       display_order?: number;
       is_active?: boolean;

@@ -4,7 +4,7 @@ export const createUserSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
   password: z.string().min(6),
-  role: z.literal("SECRETARIA"),
+  role: z.enum(["ADMIN", "SECRETARIA"]),
 });
 
 export type CreateUserDTO = z.infer<typeof createUserSchema>;

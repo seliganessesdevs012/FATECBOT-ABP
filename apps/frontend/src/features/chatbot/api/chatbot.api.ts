@@ -1,4 +1,5 @@
 import { api } from "../../../lib/axios";
+import { env } from "../../../config/env";
 import type {
     ChatNode,
     SessionRatingPayload,
@@ -29,9 +30,18 @@ export async function submitQuestion(payload: SubmitQuestionPayload){
     return res.data.data;
 }
 
+export function getEvidenceUrl(nodeId: number){
+    if (env.VITE_USE_MOCKS === "true") {
+        return null;
+    }
+
+    return new URL(`/api/v1/nodes/${nodeId}/evidence`, env.VITE_API_URL).toString();
+}
+
 export const chatbotApi = {
     getRootNode,
     getNodeById,
     submitRating,
-    submitQuestion
+    submitQuestion,
+    getEvidenceUrl
 };

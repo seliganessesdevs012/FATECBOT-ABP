@@ -27,6 +27,8 @@ export interface ChatMessage {
   text: string;
   nodeId?: number;
   nodeTitle?: string;
+  evidenceExcerpt?: string | null;
+  evidenceSource?: string | null;
   availableOptions?: ChatNodeChild[];
   selectedOptionId?: number;
   navigationFlow?: string[];
@@ -63,6 +65,7 @@ export interface SubmitQuestionPayload {
   attachment_name?: string;
   attachment_mime_type?: string;
   attachment_data?: string;
+  session_log_id?: number;
 }
 
 export interface QuestionPayload {

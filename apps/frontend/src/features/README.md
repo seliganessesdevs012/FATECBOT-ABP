@@ -2,7 +2,7 @@
 
 Coração da aplicação. Cada subpasta representa um **domínio de negócio isolado** e contém tudo que aquele domínio precisa: chamadas de API, componentes, hooks e tipos. Nenhuma lógica de negócio deve existir fora desta pasta.
 
-> **Nota de estado da Sprint 1:** `chatbot/` e `auth/` concentram o código funcional já montado. `admin/` e `secretary/` permanecem documentadas como estrutura-alvo para as próximas sprints, com arquivos-base ainda vazios ou não integrados ao fluxo final.
+> **Estado atual:** `chatbot/`, `auth/`, `admin/` e `secretary/` possuem código funcional. O painel operacional está unificado sob `/admin`; a rota `/secretary` permanece como legado e redireciona para esse painel.
 
 ---
 
@@ -106,13 +106,21 @@ CRUD de nós de navegação, gerenciamento de usuários da secretaria e visualiz
 
 | Arquivo                     | Responsabilidade                     |
 | --------------------------- | ------------------------------------ |
-| `api/nodes.api.ts`          | CRUD: `GET/POST/PATCH/DELETE /nodes` |
+| `api/dashboard.api.ts`      | `GET /dashboard/metrics`             |
+| `api/nodes.api.ts`          | CRUD e evidência: `/nodes`           |
 | `api/users.api.ts`          | `GET/POST/DELETE /users`             |
+| `api/tickets.api.ts`        | `GET/PATCH /questions` + anexos      |
 | `api/logs.api.ts`           | `GET /logs`                          |
+| `hooks/useAdminDashboard.ts`| Query de métricas                    |
 | `hooks/useNodes.ts`         | Query + mutations de nós             |
+| `hooks/useTickets.ts`       | Query de tickets com filtros         |
 | `hooks/useLogs.ts`          | Query de logs com filtros            |
+| `components/AdminDashboardOverview.tsx` | Cards e gráfico do dashboard |
 | `components/NodeTree.tsx`   | Árvore visual de nós navegável       |
 | `components/NodeEditor.tsx` | Formulário de criação/edição de nó   |
+| `components/UserList.tsx`   | Tabela e criação de usuários com TanStack Query local |
+| `components/TicketList.tsx` | Gestão de perguntas/tickets          |
+| `components/LogTable.tsx`   | Tabela de logs                       |
 
 ### `secretary/` — RF05, RF06
 

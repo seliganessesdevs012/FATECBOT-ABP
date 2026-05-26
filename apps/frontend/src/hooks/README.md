@@ -9,9 +9,7 @@ Hooks customizados de uso global — reutilizáveis por qualquer feature ou comp
 ```
 hooks/
 ├── useDebounce.ts
-├── useLocalStorage.ts
-├── useMediaQuery.ts
-└── useDisclosure.ts
+└── usePagination.ts
 ```
 
 ***
@@ -52,58 +50,25 @@ useEffect(() => {
 
 ***
 
-### `useLocalStorage.ts`
+### `usePagination.ts`
 
-Interface tipada para leitura e escrita no `localStorage`. Sincroniza o estado React com o storage automaticamente.
-
-```ts
-function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T) => void]
-```
-
-> **Nota:** não use este hook para o token JWT — isso é responsabilidade do `auth.store` (Zustand com `persist`), que já gerencia a persistência no localStorage de forma centralizada.
-
-***
-
-### `useMediaQuery.ts`
-
-Retorna `true` se a media query informada estiver ativa. Usado para lógica condicional de layout baseada no breakpoint atual.
+Gerencia estado de página e limite para listagens paginadas. Normaliza valores para inteiros positivos e expõe helpers de navegação.
 
 ```ts
-function useMediaQuery(query: string): boolean
-```
-
-Exemplo de uso:
-
-```ts
-const isMobile = useMediaQuery('(max-width: 768px)')
-```
-
-***
-
-### `useDisclosure.ts`
-
-Gerencia estado booleano de aberto/fechado para modais, drawers, dropdowns e afins. Evita repetição de `useState(false)` + handlers em toda a aplicação.
-
-```ts
-function useDisclosure(initial?: boolean): {
-  isOpen: boolean
-  open: () => void
-  close: () => void
-  toggle: () => void
+function usePagination(initialPage?: number, initialLimit?: number): {
+  page: number
+  limit: number
+  setPage: (page: number) => void
+  setLimit: (limit: number) => void
+  nextPage: () => void
+  prevPage: () => void
 }
 ```
 
 Exemplo de uso:
 
 ```ts
-const { isOpen, open, close } = useDisclosure()
-
-return (
-  <>
-    <Button onClick={open}>Abrir modal</Button>
-    <Dialog open={isOpen} onOpenChange={close} />
-  </>
-)
+const { page, limit, nextPage, prevPage } = usePagination(1, 20)
 ```
 
 ***

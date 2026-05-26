@@ -1,4 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
+import { AppError } from "../../errors/AppError";
+import { findNodeEvidencePdf } from "../nodes/nodes.evidence";
 import { ChatbotService } from './chatbot.service';
 import { CreateInteractionLogDTO } from './chatbot.types'; 
 
@@ -35,6 +37,31 @@ export class ChatbotController {
                 session_log_id,
             });
             response.status(201).json({ success: true, data: result });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async downloadEvidence(request: Request, response: Response, next: NextFunction): Promise<void> {
+        try {
+            const nodeId = Number(request.params.id);
+
+            if (!Number.isInteger(nodeId) || nodeId <= 0) {
+                throw new AppError("Identificador do no invalido.", 400);
+            }
+
+            const evidenceFile = await findNodeEvidencePdf(nodeId);
+
+            if (!evidenceFile) {
+                throw new AppError("Este no ainda nao possui PDF de evidencia salvo.", 404);
+            }
+
+            response.setHeader("Content-Type", "application/pdf");
+            response.setHeader(
+                "Content-Disposition",
+                `inline; filename="${evidenceFile.originalFileName}"`,
+            );
+            response.sendFile(evidenceFile.filePath);
         } catch (error) {
             next(error);
         }

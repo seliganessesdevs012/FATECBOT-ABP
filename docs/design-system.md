@@ -141,6 +141,74 @@ _Componente de avaliação de satisfação, mostrando os estados: neutro, gostei
 
 _Formulário para envio de dúvida à secretária, com campos para nome, e-mail, dúvida e anexo. Inclui feedback visual de sucesso após o envio._
 
+### 7. Dashboard - Admin
+
+![Dashboard Admin](designer/dashboard-admin.png)
+
+_Dashboard com estatisticas essenciais sobre os usos do chatbot._
+
+### 8. Users list
+
+#### Default
+
+![Users list](designer/users-default.png)
+
+#### Novo usuário
+
+![Users list - New user](designer/users-new-user.png)
+
+#### Editar usuário
+
+![Users list - Edit user](designer/users-edit-user.png)
+
+_Lista de usuários com variações de criação e edição de usuário._
+
+### 9. Nodes
+
+#### Default
+
+![Nodes](designer/nodes-default.png)
+
+#### Novo nó
+
+![Nodes - New node](designer/nodes-new-node.png)
+
+#### Editar nó
+
+![Nodes - Edit node](designer/nodes-edit-node.png)
+
+_Lista de opções com variações de criação e edição de nó._
+
+### 10. Dashboard - Secretaria
+
+![Dashboard - Scretaria](designer/dashboard-secretaria.png)
+
+_Dashboard com estatisticas essenciais aos membros da secretaria sobre os usos do chatbot._
+
+### 11. Tickets
+
+#### Default
+
+![Tickets](designer/tickets-default.png)
+
+#### Detalhes
+
+![Tickets  - Detalhes](designer/tickets-details.png)
+
+_Lista de tickets com variação de detalhes._
+
+### 12. Histórico
+
+#### Default
+
+![Histórico](designer/historico-default.png)
+
+#### Detalhes
+
+![Histórico  - Detalhes](designer/historico-details.png)
+
+_Lista de histórico de nós utilizados com avaliação final e variação de detalhes._
+
 ---
 
 Dúvidas ou sugestões? Consulte o Figma ou entre em contato com o responsável pelo Design System.

@@ -1,7 +1,6 @@
-
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import type { AuthUser } from '../types/auth.types';
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
+import type { AuthUser } from "../types/auth.types";
 
 type AuthState = {
   token: string | null;
@@ -21,8 +20,11 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: 'fatecbot:auth',
-      storage: (typeof window !== 'undefined' ? localStorage : undefined) as any,
-    }
-  )
+      name: "fatecbot:auth",
+      storage:
+        typeof window !== "undefined"
+          ? createJSONStorage(() => localStorage)
+          : undefined,
+    },
+  ),
 );

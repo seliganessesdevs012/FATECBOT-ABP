@@ -94,7 +94,7 @@ const token = localStorage.getItem('token')
 ### hooks/
 
 O `useLogin` encapsula o fluxo completo: chama a API, popula a store em caso de
-sucesso e redireciona o usuário para o painel correto conforme o role.
+sucesso e redireciona o usuário para o painel unificado em `/admin`.
 
 ```ts
 // ✅ Padrão adotado em hooks/
@@ -106,7 +106,7 @@ export function useLogin() {
     mutationFn: authApi.login,
     onSuccess: ({ token, user }) => {
       setAuth(token, user)
-      navigate(user.role === 'ADMIN' ? '/admin' : '/secretary')
+      navigate('/admin')
     },
   })
 }
@@ -121,7 +121,7 @@ antes de disparar a mutation e exibe feedback de erro em caso de credenciais inv
 // ✅ Componente correto — valida antes de mutar
 const schema = z.object({
   email: z.string().email('E-mail inválido'),
-  password: z.string().min(1, 'Senha obrigatória'),
+  password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
 })
 ```
 
@@ -142,7 +142,7 @@ onSuccess → setAuth(token, user) no Zustand
         ↓
 Axios interceptor passa a injetar Bearer em todas as requests
         ↓
-navigate('/admin' | '/secretary') conforme role
+navigate('/admin')
 ```
 
 Em caso de token expirado ou inválido, o interceptor de resposta do Axios
@@ -155,7 +155,7 @@ nenhuma ação manual necessária nos componentes.
 
 - **Nunca leia** `token` ou `user` do `localStorage` diretamente — use sempre `useAuthStore()`
 - **Nunca importe** `auth.store.ts` fora de `features/auth/` e `lib/axios.ts` — se outra feature precisa saber o role, ela consome o hook `useAuthStore()`
-- O redirecionamento pós-login **sempre** leva em conta o `role` — nunca direcione fixo para `/admin`
+- O redirecionamento pós-login segue `PANEL_HOME_PATH`, hoje definido como `/admin`
 - Alterações no shape de `AuthUser` exigem atualização em `types/auth.types.ts` antes de qualquer outra mudança
 - `clearAuth` deve ser chamado **apenas** pelo interceptor Axios (401) ou pelo botão de logout — nunca por lógica de feature
 

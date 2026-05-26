@@ -1,8 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
+
 import { chatbotApi } from "../api/chatbot.api";
 import type {
   QuestionFormData,
-  QuestionPayload,
   SubmitQuestionPayload,
 } from "../types/chatbot.types";
 
@@ -29,7 +29,9 @@ async function fileToBase64(file: File): Promise<string> {
 
 export function useSubmitQuestion() {
   return useMutation({
-    mutationFn: async (formData: QuestionFormData) => {
+    mutationFn: async (
+      formData: QuestionFormData & { session_log_id?: number | null },
+    ) => {
       const payload: SubmitQuestionPayload = {
         requester_name: formData.requester_name,
         requester_email: formData.requester_email,
@@ -42,14 +44,11 @@ export function useSubmitQuestion() {
         payload.attachment_data = await fileToBase64(formData.attachment);
       }
 
+      if (formData.session_log_id != null) {
+        payload.session_log_id = formData.session_log_id;
+      }
+
       return chatbotApi.submitQuestion(payload);
-    },
-    onSuccess: (data: QuestionPayload) => {
-      // Optionally invalidate queries here if needed
-      console.log("Question submitted successfully:", data);
-    },
-    onError: (error: Error) => {
-      console.error("Failed to submit question:", error.message);
     },
   });
 }

@@ -16,7 +16,9 @@
 - [Sprints](#sprints)
 - [Regras de contribuição](#regras-de-contribuicao)
 - [Diagramas de caso de uso](#-diagrama-de-casos-de-uso)
+- [Diagramas de classe](#-diagrama-de-classe)
 - [Modelo Relacional - Banco de dados](#️-modelo-relacional--banco-de-dados)
+- [Documentos de Testes](#-documento-teste)
 
 ---
 
@@ -62,8 +64,8 @@ docs/
 | [`project-structure.md`](./project-structure.md)       | Organização do monorepo, responsabilidades por pasta e princípios de modularização | Criar ou mover arquivos com segurança   |
 | [`project-standards.md`](./project-standards.md)       | Branches, commits, PRs, lint, nomenclatura e regras de env                         | Contribuir sem quebrar o fluxo do time  |
 | [`api-layer.md`](./api-layer.md)                       | Endpoints, envelopes, filtros, paginação e códigos de status                       | Integrar frontend e backend             |
-| [`../apps/frontend/README.md`](../apps/frontend/README.md) | Setup do frontend, rotas montadas e uso de TanStack Query/Zustand               | Implementar a interface da Sprint 1     |
-| [`../apps/backend/README.md`](../apps/backend/README.md)   | Setup do backend, scripts, banco, autenticação e endpoints disponíveis          | Implementar e validar a API da Sprint 1 |
+| [`../apps/frontend/README.md`](../apps/frontend/README.md) | Setup do frontend, rotas montadas e uso de TanStack Query/Zustand               | Implementar e validar a interface atual |
+| [`../apps/backend/README.md`](../apps/backend/README.md)   | Setup do backend, scripts, banco, autenticação e endpoints disponíveis          | Implementar e validar a API atual       |
 
 ---
 
@@ -91,19 +93,35 @@ referência operacional daquela sprint.
 
 ## 📐 Diagrama de Casos de Uso
 
-- [Arquivo editável (.asta)](uml/casos-de-uso.asta)
-
 ![Diagrama de Casos de Uso](uml/casos-de-uso.jpg)
 
+- [Arquivo editável (.asta)](uml/casos-de-uso.asta)
+
 ---
+
+## 📐 Diagrama de Classe
+
+![Diagrama de Classe](uml/diagrama-de-classe.jpg)
+
+- [Arquivo editável (.asta)](uml/diagrama-classe.asta)
+---
+
 
 ## 🗄️ Modelo Relacional — Banco de Dados
 
 ![Modelo Relacional](bd/Modelagem-Banco-Dados.jpeg)
 
-![Modelo do DBDesigner](bd/modelagem-banco-dados.xml)
+- [Modelo do DBDesigner](bd/modelagem-banco-dados.xml)
 
-- [PDF do modelo](bd/Modelagem-Banco-Dados.pdf)
+
+---
+
+## 📄 Documentação de Testes <a id="documento-teste"></a>
+
+- [Documentação de teste](./documento-de-teste.pdf)
+
+
+
 
 ---
 

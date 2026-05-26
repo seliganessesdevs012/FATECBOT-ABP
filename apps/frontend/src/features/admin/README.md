@@ -4,7 +4,7 @@
 > Cobre o CRUD de nós de navegação, usuários da secretaria
 > e a visualização de logs de atendimento (RF04, RF08).
 
-> **Nota de estado da Sprint 1:** esta feature permanece documentada como arquitetura-alvo. No código atual, os arquivos de `api/`, `hooks/` e `components/` desta pasta ainda estão como base para implementação futura.
+> **Estado atual:** dashboard, nós, usuários, tickets e logs possuem APIs/componentes funcionais. `documents.api.ts` e `useDocuments.ts` existem como arquivos vazios e não estão integrados ao roteador atual.
 
 ***
 
@@ -36,18 +36,26 @@ features/admin/
 ├── api/                        # Funções de acesso à API REST
 │   ├── nodes.api.ts            # GET, POST, PATCH, DELETE /nodes
 │   ├── users.api.ts            # GET, POST, DELETE /users
+│   ├── tickets.api.ts          # GET, PATCH /questions + download de anexo
+│   ├── dashboard.api.ts        # GET /dashboard/metrics
+│   ├── documents.api.ts        # Vazio no estado atual
 │   └── logs.api.ts             # GET /logs
 │
 ├── components/                 # Componentes visuais exclusivos do admin
-│   ├── NodeTree/               # Árvore de navegação do chatbot (MENU/ANSWER)
-│   ├── NodeForm/               # Formulário de criação e edição de nó
-│   ├── UserList/               # Tabela de usuários da secretaria
-│   ├── UserForm/               # Formulário de criação de usuário
-│   └── LogTable/               # Tabela de logs de atendimento (somente leitura)
+│   ├── AdminDashboardOverview.tsx
+│   ├── NodeTree.tsx
+│   ├── NodeInspector.tsx
+│   ├── NodeEditor.tsx
+│   ├── UserList.tsx
+│   ├── TicketList.tsx
+│   └── LogTable.tsx
 │
 └── hooks/                      # Hooks de dados com TanStack Query
+    ├── useAdminDashboard.ts    # useQuery para métricas do dashboard
     ├── useNodes.ts             # useQuery + useMutation para nós
-    ├── useUsers.ts             # useQuery + useMutation para usuários
+    ├── useTickets.ts           # useQuery para tickets
+    ├── useUpdateTicket.ts      # useMutation para status de tickets
+    ├── useDocuments.ts         # Vazio no estado atual
     └── useLogs.ts              # useQuery para logs (somente leitura)
 ```
 
@@ -63,10 +71,10 @@ retornam Promises diretamente para serem consumidas pelos hooks do TanStack Quer
 ```ts
 // ✅ Padrão adotado em api/
 export const nodesApi = {
-  getAll: () => api.get<Node[]>('/nodes').then(res => res.data),
-  create: (data: CreateNodeDto) => api.post<Node>('/nodes', data).then(res => res.data),
-  update: (id: string, data: UpdateNodeDto) => api.patch<Node>(`/nodes/${id}`, data).then(res => res.data),
-  remove: (id: string) => api.delete(`/nodes/${id}`),
+  list: () => api.get<ApiResponse<NodeListItemDTO[]>>('/nodes').then(res => res.data.data),
+  create: (data: CreateNodePayload) => api.post<ApiResponse<NodeListItemDTO>>('/nodes', data).then(res => res.data.data),
+  update: (id: number, data: UpdateNodePayload) => api.patch<ApiResponse<NodeListItemDTO>>(`/nodes/${id}`, data).then(res => res.data.data),
+  remove: (id: number) => api.delete(`/nodes/${id}`),
 }
 
 // ❌ Nunca use axios diretamente nos hooks ou componentes
@@ -81,18 +89,27 @@ diretamente.
 ```ts
 // ✅ Padrão adotado em hooks/
 export function useNodes() {
-  return useQuery({
-    queryKey: ['nodes'],
-    queryFn: nodesApi.getAll,
-  })
-}
-
-export function useCreateNode() {
   const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: nodesApi.create,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['nodes'] }),
+
+  const query = useQuery({
+    queryKey: ['nodes'],
+    queryFn: nodesApi.list,
   })
+
+  const createNodeMutation = useMutation({
+    mutationFn: nodesApi.create,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['nodes'] })
+    },
+  })
+
+  return {
+    nodes: query.data ?? [],
+    isLoading: query.isLoading || createNodeMutation.isPending,
+    createNode: async dto => {
+      await createNodeMutation.mutateAsync(dto)
+    },
+  }
 }
 ```
 
@@ -104,7 +121,7 @@ representa um domínio visual independente com seu próprio `index.tsx`.
 ```tsx
 // ✅ Componente correto — consome hook, não chama api/ diretamente
 export function NodeForm({ onSuccess }: NodeFormProps) {
-  const { mutate: createNode, isPending } = useCreateNode()
+  const { createNode, isLoading } = useNodes()
   // ...
 }
 ```
@@ -115,9 +132,11 @@ export function NodeForm({ onSuccess }: NodeFormProps) {
 
 | Requisito | Funcionalidade                         | Hook       | Componente              |
 | --------- | -------------------------------------- | ---------- | ----------------------- |
-| **RF04**  | CRUD de nós de navegação               | `useNodes` | `NodeTree`, `NodeForm`  |
-| **RF04**  | Criar e remover usuários da secretaria | `useUsers` | `UserList`, `UserForm`  |
+| **RF04**  | CRUD de nós de navegação               | `useNodes` | `NodeTree`, `NodeEditor`, `NodeInspector` |
+| **RF04**  | Criar e remover usuários internos      | TanStack Query no componente | `UserList` |
+| **RF05/RF06** | Gerenciar tickets/perguntas        | `useTickets`, `useUpdateTicket` | `TicketList` |
 | **RF08**  | Visualizar logs de atendimento         | `useLogs`  | `LogTable`              |
+| **RF08**  | Métricas agregadas do painel           | `useAdminDashboard` | `AdminDashboardOverview` |
 
 ***
 

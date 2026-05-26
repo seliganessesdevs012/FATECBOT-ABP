@@ -3,7 +3,7 @@
 > Módulo responsável pela criação e remoção dos usuários autenticados do sistema —
 > Secretárias Acadêmicas e Administradores. Acesso restrito ao Administrador (RF04, RF03).
 
-> **Nota de estado da Sprint 1:** este módulo permanece documentado como estrutura-alvo. No repositório atual, o diretório contém apenas a documentação do que deve ser implementado nas próximas sprints.
+> **Estado atual:** o módulo está implementado com rotas `GET`, `POST` e `DELETE` protegidas por `ADMIN`.
 
 ***
 
@@ -24,8 +24,9 @@ Este módulo gerencia o ciclo de vida dos usuários autenticados do sistema.
 O perfil **Aluno não é um usuário cadastrado** — ele acessa o chatbot de forma
 pública, sem autenticação. Apenas Secretárias e Administradores possuem conta.
 
-O Administrador padrão **não é criado por este módulo** — ele é gerado
-pelo seed em `prisma/seed.ts` e não pode ser removido por esta interface.
+Os usuários iniciais são gerados pelo seed em `prisma/seed.ts`. A interface
+permite criar usuários `ADMIN` ou `SECRETARIA`; o backend impede remover o
+último usuário administrador.
 
 | Responsabilidade | Arquivo |
 | ---------------- | ------- |
@@ -52,10 +53,10 @@ modules/users/
 
 ### users.routes.ts
 
-Todas as rotas são protegidas por `authMiddleware` + `authorize('ADMIN')`:
+Todas as rotas são protegidas por `authenticate` + `authorize('ADMIN')`:
 
 ```ts
-router.use(authMiddleware)
+router.use(authenticate)
 router.use(authorize('ADMIN'))
 
 router.get('/', usersController.getAll)
@@ -67,22 +68,22 @@ O body do `POST /users` é validado com Zod antes de chegar ao controller.
 
 ### users.service.ts
 
-**`getAll`** — lista todos os usuários cadastrados exceto o administrador
-padrão. Nunca retorna o campo `password` — mapeie sempre para `UserResponse`
+**`listUsers`** — lista todos os usuários cadastrados com paginação.
+Nunca retorna o campo `password_hash` — mapeie sempre para `UserResponse`
 antes de retornar:
 
 ```ts
 // ✅ Nunca retorne o hash da senha
 const users = await prisma.user.findMany({
-  where: { role: 'SECRETARIA' },
-  select: { id: true, email: true, role: true, createdAt: true },
+  skip,
+  take,
+  select: { id: true, name: true, email: true, role: true, created_at: true },
 })
 ```
 
-**`create`** — cria um novo usuário com role `SECRETARIA`. O `role` nunca
-é aceito no body — todos os usuários criados por esta interface são
-Secretárias. A senha é hasheada com Argon2id via `hashPassword` de
-`utils/hash.utils.ts` antes de persistir:
+**`createUser`** — cria um novo usuário com role `ADMIN` ou `SECRETARIA`.
+A senha é hasheada com Argon2id via `hashPassword` de `utils/hash.util.ts`
+antes de persistir:
 
 ```ts
 // ✅ Hash da senha antes de salvar
@@ -91,19 +92,23 @@ const hashedPassword = await hashPassword(dto.password)
 await prisma.user.create({
   data: {
     email: dto.email,
-    password: hashedPassword,
-    role: 'SECRETARIA',    // sempre SECRETARIA — nunca aceite role no body
+    name: dto.name,
+    password_hash: hashedPassword,
+    role: dto.role,
   },
 })
 ```
 
-**`remove`** — remove um usuário pelo `id`. Bloqueia a remoção se o
-usuário for o administrador padrão ou se o `id` não existir:
+**`removeUser`** — remove um usuário pelo `id`. Bloqueia a remoção se o
+usuário não existir ou se a operação removeria o único `ADMIN`:
 
 ```ts
 // ✅ Proteção do admin padrão
 if (user.role === 'ADMIN') {
-  throw new AppError('O administrador padrão não pode ser removido.', 403)
+  const adminCount = await db.user.count({ where: { role: 'ADMIN' } })
+  if (adminCount <= 1) {
+    throw new AppError('Nao e possivel remover o unico admin', 409)
+  }
 }
 ```
 
@@ -124,16 +129,19 @@ async create(req: Request, res: Response) {
 ```ts
 // Body esperado no POST /users
 interface CreateUserDto {
+  name: string
   email: string
   password: string    // senha em texto plano — hasheada no service
+  role: 'SECRETARIA' | 'ADMIN'
 }
 
 // Resposta retornada ao frontend — nunca inclui password
 interface UserResponse {
-  id: string
+  id: number
+  name: string
   email: string
   role: 'SECRETARIA' | 'ADMIN'
-  createdAt: string
+  created_at: string
 }
 ```
 
@@ -143,14 +151,16 @@ interface UserResponse {
 
 ```
 User
-├── id        String   @id
-├── email     String   @unique
-├── password  String   (hash Argon2id — nunca retornado pela API)
-├── role      Role     (ADMIN | SECRETARIA)
-└── createdAt DateTime
+├── id            Int      @id @default(autoincrement())
+├── name          String
+├── email         String   @unique
+├── password_hash String   (hash Argon2id — nunca retornado pela API)
+├── role          Role     (ADMIN | SECRETARIA)
+├── created_at    DateTime @default(now())
+└── updated_at    DateTime @updatedAt
 ```
 
-> O campo `password` **nunca** deve aparecer em nenhuma resposta da API —
+> O campo `password_hash` **nunca** deve aparecer em nenhuma resposta da API —
 > nem em listagem, nem em criação, nem em erro. Sempre use `select` explícito
 > no Prisma ou mapeie para `UserResponse` antes de retornar.
 
@@ -163,20 +173,19 @@ Documentação completa com exemplos de request/response em
 
 | Método | Rota | Acesso | Descrição |
 | ------ | ---- | :----: | --------- |
-| `GET` | `/api/v1/users` | 🔒 ADMIN | Lista usuários da secretaria |
-| `POST` | `/api/v1/users` | 🔒 ADMIN | Cria usuário da secretaria |
+| `GET` | `/api/v1/users` | 🔒 ADMIN | Lista usuários internos |
+| `POST` | `/api/v1/users` | 🔒 ADMIN | Cria usuário interno |
 | `DELETE` | `/api/v1/users/:id` | 🔒 ADMIN | Remove usuário |
 
 ***
 
 ## 📐 Regras de Contribuição <a id="regras"></a>
 
-- O campo `password` **nunca** é retornado pela API — use sempre `select` explícito ou mapeie para `UserResponse`
-- O `role` **nunca** é aceito no body do `POST` — todos os usuários criados aqui são `SECRETARIA`
-- A criação de novos Administradores **não é suportada** por esta interface — o admin padrão existe apenas via seed
-- O administrador padrão **não pode ser removido** — bloqueie no service antes de chamar o Prisma
-- Senhas são sempre hasheadas com Argon2id via `utils/hash.utils.ts` — nunca use bcrypt ou salve em texto plano
-- Rotas deste módulo são **sempre protegidas** — nunca remova o `authMiddleware` ou o `authorize('ADMIN')`
+- O campo `password_hash` **nunca** é retornado pela API — use sempre `select` explícito ou mapeie para `UserResponse`
+- O `role` aceito no body do `POST` deve ser `ADMIN` ou `SECRETARIA`
+- A remoção do último `ADMIN` **não é suportada** — bloqueie no service antes de chamar o Prisma
+- Senhas são sempre hasheadas com Argon2id via `utils/hash.util.ts` — nunca use bcrypt ou salve em texto plano
+- Rotas deste módulo são **sempre protegidas** — nunca remova o `authenticate` ou o `authorize('ADMIN')`
 
 ***
 

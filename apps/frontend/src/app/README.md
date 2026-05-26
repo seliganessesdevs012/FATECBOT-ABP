@@ -41,18 +41,20 @@ app/
 ├── provider.tsx         # Composição dos providers globais
 └── routes/
     ├── index.tsx        # Rota pública do chatbot
+    ├── login.tsx        # Rota pública de autenticação
     ├── admin/           # Páginas do painel administrativo
     │   ├── dashboard.tsx
-    │   ├── documents.tsx
     │   ├── logs.tsx
     │   ├── nodes.tsx
+    │   ├── tickets.tsx
     │   └── users.tsx
     └── secretary/       # Páginas do painel da secretária
+        ├── index.tsx
         ├── dashboard.tsx
         └── questions.tsx
 ```
 
-> Se uma rota ainda não existir no código, trate esta estrutura como alvo de implementação e não como garantia de que tudo já foi criado.
+> `dashboard.tsx` e `questions.tsx` em `routes/secretary/` existem no diretório, mas não estão montados no `router.tsx`; `/secretary` redireciona para `/admin`.
 
 ***
 
@@ -64,9 +66,10 @@ autorização pelos componentes de página.
 
 ```tsx
 <Route element={<ProtectedRoute />}>
-  <Route element={<RoleGuard role="ADMIN" />}>
-    <Route path="/admin" element={<AdminDashboardPage />} />
-  </Route>
+  <Route
+    path="/admin"
+    element={<RoleGuard allowedRoles={["ADMIN", "SECRETARIA"]}><AdminPage /></RoleGuard>}
+  />
 </Route>
 ```
 

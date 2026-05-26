@@ -234,7 +234,7 @@ Essa abordagem garante rastreabilidade, confiabilidade da informação e reduç�
 
 - O formulário de login exige e-mail e senha; campos em branco exibem mensagem de erro inline
 - Credenciais inválidas retornam mensagem de erro genérica sem indicar qual campo está errado (segurança)
-- Login bem-sucedido redireciona o usuário para o painel correspondente ao seu papel: `ADMIN → /admin`, `SECRETARIA → /secretary`
+- Login bem-sucedido redireciona o usuário autenticado para o painel unificado em `/admin`; a rota legada `/secretary` redireciona para esse painel
 - O token JWT retornado contém os campos `sub`, `role` e `exp`
 - O token expira em 8 horas; após expiração, o usuário é redirecionado para `/login`
 
@@ -259,10 +259,10 @@ Essa abordagem garante rastreabilidade, confiabilidade da informação e reduç�
 
 **Critérios de Aceitação:**
 
-- Qualquer requisição a rotas sob `/api/v1/admin/*` e `/api/v1/secretary/*` sem header `Authorization: Bearer <token>` retorna `401 Unauthorized`
+- Qualquer requisição a recursos protegidos como `/api/v1/nodes`, `/api/v1/users`, `/api/v1/questions`, `/api/v1/logs` e `/api/v1/dashboard/metrics` sem header `Authorization: Bearer <token>` retorna `401 Unauthorized`
 - Token malformado ou com assinatura inválida retorna `401` com mensagem "Token inválido"
 - Token expirado retorna `401` com mensagem "Token expirado"
-- O endpoint público do chatbot (`GET /api/v1/nodes/*`) e o de envio de perguntas (`POST /api/v1/questions`) não exigem autenticação
+- Os endpoints públicos do chatbot (`GET /api/v1/nodes/root`, `GET /api/v1/nodes/:id` e `GET /api/v1/nodes/:id/evidence`) e o de envio de perguntas (`POST /api/v1/questions`) não exigem autenticação
 - O middleware de autenticação é aplicado globalmente nas rotas sensíveis, sem necessidade de anotação por handler
 
 ---
@@ -274,8 +274,8 @@ Essa abordagem garante rastreabilidade, confiabilidade da informação e reduç�
 | Sprint | Objetivos                                           | Documentação                              | Período    | Status       |
 | ------ | --------------------------------------------------- | ----------------------------------------- | ---------- | ------------ |
 | 1      | Estrutura base, autenticação, navegação do chatbot  | [Sprint 1 Docs](./docs/sprint1/README.md) | Iteração 1 | 🟢 Entregue |
-| 2      | Painel Admin (CRUD nós), RBAC, perguntas            | [Sprint 2 Docs](./docs/sprint2/README.md) | Iteração 2 | 🔵 Planejado |
-| 3      | Painel Secretária, logs, satisfação, ajustes finais | [Sprint 3 Docs](./docs/sprint3/README.md) | Iteração 3 | 🔵 Planejado |
+| 2      | Painel Admin (CRUD nós), RBAC, perguntas            | [Sprint 2 Docs](./docs/sprint2/README.md) | Iteração 2 | 🟢 Entregue |
+| 3      | Painel Secretária, logs, satisfação, ajustes finais | [Sprint 3 Docs](./docs/sprint3/README.md) | Iteração 3 | 🟡 Em andamento |
 
 > 📝 Tasks detalhadas por sprint:
 > [Sprint 1 Tasks](./docs/sprint1/README.md) · [Sprint 2 Tasks](./docs/sprint2/README.md) · [Sprint 3 Tasks](./docs/sprint3/README.md)
@@ -363,8 +363,7 @@ git clone https://github.com/seu-org/fatecbot.git
 cd fatecbot
 
 # 2. Configure as variáveis de ambiente
-cp .env.example .env
-# Edite o .env com os valores do seu ambiente
+# Crie um arquivo .env na raiz usando o bloco abaixo como referência
 
 # 3. Suba todos os containers com um único comando
 docker compose up --build
@@ -386,23 +385,33 @@ A aplicação estará disponível em:
 
 ## 🔐 Variáveis de Ambiente <a id="env"></a>
 
-Copie `.env.example` para `.env` e preencha os valores:
+Crie um arquivo `.env` na raiz e preencha os valores:
 
 ```bash
+# ── Postgres / Docker Compose ───────────────────────────
+POSTGRES_DB=fatecbot
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_PORT=5432
+
 # ── Banco de Dados ──────────────────────────────────────
 DATABASE_URL=postgresql://postgres:postgres@db:5432/fatecbot
 
 # ── JWT ─────────────────────────────────────────────────
-JWT_SECRET=troque_por_um_segredo_forte_aqui
+JWT_SECRET=troque_por_um_segredo_forte_com_32_chars
 JWT_EXPIRES_IN=8h
 
 # ── Backend ─────────────────────────────────────────────
 PORT=3000
 NODE_ENV=development
+ARGON2_MEMORY_COST=65536
+ARGON2_TIME_COST=3
+ARGON2_PARALLELISM=1
 
 # ── Frontend ────────────────────────────────────────────
-VITE_API_URL=http://localhost:3000
+VITE_API_URL=http://localhost:3000/api/v1
 VITE_ENABLE_DEVTOOLS=true
+VITE_USE_MOCKS=false
 ```
 
 > ⚠️ **Nunca commite o arquivo `.env`**. Ele já está no `.gitignore`.
@@ -428,7 +437,6 @@ fatecbot/
 │   ├── sprint2/
 │   ├── sprint3/
 ├── docker-compose.yml
-├── .env.example
 └── pnpm-workspace.yaml
 ```
 

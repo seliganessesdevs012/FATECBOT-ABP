@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ChatSidebar } from "./ChatSidebar";
+import { EvidenceCard } from "./EvidenceCard";
 import { MessageBubble } from "./MessageBubble";
 import type {
   ChatMessage,
@@ -50,6 +51,8 @@ export function ChatWindow() {
         text: currentNode.prompt || currentNode.answer_summary || "",
         nodeId: currentNode.id,
         nodeTitle: currentNode.title,
+        evidenceExcerpt: currentNode.evidence_excerpt,
+        evidenceSource: currentNode.evidence_source,
         availableOptions: currentNode.children,
         navigationFlow: [...navigationFlow],
       },
@@ -181,6 +184,7 @@ export function ChatWindow() {
           <ChatSidebar
             historyItems={historyItems}
             onHistoryItemClick={handleHistoryItemClick}
+            sessionLogId={sessionLogId}
           />
         </div>
 
@@ -261,6 +265,12 @@ export function ChatWindow() {
                     message.nodeId !== 0 &&
                     (message.availableOptions?.length ?? 0) === 0 && (
                       <div className="flex flex-col gap-3 px-4 pb-4">
+                        <EvidenceCard
+                          nodeId={message.nodeId}
+                          excerpt={message.evidenceExcerpt}
+                          source={message.evidenceSource}
+                        />
+
                         <SatisfactionRating
                           navigation_flow={message.navigationFlow ?? []}
                           nodeId={message.nodeId}

@@ -40,6 +40,7 @@ apps/backend/
 │   ├── modules/
 │   │   ├── auth/
 │   │   ├── chatbot/
+│   │   ├── dashboard/
 │   │   ├── logs/
 │   │   ├── nodes/
 │   │   ├── questions/
@@ -81,7 +82,9 @@ apps/frontend/
 │   ├── hooks/
 │   ├── lib/
 │   ├── types/
-│   └── utils/
+│   ├── utils/
+│   ├── index.css
+│   └── main.tsx
 ├── vite.config.ts
 └── tsconfig.json
 ```

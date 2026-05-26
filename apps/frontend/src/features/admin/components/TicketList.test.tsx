@@ -1,0 +1,351 @@
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+
+import TicketList from "@/features/admin/components/TicketList";
+import { ticketsApi } from "@/features/admin/api/tickets.api";
+import { useTickets } from "@/features/admin/hooks/useTickets";
+import { useUpdateTicket } from "@/features/admin/hooks/useUpdateTicket";
+
+vi.mock("@/features/admin/hooks/useTickets", () => ({
+  useTickets: vi.fn(),
+}));
+
+vi.mock("@/features/admin/hooks/useUpdateTicket", () => ({
+  useUpdateTicket: vi.fn(),
+}));
+
+vi.mock("@/features/admin/api/tickets.api", () => {
+  return {
+    ticketsApi: {
+      downloadAttachment: vi.fn().mockResolvedValue(new Blob(["ticket"])),
+    },
+  };
+});
+
+const refetchMock = vi.fn().mockResolvedValue(undefined);
+const mutateAsyncMock = vi.fn().mockResolvedValue({
+  id: 21,
+  requester_name: "Aluno A",
+  requester_email: "aluno.a@fatec.sp.gov.br",
+  question: "Preciso do calendario do semestre.",
+  session_log_id: 9,
+  attachment_name: "calendario.pdf",
+  attachment_mime_type: "application/pdf",
+  attachment_size_bytes: 2048,
+  has_attachment: true,
+  status: "RESPONDIDA",
+  answered_at: "2026-05-18T12:00:00.000Z",
+  answered_by_user: {
+    id: 1,
+    name: "Administrador",
+    email: "admin@fatec.sp.gov.br",
+    role: "ADMIN",
+  },
+  created_at: "2026-05-18T11:00:00.000Z",
+  updated_at: "2026-05-18T12:00:00.000Z",
+});
+const resetMock = vi.fn();
+
+const createUseTicketsResult = (
+  overrides: Partial<ReturnType<typeof useTickets>> = {},
+): ReturnType<typeof useTickets> => ({
+  items: [],
+  meta: {
+    total: 0,
+    page: 1,
+    limit: 20,
+  },
+  isLoading: false,
+  isFetching: false,
+  isError: false,
+  error: null,
+  refetch: refetchMock,
+  ...overrides,
+});
+
+const createUseUpdateTicketResult = (
+  overrides: Partial<ReturnType<typeof useUpdateTicket>> = {},
+): ReturnType<typeof useUpdateTicket> => ({
+  mutateAsync: mutateAsyncMock,
+  mutate: vi.fn(),
+  isPending: false,
+  isError: false,
+  error: null,
+  reset: resetMock,
+  variables: undefined,
+  data: undefined,
+  status: "idle",
+  failureCount: 0,
+  failureReason: null,
+  isPaused: false,
+  submittedAt: 0,
+  isIdle: true,
+  isSuccess: false,
+  context: undefined,
+  ...overrides,
+}) as unknown as ReturnType<typeof useUpdateTicket>;
+
+describe("TicketList", () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("mostra loading enquanto carrega a listagem", () => {
+    vi.mocked(useTickets).mockReturnValue(
+      createUseTicketsResult({
+        isLoading: true,
+      }),
+    );
+    vi.mocked(useUpdateTicket).mockReturnValue(
+      createUseUpdateTicketResult(),
+    );
+
+    render(<TicketList />);
+
+    expect(screen.getByText("Carregando tickets...")).not.toBeNull();
+  });
+
+  it("renderiza tickets, permite busca e atualiza status", async () => {
+    const user = userEvent.setup();
+
+    vi.mocked(useTickets).mockReturnValue(
+      createUseTicketsResult({
+        items: [
+          {
+            id: 21,
+            requester_name: "Aluno A",
+            requester_email: "aluno.a@fatec.sp.gov.br",
+            question: "Preciso do calendario do semestre.",
+            session_log_id: 9,
+            attachment_name: "calendario.pdf",
+            attachment_mime_type: "application/pdf",
+            attachment_size_bytes: 2048,
+            has_attachment: true,
+            status: "ABERTA",
+            answered_at: null,
+            answered_by_user: null,
+            created_at: "2026-05-18T11:00:00.000Z",
+            updated_at: "2026-05-18T11:00:00.000Z",
+          },
+          {
+            id: 22,
+            requester_name: "Aluno B",
+            requester_email: "aluno.b@fatec.sp.gov.br",
+            question: "Minha AACC ja foi validada?",
+            session_log_id: null,
+            attachment_name: null,
+            attachment_mime_type: null,
+            attachment_size_bytes: null,
+            has_attachment: false,
+            status: "RESPONDIDA",
+            answered_at: "2026-05-17T08:15:00.000Z",
+            answered_by_user: {
+              id: 1,
+              name: "Administrador",
+              email: "admin@fatec.sp.gov.br",
+              role: "ADMIN",
+            },
+            created_at: "2026-05-16T10:30:00.000Z",
+            updated_at: "2026-05-17T08:15:00.000Z",
+          },
+        ],
+        meta: {
+          total: 2,
+          page: 1,
+          limit: 20,
+        },
+      }),
+    );
+    vi.mocked(useUpdateTicket).mockReturnValue(
+      createUseUpdateTicketResult(),
+    );
+
+    render(<TicketList />);
+
+    expect(screen.getByText("Aluno A")).not.toBeNull();
+    expect(screen.getByText("Sessao vinculada: #9")).not.toBeNull();
+    expect(screen.getByText("calendario.pdf")).not.toBeNull();
+    expect(screen.getByText("Aberto")).not.toBeNull();
+    expect(screen.getByText("Respondido")).not.toBeNull();
+    expect(
+      screen.getByText(/Respondido por Administrador \(Administrador\)/i),
+    ).not.toBeNull();
+    expect(screen.getByText("Responsavel")).not.toBeNull();
+
+    await user.type(
+      screen.getByPlaceholderText(/buscar por nome, email ou conteudo/i),
+      "AACC",
+    );
+
+    expect(screen.queryByText("Aluno A")).toBeNull();
+    expect(screen.getByText("Aluno B")).not.toBeNull();
+
+    await user.clear(
+      screen.getByPlaceholderText(/buscar por nome, email ou conteudo/i),
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: /marcar respondido/i }),
+    );
+
+    expect(mutateAsyncMock).toHaveBeenCalledWith({
+      id: 21,
+      status: "RESPONDIDA",
+    });
+  });
+
+  it("abre o anexo quando disponivel", async () => {
+    const user = userEvent.setup();
+
+    vi.mocked(useTickets).mockReturnValue(
+      createUseTicketsResult({
+        items: [
+          {
+            id: 30,
+            requester_name: "Aluno D",
+            requester_email: "aluno.d@fatec.sp.gov.br",
+            question: "Enviei meu comprovante.",
+            session_log_id: 4,
+            attachment_name: "comprovante.pdf",
+            attachment_mime_type: "application/pdf",
+            attachment_size_bytes: 1024,
+            has_attachment: true,
+            status: "ABERTA",
+            answered_at: null,
+            answered_by_user: null,
+            created_at: "2026-05-18T11:00:00.000Z",
+            updated_at: "2026-05-18T11:00:00.000Z",
+          },
+        ],
+        meta: {
+          total: 1,
+          page: 1,
+          limit: 20,
+        },
+      }),
+    );
+    vi.mocked(useUpdateTicket).mockReturnValue(createUseUpdateTicketResult());
+
+    Object.defineProperty(URL, "createObjectURL", {
+      writable: true,
+      value: vi.fn(() => "blob:ticket"),
+    });
+    Object.defineProperty(URL, "revokeObjectURL", {
+      writable: true,
+      value: vi.fn(),
+    });
+    const openSpy = vi.spyOn(window, "open").mockReturnValue(null);
+    render(<TicketList />);
+
+    await user.click(screen.getByRole("button", { name: /abrir anexo/i }));
+
+    expect(vi.mocked(ticketsApi.downloadAttachment)).toHaveBeenCalledWith(30);
+    expect(openSpy).toHaveBeenCalledTimes(1);
+    openSpy.mockRestore();
+  });
+
+  it("mostra fallback claro para tickets respondidos antes da auditoria", () => {
+    vi.mocked(useTickets).mockReturnValue(
+      createUseTicketsResult({
+        items: [
+          {
+            id: 31,
+            requester_name: "Aluno Legado",
+            requester_email: "legado@fatec.sp.gov.br",
+            question: "Ticket respondido antes da feature.",
+            session_log_id: null,
+            attachment_name: null,
+            attachment_mime_type: null,
+            attachment_size_bytes: null,
+            has_attachment: false,
+            status: "RESPONDIDA",
+            answered_at: null,
+            answered_by_user: null,
+            created_at: "2026-05-10T11:00:00.000Z",
+            updated_at: "2026-05-10T12:00:00.000Z",
+          },
+        ],
+        meta: {
+          total: 1,
+          page: 1,
+          limit: 20,
+        },
+      }),
+    );
+    vi.mocked(useUpdateTicket).mockReturnValue(createUseUpdateTicketResult());
+
+    render(<TicketList />);
+
+    expect(
+      screen.getByText(/Respondido antes da auditoria de responsavel/i),
+    ).not.toBeNull();
+  });
+
+  it("troca filtro e pagina usando os parametros do hook", async () => {
+    const user = userEvent.setup();
+
+    vi.mocked(useTickets).mockReturnValue(createUseTicketsResult());
+    vi.mocked(useUpdateTicket).mockReturnValue(
+      createUseUpdateTicketResult(),
+    );
+
+    const view = render(<TicketList />);
+
+    expect(vi.mocked(useTickets)).toHaveBeenLastCalledWith({
+      status: undefined,
+      page: 1,
+      limit: 20,
+    });
+
+    await user.click(screen.getByRole("button", { name: /abertos/i }));
+
+    expect(vi.mocked(useTickets)).toHaveBeenLastCalledWith({
+      status: "ABERTA",
+      page: 1,
+      limit: 20,
+    });
+
+    vi.mocked(useTickets).mockReturnValue(
+      createUseTicketsResult({
+        meta: {
+          total: 40,
+          page: 1,
+          limit: 20,
+        },
+      }),
+    );
+
+    view.rerender(<TicketList />);
+
+    await user.click(screen.getByRole("button", { name: /proxima/i }));
+
+    expect(vi.mocked(useTickets)).toHaveBeenLastCalledWith({
+      status: "ABERTA",
+      page: 2,
+      limit: 20,
+    });
+  });
+
+  it("mostra erro da query com opcao de tentar novamente", async () => {
+    const user = userEvent.setup();
+
+    vi.mocked(useTickets).mockReturnValue(
+      createUseTicketsResult({
+        isError: true,
+        error: new Error("Falha ao consultar tickets"),
+      }),
+    );
+    vi.mocked(useUpdateTicket).mockReturnValue(
+      createUseUpdateTicketResult(),
+    );
+
+    render(<TicketList />);
+
+    expect(screen.getByText("Erro ao carregar tickets")).not.toBeNull();
+    expect(screen.getByText("Falha ao consultar tickets")).not.toBeNull();
+
+    await user.click(screen.getByRole("button", { name: /tentar novamente/i }));
+
+    expect(refetchMock).toHaveBeenCalledTimes(1);
+  });
+});

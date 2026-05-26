@@ -197,18 +197,22 @@ RF:
 ### Nomenclatura de rotas da API
 
 ```
-GET    /api/v1/nodes              → listar nós raiz
-GET    /api/v1/nodes/:id          → buscar nó por ID (com filhos)
+GET    /api/v1/nodes/root         → listar nós raiz para o chatbot público
+GET    /api/v1/nodes/:id          → buscar nó por ID (com filhos) no chatbot público
+GET    /api/v1/nodes              → listar nós no painel administrativo
 POST   /api/v1/nodes              → criar nó
 PATCH  /api/v1/nodes/:id          → atualizar nó
 DELETE /api/v1/nodes/:id          → remover nó
+GET    /api/v1/nodes/:id/evidence → baixar PDF de evidência do nó
 
 POST   /api/v1/auth/login         → autenticar usuário
 POST   /api/v1/questions          → enviar pergunta à secretaria
 GET    /api/v1/questions          → listar perguntas (secretária)
 PATCH  /api/v1/questions/:id      → atualizar status da pergunta
+GET    /api/v1/questions/:id/attachment → baixar anexo da pergunta
 
 GET    /api/v1/logs               → listar logs (admin)
+GET    /api/v1/dashboard/metrics  → métricas do painel
 POST   /api/v1/sessions/log       → registrar log de sessão e satisfação
 ```
 
@@ -440,6 +444,7 @@ import { z } from "zod";
 const envSchema = z.object({
   VITE_API_URL: z.string().url(),
   VITE_ENABLE_DEVTOOLS: z.string().default("false"),
+  VITE_USE_MOCKS: z.string().default("false"),
 });
 
 export const env = envSchema.parse(import.meta.env);
@@ -457,7 +462,12 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url(),
   JWT_SECRET: z.string().min(32, "JWT_SECRET deve ter no mínimo 32 caracteres"),
   JWT_EXPIRES_IN: z.string().default("8h"),
+  NODE_EVIDENCE_DIR: z.string().min(1).optional(),
+  QUESTION_ATTACHMENT_DIR: z.string().min(1).optional(),
   PORT: z.coerce.number().default(3333),
+  ARGON2_MEMORY_COST: z.coerce.number().int().min(8192).default(65536),
+  ARGON2_TIME_COST: z.coerce.number().int().min(1).default(3),
+  ARGON2_PARALLELISM: z.coerce.number().int().min(1).default(1),
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),

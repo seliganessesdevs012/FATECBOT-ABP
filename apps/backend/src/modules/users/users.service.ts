@@ -13,9 +13,8 @@ export class UsersService {
     const { skip, take, page, limit } = paginate(query as { page?: unknown; limit?: unknown });
 
     const [total, users] = await Promise.all([
-      db.user.count({ where: { role: "SECRETARIA" } }),
+      db.user.count(),
       db.user.findMany({
-        where: { role: "SECRETARIA" },
         skip,
         take,
         orderBy: { created_at: "desc" },
@@ -48,10 +47,6 @@ export class UsersService {
   }
 
   async createUser(dto: CreateUserDTO): Promise<UserResponseDTO> {
-    if (dto.role !== "SECRETARIA") {
-      throw new AppError("Role invalida para criacao de usuario", 400);
-    }
-
     const passwordHash = await hashPassword(dto.password);
 
     const user = await db.user.create({
@@ -59,7 +54,7 @@ export class UsersService {
         name: dto.name,
         email: dto.email,
         password_hash: passwordHash,
-        role: "SECRETARIA",
+        role: dto.role,
       },
       select: {
         id: true,

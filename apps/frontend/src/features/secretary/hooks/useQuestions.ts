@@ -1,61 +1,43 @@
-import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { questionsApi } from '@/features/secretary/api/questions.api';
-import type { PaginatedResponse } from '@/types/api.types';
-import type { QuestionResponseDTO } from '@/features/secretary/types/questions.types';
-import type { InquiryStatus } from '@/types/common.types';
+import { useQuery } from "@tanstack/react-query";
 
-export type ListParams = { status?: InquiryStatus; limit?: number };
+import { questionsApi } from "@/features/secretary/api/questions.api";
+import type { InquiryStatus } from "@/types/common.types";
+
+import type { QuestionResponseDTO } from "../types/questions.types";
+
+export type ListParams = {
+  status?: InquiryStatus;
+  page?: number;
+  limit?: number;
+};
+
+const QUESTIONS_QUERY_KEY = ["questions"] as const;
 
 export function useQuestions(params?: ListParams) {
-  const queryClient = useQueryClient();
-  const limit = params?.limit ?? 10;
+  const page = params?.page ?? 1;
+  const limit = params?.limit ?? 20;
   const status = params?.status;
+  const queryKey = [...QUESTIONS_QUERY_KEY, { status, page, limit }] as const;
 
-  const queryKey = ['questions', { status, limit }];
-
-  const query = useInfiniteQuery<PaginatedResponse<QuestionResponseDTO>>(
+  const query = useQuery({
     queryKey,
-    async ({ pageParam = 1 }) => {
-      return questionsApi.list({ status, page: pageParam, limit });
-    },
-    {
-      getNextPageParam: (lastPage) => {
-        // assume meta: { page, lastPage }
-        const meta = (lastPage as any).meta;
-        if (!meta) return undefined;
-        return meta.page < meta.lastPage ? meta.page + 1 : undefined;
-      },
-      keepPreviousData: true,
-      staleTime: 1000 * 30,
-    }
-  );
-
-  const updateStatusMutation = useMutation(
-    async ({ id, status }: { id: number; status: InquiryStatus }) =>
-      questionsApi.updateStatus(id, status),
-    {
-      onSuccess: () => {
-        // Invalidate queries so UI refetches updated list
-        queryClient.invalidateQueries(queryKey);
-        queryClient.invalidateQueries(['questions']); // broader invalidate
-      },
-    }
-  );
-
-  const items = query.data?.pages.flatMap(p => (p as any).data ?? []) ?? [];
+    queryFn: () => questionsApi.list({ status, page, limit }),
+    staleTime: 1000 * 30,
+  });
 
   return {
-    items,
+    items: query.data?.data ?? ([] as QuestionResponseDTO[]),
+    meta: query.data?.meta ?? {
+      total: 0,
+      page,
+      limit,
+    },
     isLoading: query.isLoading,
     isFetching: query.isFetching,
-    isFetchingNextPage: query.isFetchingNextPage,
-    fetchNextPage: query.fetchNextPage,
-    hasNextPage: query.hasNextPage,
+    isError: query.isError,
+    error: query.error,
     refetch: query.refetch,
-    updateStatus: updateStatusMutation.mutateAsync,
-    updateStatusState: {
-      isLoading: updateStatusMutation.isLoading,
-      isError: updateStatusMutation.isError,
-    },
   };
 }
+
+export { QUESTIONS_QUERY_KEY };
