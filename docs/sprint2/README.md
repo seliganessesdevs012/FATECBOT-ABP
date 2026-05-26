@@ -12,7 +12,7 @@
 
 **Link do Burndown da Sprint 2:** [Link Google](https://docs.google.com/spreadsheets/d/1pSj-2_RsHqxcnypaDYe_PIhw74WJXMK6gi8MiMOZ4MY/edit?gid=1935655043#gid=1935655043)
 
-🎥 **Video de demonstracao da Sprint 2:** [Assistir no YouTube/Drive](https://youtu.be/SEU_ID)
+🎥 **Video de demonstracao da Sprint 2:** [Assistir no YouTube/Drive](https://youtu.be/fDr28T7cGzc)
 
 ***
 
