@@ -93,18 +93,17 @@ referência operacional daquela sprint.
 
 ## 📐 Diagrama de Casos de Uso
 
-- [Arquivo editável (.asta)](uml/casos-de-uso.asta)
-
 ![Diagrama de Casos de Uso](uml/casos-de-uso.jpg)
+
+- [Arquivo editável (.asta)](uml/casos-de-uso.asta)
 
 ---
 
 ## 📐 Diagrama de Classe
 
-- [Arquivo editável (.asta)](uml/casos-de-classe.asta)
-
 ![Diagrama de Classe](uml/diagrama-de-classe.jpg)
 
+- [Arquivo editável (.asta)](uml/casos-de-classe.asta)
 ---
 
 
@@ -112,14 +111,16 @@ referência operacional daquela sprint.
 
 ![Modelo Relacional](bd/Modelagem-Banco-Dados.jpeg)
 
-![Modelo do DBDesigner](bd/modelagem-banco-dados.xml)
+- [Modelo do DBDesigner](bd/modelagem-banco-dados.xml)
 
 
 ---
 
 ## 📄 Documentação de Testes <a id="documento-teste"></a>
 
-![Testes de navegação do chatbot](https://docs.google.com/document/d/1BneZiRN3zZgkRhjiEBJm2Aukdc_H8ZFYlHdnDEa4l1U/edit?usp=sharing)
+- [Testes de navegação do chatbot](./documento-de-teste.pdf)
+
+
 
 
 ---
