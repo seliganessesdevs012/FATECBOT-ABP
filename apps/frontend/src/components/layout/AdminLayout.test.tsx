@@ -104,6 +104,58 @@ describe("AdminLayout", () => {
     expect(screen.getAllByText("Disponivel em sprint futura")).toHaveLength(1);
   });
 
+  it("oculta itens restritos para secretaria no painel compartilhado", () => {
+    const state = createMockAuthState({
+      user: {
+        id: 2,
+        name: "Sara Secretaria",
+        email: "secretaria@fatec.sp.gov.br",
+        role: "SECRETARIA",
+      },
+    });
+    const shellState = createMockAdminShellState();
+
+    vi.mocked(useAuthStore).mockImplementation(
+      (selector?: (store: MockAuthState) => unknown) =>
+        selector ? selector(state) : state,
+    );
+    vi.mocked(useAdminShellStore).mockImplementation(
+      (selector?: (store: MockAdminShellState) => unknown) =>
+        selector ? selector(shellState) : shellState,
+    );
+
+    render(
+      <MemoryRouter initialEntries={["/admin"]}>
+        <Routes>
+          <Route
+            path="/admin"
+            element={
+              <AdminLayout title="Painel administrativo">
+                <div>Conteudo protegido</div>
+              </AdminLayout>
+            }
+          />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(
+      screen.getByRole("link", { name: /dashboard/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /tickets/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /historico/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /^care$/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /^usuarios$/i }),
+    ).not.toBeInTheDocument();
+  });
+
   it("encerra a sessao e navega para login ao clicar em sair", async () => {
     const user = userEvent.setup();
     const clearAuth = vi.fn();

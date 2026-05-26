@@ -332,7 +332,13 @@ let mockQuestions: QuestionResponseDTO[] = [
     requester_email: "aluno.a@fatec.sp.gov.br",
     question: "Quais documentos preciso para pedir aproveitamento?",
     session_log_id: 2,
+    attachment_name: "requerimento-aproveitamento.pdf",
+    attachment_mime_type: "application/pdf",
+    attachment_size_bytes: 184320,
+    has_attachment: true,
     status: "ABERTA",
+    answered_at: null,
+    answered_by_user: null,
     created_at: "2026-05-18T11:00:00.000Z",
     updated_at: "2026-05-18T11:00:00.000Z",
   },
@@ -342,7 +348,13 @@ let mockQuestions: QuestionResponseDTO[] = [
     requester_email: "aluno.b@fatec.sp.gov.br",
     question: "Como validar minhas AACC?",
     session_log_id: 5,
+    attachment_name: null,
+    attachment_mime_type: null,
+    attachment_size_bytes: null,
+    has_attachment: false,
     status: "ABERTA",
+    answered_at: null,
+    answered_by_user: null,
     created_at: "2026-05-17T15:40:00.000Z",
     updated_at: "2026-05-17T15:40:00.000Z",
   },
@@ -352,7 +364,18 @@ let mockQuestions: QuestionResponseDTO[] = [
     requester_email: "aluno.c@fatec.sp.gov.br",
     question: "Onde encontro o calendario do semestre?",
     session_log_id: 7,
+    attachment_name: "comprovante-calendario.png",
+    attachment_mime_type: "image/png",
+    attachment_size_bytes: 93211,
+    has_attachment: true,
     status: "RESPONDIDA",
+    answered_at: "2026-05-16T08:30:00.000Z",
+    answered_by_user: {
+      id: 1,
+      name: "Administrador",
+      email: "admin@fatec.sp.gov.br",
+      role: "ADMIN",
+    },
     created_at: "2026-05-15T10:15:00.000Z",
     updated_at: "2026-05-16T08:30:00.000Z",
   },
@@ -754,6 +777,16 @@ export const mockBackend = {
       const updatedQuestion = {
         ...current,
         status,
+        answered_at: status === "RESPONDIDA" ? new Date().toISOString() : null,
+        answered_by_user:
+          status === "RESPONDIDA"
+            ? {
+                id: mockAdminUser.id,
+                name: mockAdminUser.name,
+                email: mockAdminUser.email,
+                role: mockAdminUser.role,
+              }
+            : null,
         updated_at: new Date().toISOString(),
       };
 
@@ -762,6 +795,23 @@ export const mockBackend = {
       );
 
       return updatedQuestion;
+    },
+
+    async downloadAttachment(id: number): Promise<Blob> {
+      await wait();
+
+      const current = mockQuestions.find(question => question.id === id);
+
+      if (!current?.has_attachment) {
+        throw new Error("Esta pergunta nao possui anexo.");
+      }
+
+      return new Blob(
+        [`Mock attachment for question ${id}: ${current.attachment_name ?? "anexo"}`],
+        {
+          type: current.attachment_mime_type ?? "application/octet-stream",
+        },
+      );
     },
   },
 

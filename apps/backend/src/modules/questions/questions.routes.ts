@@ -2,7 +2,7 @@ import { QuestionsController } from "./questions.controller";
 import { NextFunction, Request, Response, Router } from "express";
 import { authenticate } from "../../middlewares/auth.middleware";
 import { authorize } from "../../middlewares/rbac.middleware";
-import {z } from "zod";
+import { z } from "zod";
 
 const router: Router = Router();
 const controller = new QuestionsController();
@@ -56,7 +56,9 @@ function validateUpdateStatus(req: Request, _res: Response, next: NextFunction) 
 }
 
 
-   router.post("/", validateCreateQuestion, (req, res, next) => controller.createQuestion(req, res, next));
+router.post("/", validateCreateQuestion, (req, res, next) =>
+  controller.createQuestion(req, res, next),
+);
 
 router.get(
   "/",
@@ -66,6 +68,13 @@ router.get(
   (req, res, next) => controller.listQuestions(req, res, next),
 );
 
+router.get(
+  "/:id/attachment",
+  authenticate,
+  authorize("SECRETARIA", "ADMIN"),
+  (req, res, next) => controller.downloadAttachment(req, res, next),
+);
+
 router.patch(
   "/:id",
   authenticate,
@@ -73,4 +82,5 @@ router.patch(
   validateUpdateStatus,
   (req, res, next) => controller.updateStatus(req, res, next),
 );
-    export default router;
+
+export default router;

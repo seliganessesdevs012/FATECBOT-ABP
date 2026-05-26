@@ -6,6 +6,7 @@ export default function AdminLogsPage() {
     <AdminLayout
       title="Historico de atendimentos"
       description="Visualize o fluxo percorrido nas sessoes, a satisfacao registrada e as perguntas vinculadas."
+      hidePageHeader
     >
       <LogTable />
     </AdminLayout>

@@ -24,6 +24,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:?JWT_EXPIRES_IN is required}
       NODE_EVIDENCE_DIR: /app/runtime-storage/node-evidence
+      QUESTION_ATTACHMENT_DIR: /app/runtime-storage/question-attachments
       PORT: ${PORT:-3000}
       NODE_ENV: ${NODE_ENV:-development}
     ports:

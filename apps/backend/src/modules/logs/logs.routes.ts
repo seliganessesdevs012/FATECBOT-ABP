@@ -30,7 +30,7 @@ function validateLogsQuery(req: Request, _res: Response, next: NextFunction) {
   }
 }
 router.use(authenticate);
-router.use(authorize("ADMIN"));
+router.use(authorize("ADMIN", "SECRETARIA"));
 
 router.get("/", validateLogsQuery, (req, res, next) => controller.getLogs(req, res, next));
 

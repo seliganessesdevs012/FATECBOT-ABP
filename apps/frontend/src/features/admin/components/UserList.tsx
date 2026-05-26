@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { isAxiosError } from "axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ErrorAlert } from "@/components/shared/ErrorAlert";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
+import {
+  PanelEmptyState,
+  PanelPageIntro,
+  PanelSectionCard,
+  PanelStatCard,
+  PanelTableCard,
+} from "@/components/shared/panel/PanelScaffold";
+import { ShieldCheck, Users } from "lucide-react";
+import { getApiErrorMessage } from "@/lib/api-feedback";
 import { cn } from "@/lib/utils";
 import { formatDateTime } from "@/utils/date.utils";
 
@@ -37,29 +45,12 @@ export interface UserListProps {
   className?: string;
 }
 
-const getErrorMessage = (error: unknown, fallback: string): string => {
-  if (isAxiosError(error)) {
-    const data = error.response?.data;
-    if (data && typeof data === "object" && "message" in data) {
-      const message = data.message;
-      if (typeof message === "string" && message.trim().length > 0) {
-        return message;
-      }
-    }
-  }
-
-  if (error instanceof Error && error.message.trim().length > 0) {
-    return error.message;
-  }
-
-  return fallback;
-};
-
 const UserList = ({ className }: UserListProps) => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("ALL");
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const listQuery = useQuery({
@@ -87,6 +78,7 @@ const UserList = ({ className }: UserListProps) => {
       queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY });
       reset();
       setIsCreateOpen(false);
+      setSuccessMessage("Novo acesso interno criado com sucesso.");
     },
   });
 
@@ -94,6 +86,7 @@ const UserList = ({ className }: UserListProps) => {
     mutationFn: usersApi.remove,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY });
+      setSuccessMessage("Usuario removido com sucesso.");
     },
     onSettled: () => {
       setDeletingId(null);
@@ -115,13 +108,13 @@ const UserList = ({ className }: UserListProps) => {
   const isCreateBusy = createUserMutation.isPending;
 
   const createErrorMessage = createUserMutation.isError
-    ? getErrorMessage(
+    ? getApiErrorMessage(
         createUserMutation.error,
         "Nao foi possivel criar usuario.",
       )
     : null;
   const deleteErrorMessage = deleteUserMutation.isError
-    ? getErrorMessage(
+    ? getApiErrorMessage(
         deleteUserMutation.error,
         "Nao foi possivel remover usuario.",
       )
@@ -167,7 +160,7 @@ const UserList = ({ className }: UserListProps) => {
     return (
       <ErrorAlert
         title="Erro ao carregar usuarios"
-        message={getErrorMessage(listQuery.error, "Tente novamente.")}
+        message={getApiErrorMessage(listQuery.error, "Tente novamente.")}
         onRetry={() => listQuery.refetch()}
       />
     );
@@ -175,59 +168,78 @@ const UserList = ({ className }: UserListProps) => {
 
   return (
     <section className={cn("space-y-4", className)}>
-      <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-foreground">
-            Usuarios internos
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Exibindo {filteredUsers.length} de {total} usuarios
-          </p>
-        </div>
-        <Button type="button" onClick={() => setIsCreateOpen(true)}>
-          Novo acesso
-        </Button>
-      </header>
-
-      <div className="rounded-lg border border-border bg-card p-4">
-        <div className="grid gap-3 md:grid-cols-[minmax(0,1.8fr)_220px_auto] md:items-end">
-          <div className="space-y-1">
-            <Label htmlFor="users-search">Buscar</Label>
-            <Input
-              id="users-search"
-              type="search"
-              placeholder="Buscar por nome ou email"
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
+      <PanelPageIntro
+        icon={Users}
+        badge="Acessos internos"
+        title="Usuarios do painel"
+        description="Gerencie quem pode acessar o painel administrativo e operacional, mantendo controle entre perfis de secretaria e administracao."
+        aside={
+          <>
+            <PanelStatCard label="Usuarios exibidos" value={filteredUsers.length} supportingText={`Base atual: ${total} cadastro(s)`} />
+            <PanelStatCard
+              label="Administracao"
+              value={users.filter(user => user.role === "ADMIN").length}
+              supportingText={`Secretarias: ${users.filter(user => user.role === "SECRETARIA").length}`}
             />
-          </div>
+          </>
+        }
+      />
 
-          <div className="space-y-1">
-            <Label htmlFor="users-role-filter">Perfil</Label>
-            <select
-              id="users-role-filter"
-              value={roleFilter}
-              onChange={(event) =>
-                setRoleFilter(event.target.value as RoleFilter)
-              }
-              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+      <PanelSectionCard>
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div className="grid gap-3 md:flex-1 md:grid-cols-[minmax(0,1.8fr)_220px_auto] md:items-end">
+            <div className="space-y-1">
+              <Label htmlFor="users-search">Buscar</Label>
+              <Input
+                id="users-search"
+                type="search"
+                placeholder="Buscar por nome ou email"
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="users-role-filter">Perfil</Label>
+              <select
+                id="users-role-filter"
+                value={roleFilter}
+                onChange={(event) =>
+                  setRoleFilter(event.target.value as RoleFilter)
+                }
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              >
+                <option value="ALL">Todos</option>
+                <option value="ADMIN">Admin</option>
+                <option value="SECRETARIA">Secretaria</option>
+              </select>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={clearFilters}
+              disabled={searchTerm.length === 0 && roleFilter === "ALL"}
             >
-              <option value="ALL">Todos</option>
-              <option value="ADMIN">Admin</option>
-              <option value="SECRETARIA">Secretaria</option>
-            </select>
+              Limpar filtros
+            </Button>
           </div>
 
-          <Button
-            type="button"
-            variant="outline"
-            onClick={clearFilters}
-            disabled={searchTerm.length === 0 && roleFilter === "ALL"}
-          >
-            Limpar filtros
+          <Button type="button" onClick={() => setIsCreateOpen(true)}>
+            Novo acesso
           </Button>
         </div>
-      </div>
+      </PanelSectionCard>
+
+      {successMessage ? (
+        <ErrorAlert
+          variant="info"
+          title="Usuarios atualizados"
+          message={successMessage}
+          dismissible
+          onDismiss={() => setSuccessMessage(null)}
+        />
+      ) : null}
 
       {createErrorMessage ? (
         <ErrorAlert
@@ -248,40 +260,43 @@ const UserList = ({ className }: UserListProps) => {
       ) : null}
 
       {filteredUsers.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border bg-muted/20 px-6 py-10 text-center text-sm text-muted-foreground">
-          {users.length === 0
-            ? "Nenhum usuario cadastrado ate o momento."
-            : "Nenhum usuario corresponde aos filtros aplicados."}
-        </div>
+        <PanelEmptyState
+          title={
+            users.length === 0
+              ? "Nenhum usuario cadastrado ate o momento."
+              : "Nenhum usuario corresponde aos filtros aplicados."
+          }
+          description="Ajuste os filtros ou crie um novo acesso interno para continuar."
+        />
       ) : (
-        <div className="overflow-hidden rounded-lg border border-border bg-card">
+        <PanelTableCard>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-[var(--brand-secondary-soft)] text-xs uppercase text-[var(--brand-secondary)]">
+              <thead className="bg-[var(--brand-secondary-soft)] text-xs uppercase tracking-[0.12em] text-[var(--brand-secondary)]">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium">Nome</th>
                   <th className="px-4 py-3 text-left font-medium">Email</th>
-                  <th className="px-4 py-3 text-left font-medium">Role</th>
+                  <th className="px-4 py-3 text-left font-medium">Perfil</th>
                   <th className="px-4 py-3 text-left font-medium">Criado em</th>
                   <th className="px-4 py-3 text-right font-medium">Acoes</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-[#EFE5D9]">
                 {filteredUsers.map((user) => (
                   <tr
                     key={user.id}
-                    className="transition-colors hover:bg-muted/30"
+                    className="transition-colors hover:bg-[#FFF9F0]"
                   >
-                    <td className="px-4 py-3 font-medium text-foreground">
+                    <td className="px-4 py-3 font-medium text-[#1C262E]">
                       {user.name}
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {user.email}
+                    <td className="px-4 py-3 text-[#6E6252]">{user.email}</td>
+                    <td className="px-4 py-3">
+                      <span className="inline-flex rounded-full bg-[#FCF8F2] px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--brand-secondary)]">
+                        {user.role}
+                      </span>
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {user.role}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
+                    <td className="px-4 py-3 text-[#6E6252]">
                       {formatDateTime(user.created_at)}
                     </td>
                     <td className="px-4 py-3 text-right">
@@ -304,7 +319,7 @@ const UserList = ({ className }: UserListProps) => {
               </tbody>
             </table>
           </div>
-        </div>
+        </PanelTableCard>
       )}
 
       {isCreateOpen ? (
@@ -313,13 +328,17 @@ const UserList = ({ className }: UserListProps) => {
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-lg rounded-lg bg-background p-6 shadow-lg">
+          <div className="w-full max-w-lg rounded-[28px] border border-[#E3D8CA] bg-white p-6 shadow-[0_20px_45px_rgba(76,56,24,0.16)]">
             <div className="flex items-start justify-between">
               <div className="space-y-1">
-                <h3 className="text-lg font-semibold text-foreground">
+                <div className="inline-flex items-center gap-2 rounded-full bg-[#F6EFE4] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#7A6548]">
+                  <ShieldCheck className="size-3.5" aria-hidden="true" />
+                  Novo acesso
+                </div>
+                <h3 className="text-lg font-semibold text-[#1C262E]">
                   Criar acesso interno
                 </h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-[#6E6252]">
                   Escolha se o novo acesso sera administrativo ou operacional.
                 </p>
               </div>

@@ -9,6 +9,13 @@ import AdminUsersPage from "./routes/admin/users";
 import SecretaryPage from "./routes/secretary";
 import { ProtectedRoute } from "../components/shared/ProtectedRoute";
 import { RoleGuard } from "../components/shared/RoleGuard";
+import {
+  ADMIN_ONLY_ROLES,
+  LEGACY_SECRETARY_PATH,
+  PANEL_HOME_PATH,
+  PANEL_ROUTE_PATHS,
+  SHARED_PANEL_ROLES,
+} from "@/features/admin/config/panel-access";
 
 export const router = createBrowserRouter([
   {
@@ -23,49 +30,49 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute />, // Protege todas as rotas filhas
     children: [
       {
-        path: "/admin",
+        path: PANEL_HOME_PATH,
         element: (
-          <RoleGuard allowedRoles={["ADMIN"]}>
+          <RoleGuard allowedRoles={SHARED_PANEL_ROLES}>
             <AdminPage />
           </RoleGuard>
         ),
       },
       {
-        path: "/admin/nodes",
+        path: PANEL_ROUTE_PATHS.nodes,
         element: (
-          <RoleGuard allowedRoles={["ADMIN"]}>
+          <RoleGuard allowedRoles={ADMIN_ONLY_ROLES}>
             <AdminNodesPage />
           </RoleGuard>
         ),
       },
       {
-        path: "/admin/users",
+        path: PANEL_ROUTE_PATHS.users,
         element: (
-          <RoleGuard allowedRoles={["ADMIN"]}>
+          <RoleGuard allowedRoles={ADMIN_ONLY_ROLES}>
             <AdminUsersPage />
           </RoleGuard>
         ),
       },
       {
-        path: "/admin/tickets",
+        path: PANEL_ROUTE_PATHS.tickets,
         element: (
-          <RoleGuard allowedRoles={["ADMIN"]}>
+          <RoleGuard allowedRoles={SHARED_PANEL_ROLES}>
             <AdminTicketsPage />
           </RoleGuard>
         ),
       },
       {
-        path: "/admin/logs",
+        path: PANEL_ROUTE_PATHS.logs,
         element: (
-          <RoleGuard allowedRoles={["ADMIN"]}>
+          <RoleGuard allowedRoles={SHARED_PANEL_ROLES}>
             <AdminLogsPage />
           </RoleGuard>
         ),
       },
       {
-        path: "/secretary",
+        path: LEGACY_SECRETARY_PATH,
         element: (
-          <RoleGuard allowedRoles={["SECRETARIA"]}>
+          <RoleGuard allowedRoles={SHARED_PANEL_ROLES}>
             <SecretaryPage />
           </RoleGuard>
         ),

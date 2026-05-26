@@ -77,17 +77,18 @@ describe("RoleGuard", () => {
     );
 
     render(
-      <MemoryRouter initialEntries={["/admin"]}>
+      <MemoryRouter initialEntries={["/admin/users"]}>
         <Routes>
+          <Route path="/admin" element={<div>Painel compartilhado</div>} />
           <Route path="/" element={<div>Pagina Inicial</div>} />
           <Route element={<RoleGuard allowedRoles={["ADMIN"]} />}>
-            <Route path="/admin" element={<div>Painel Admin</div>} />
+            <Route path="/admin/users" element={<div>Gestao de usuarios</div>} />
           </Route>
         </Routes>
       </MemoryRouter>,
     );
 
-    expect(screen.getByText("Pagina Inicial")).toBeInTheDocument();
-    expect(screen.queryByText("Painel Admin")).not.toBeInTheDocument();
+    expect(screen.getByText("Painel compartilhado")).toBeInTheDocument();
+    expect(screen.queryByText("Gestao de usuarios")).not.toBeInTheDocument();
   });
 });

@@ -6,6 +6,7 @@ export default function AdminUsersPage() {
     <AdminLayout
       title="Usuarios internos"
       description="Gerencie os acessos internos de admin e secretaria em uma unica tabela."
+      hidePageHeader
     >
       <UserList />
     </AdminLayout>
