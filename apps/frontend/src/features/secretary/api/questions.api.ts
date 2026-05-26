@@ -25,4 +25,16 @@ export const questionsApi = {
     const response = await api.patch<{ success: boolean; data: QuestionResponseDTO }>(`/questions/${id}`, { status });
     return response.data.data;
   },
+
+  async downloadAttachment(id: number): Promise<Blob> {
+    if (env.VITE_USE_MOCKS === "true") {
+      return mockBackend.questions.downloadAttachment(id);
+    }
+
+    const response = await api.get<Blob>(`/questions/${id}/attachment`, {
+      responseType: "blob",
+    });
+
+    return response.data;
+  },
 };

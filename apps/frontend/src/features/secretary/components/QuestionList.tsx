@@ -1,18 +1,35 @@
 import { useMemo, useState } from "react";
-import { isAxiosError } from "axios";
-import { CheckCheck, Filter, Mail, MessageSquareText } from "lucide-react";
+import {
+  CheckCheck,
+  ExternalLink,
+  Filter,
+  Mail,
+  MessageSquareText,
+  Paperclip,
+} from "lucide-react";
 
 import { ErrorAlert } from "@/components/shared/ErrorAlert";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
+import {
+  PanelEmptyState,
+  PanelFooterBar,
+  PanelPageIntro,
+  PanelSectionCard,
+  PanelStatCard,
+  PanelTableCard,
+} from "@/components/shared/panel/PanelScaffold";
 import { Button } from "@/components/ui/button";
+import { getApiErrorMessage } from "@/lib/api-feedback";
 import { cn } from "@/lib/utils";
-import type { InquiryStatus } from "@/types/common.types";
+import type { InquiryStatus, Role } from "@/types/common.types";
 import { formatDateTime } from "@/utils/date.utils";
+import { formatFileSize, openBlobInNewTab } from "@/utils/file.utils";
 
-import QuestionStatusBadge from "./QuestionStatusBadge";
+import { questionsApi } from "../api/questions.api";
 import { useQuestions } from "../hooks/useQuestions";
 import { useUpdateQuestion } from "../hooks/useUpdateQuestion";
 import type { QuestionResponseDTO } from "../types/questions.types";
+import QuestionStatusBadge from "./QuestionStatusBadge";
 
 const PAGE_SIZE = 20;
 
@@ -30,40 +47,46 @@ const FILTER_STATUS_COPY: Record<StatusFilter, string> = {
   RESPONDIDA: "Respondidas",
 };
 
+const getRoleLabel = (role: Role): string =>
+  role === "ADMIN" ? "Administrador" : "Secretaria";
+
+const getQuestionSummary = (question: QuestionResponseDTO): string => {
+  if (question.status === "ABERTA") {
+    return "Aguardando retorno externo da secretaria.";
+  }
+
+  return "Marcada como respondida na fila interna.";
+};
+
+const getQuestionResponderSummary = (question: QuestionResponseDTO): string => {
+  if (question.status === "ABERTA") {
+    return "Aguardando retorno da equipe.";
+  }
+
+  if (question.answered_by_user && question.answered_at) {
+    return `Respondida por ${question.answered_by_user.name} (${getRoleLabel(question.answered_by_user.role)}) em ${formatDateTime(question.answered_at)}.`;
+  }
+
+  return "Respondida antes da auditoria de responsavel estar disponivel.";
+};
+
 export interface QuestionListProps {
   className?: string;
 }
-
-const getErrorMessage = (error: unknown, fallback: string): string => {
-  if (isAxiosError(error)) {
-    const data = error.response?.data;
-    if (data && typeof data === "object" && "message" in data) {
-      const message = data.message;
-      if (typeof message === "string" && message.trim().length > 0) {
-        return message;
-      }
-    }
-  }
-
-  if (error instanceof Error && error.message.trim().length > 0) {
-    return error.message;
-  }
-
-  return fallback;
-};
-
-const getQuestionSummary = (question: QuestionResponseDTO): string =>
-  question.status === "ABERTA"
-    ? "Aguardando retorno externo da secretaria."
-    : `Marcada como respondida em ${formatDateTime(question.updated_at)}.`;
 
 const QuestionList = ({ className }: QuestionListProps) => {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("TODAS");
   const [page, setPage] = useState(1);
   const [activeQuestionId, setActiveQuestionId] = useState<number | null>(null);
+  const [activeAttachmentId, setActiveAttachmentId] = useState<number | null>(
+    null,
+  );
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [attachmentErrorMessage, setAttachmentErrorMessage] = useState<
+    string | null
+  >(null);
 
-  const apiStatusFilter =
-    statusFilter === "TODAS" ? undefined : statusFilter;
+  const apiStatusFilter = statusFilter === "TODAS" ? undefined : statusFilter;
   const { items, meta, isLoading, isError, error, refetch, isFetching } =
     useQuestions({
       status: apiStatusFilter,
@@ -77,7 +100,7 @@ const QuestionList = ({ className }: QuestionListProps) => {
   const hasNextPage = page < totalPages;
   const isUpdating = updateQuestionMutation.isPending;
   const updateErrorMessage = updateQuestionMutation.isError
-    ? getErrorMessage(
+    ? getApiErrorMessage(
         updateQuestionMutation.error,
         "Nao foi possivel atualizar o status da pergunta.",
       )
@@ -101,14 +124,41 @@ const QuestionList = ({ className }: QuestionListProps) => {
 
   const handleMarkAsAnswered = async (questionId: number) => {
     setActiveQuestionId(questionId);
+    setSuccessMessage(null);
 
     try {
-      await updateQuestionMutation.mutateAsync({
+      const updatedQuestion = await updateQuestionMutation.mutateAsync({
         id: questionId,
         status: "RESPONDIDA",
       });
+
+      const responderName =
+        updatedQuestion.answered_by_user?.name ?? "usuario autenticado";
+
+      setSuccessMessage(
+        `Pergunta marcada como respondida com sucesso por ${responderName}.`,
+      );
     } finally {
       setActiveQuestionId(null);
+    }
+  };
+
+  const handleOpenAttachment = async (question: QuestionResponseDTO) => {
+    setActiveAttachmentId(question.id);
+    setAttachmentErrorMessage(null);
+
+    try {
+      const fileBlob = await questionsApi.downloadAttachment(question.id);
+      openBlobInNewTab(fileBlob);
+    } catch (downloadError) {
+      setAttachmentErrorMessage(
+        getApiErrorMessage(
+          downloadError,
+          "Nao foi possivel abrir o anexo desta pergunta.",
+        ),
+      );
+    } finally {
+      setActiveAttachmentId(null);
     }
   };
 
@@ -120,7 +170,7 @@ const QuestionList = ({ className }: QuestionListProps) => {
     return (
       <ErrorAlert
         title="Erro ao carregar perguntas"
-        message={getErrorMessage(error, "Tente novamente em instantes.")}
+        message={getApiErrorMessage(error, "Tente novamente em instantes.")}
         onRetry={() => {
           void refetch();
         }}
@@ -130,45 +180,36 @@ const QuestionList = ({ className }: QuestionListProps) => {
 
   return (
     <section className={cn("space-y-5", className)}>
-      <header className="rounded-[28px] border border-[#E3D8CA] bg-white p-5 shadow-[0_18px_40px_rgba(92,53,12,0.06)]">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 rounded-full bg-[#F6EFE4] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#7A6548]">
-              <Filter className="size-3.5" aria-hidden="true" />
-              Fila de atendimento
-            </div>
-            <div>
-              <h2 className="text-2xl font-black text-[#1C262E]">
-                Perguntas recebidas
-              </h2>
-              <p className="mt-1 max-w-2xl text-sm leading-relaxed text-[#6E6252]">
-                Use o filtro para priorizar a fila e marque como respondidas as
-                perguntas ja tratadas fora da plataforma.
-              </p>
-            </div>
-          </div>
+      <PanelPageIntro
+        icon={Filter}
+        badge="Fila de atendimento"
+        title="Perguntas recebidas"
+        description="Use o filtro para priorizar a fila, abra os anexos enviados pelo aluno e marque como respondidas as perguntas ja tratadas fora da plataforma."
+        aside={
+          <>
+            <PanelStatCard
+              label="Status atual"
+              value={
+                <span className="text-sm font-semibold text-[#1C262E]">
+                  {FILTER_STATUS_COPY[statusFilter]}
+                </span>
+              }
+              supportingText={resultsLabel}
+            />
+            <PanelStatCard
+              label="Operacao"
+              value={
+                <span className="text-sm font-semibold text-[#1C262E]">
+                  Atendimento externo
+                </span>
+              }
+              supportingText="A resposta ao aluno acontece por e-mail fora do sistema."
+            />
+          </>
+        }
+      />
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-[22px] bg-[#FCF8F2] px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8C7E6C]">
-                Status atual
-              </p>
-              <p className="mt-2 text-sm font-semibold text-[#1C262E]">
-                {FILTER_STATUS_COPY[statusFilter]}
-              </p>
-              <p className="mt-1 text-xs text-[#6E6252]">{resultsLabel}</p>
-            </div>
-            <div className="rounded-[22px] bg-[#FCF8F2] px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8C7E6C]">
-                Operacao
-              </p>
-              <p className="mt-2 text-sm text-[#1C262E]">
-                A resposta ao aluno acontece por e-mail fora do sistema.
-              </p>
-            </div>
-          </div>
-        </div>
-
+      <PanelSectionCard>
         <div className="mt-5 flex flex-wrap gap-2">
           {FILTER_OPTIONS.map(option => {
             const isActive = option.value === statusFilter;
@@ -190,7 +231,17 @@ const QuestionList = ({ className }: QuestionListProps) => {
             );
           })}
         </div>
-      </header>
+      </PanelSectionCard>
+
+      {successMessage ? (
+        <ErrorAlert
+          variant="info"
+          title="Pergunta atualizada"
+          message={successMessage}
+          dismissible
+          onDismiss={() => setSuccessMessage(null)}
+        />
+      ) : null}
 
       {updateErrorMessage ? (
         <ErrorAlert
@@ -201,17 +252,22 @@ const QuestionList = ({ className }: QuestionListProps) => {
         />
       ) : null}
 
+      {attachmentErrorMessage ? (
+        <ErrorAlert
+          title="Erro ao abrir anexo"
+          message={attachmentErrorMessage}
+          dismissible
+          onDismiss={() => setAttachmentErrorMessage(null)}
+        />
+      ) : null}
+
       {items.length === 0 ? (
-        <div className="rounded-[28px] border border-dashed border-[#D8C9B3] bg-[#FFFDF9] px-6 py-12 text-center shadow-[0_18px_40px_rgba(92,53,12,0.04)]">
-          <p className="text-lg font-semibold text-[#1C262E]">
-            Nenhuma pergunta para este filtro.
-          </p>
-          <p className="mt-2 text-sm text-[#6E6252]">
-            Ajuste o status selecionado para revisar outro recorte da fila.
-          </p>
-        </div>
+        <PanelEmptyState
+          title="Nenhuma pergunta para este filtro."
+          description="Ajuste o status selecionado para revisar outro recorte da fila."
+        />
       ) : (
-        <div className="overflow-hidden rounded-[28px] border border-[#E3D8CA] bg-white shadow-[0_18px_40px_rgba(92,53,12,0.06)]">
+        <PanelTableCard>
           <div className="overflow-x-auto">
             <table className="min-w-full text-left text-sm">
               <thead className="bg-[#FBF7F1] text-xs uppercase tracking-[0.12em] text-[#8C7E6C]">
@@ -220,6 +276,7 @@ const QuestionList = ({ className }: QuestionListProps) => {
                   <th className="px-5 py-4 font-semibold">Pergunta</th>
                   <th className="px-5 py-4 font-semibold">Status</th>
                   <th className="px-5 py-4 font-semibold">Criada em</th>
+                  <th className="px-5 py-4 font-semibold">Responsavel</th>
                   <th className="px-5 py-4 text-right font-semibold">Acao</th>
                 </tr>
               </thead>
@@ -228,6 +285,7 @@ const QuestionList = ({ className }: QuestionListProps) => {
                   const isOpen = question.status === "ABERTA";
                   const isRowBusy =
                     isUpdating && activeQuestionId === question.id;
+                  const isAttachmentBusy = activeAttachmentId === question.id;
 
                   return (
                     <tr
@@ -249,6 +307,21 @@ const QuestionList = ({ className }: QuestionListProps) => {
                             </p>
                             {question.session_log_id ? (
                               <p>Atendimento vinculado: #{question.session_log_id}</p>
+                            ) : null}
+                            {question.has_attachment && question.attachment_name ? (
+                              <button
+                                type="button"
+                                className="inline-flex cursor-pointer items-center gap-2 rounded-full text-left text-xs font-medium text-[var(--brand-secondary)] transition-colors hover:text-[var(--brand-primary)]"
+                                onClick={() => void handleOpenAttachment(question)}
+                              >
+                                <Paperclip className="size-3.5" aria-hidden="true" />
+                                <span>{question.attachment_name}</span>
+                                {question.attachment_size_bytes ? (
+                                  <span className="text-[#8C7E6C]">
+                                    ({formatFileSize(question.attachment_size_bytes)})
+                                  </span>
+                                ) : null}
+                              </button>
                             ) : null}
                           </div>
                         </div>
@@ -277,7 +350,24 @@ const QuestionList = ({ className }: QuestionListProps) => {
                         <p>{formatDateTime(question.created_at)}</p>
                       </td>
                       <td className="px-5 py-5">
-                        <div className="flex justify-end">
+                        <p className="max-w-[250px] text-xs leading-relaxed text-[#6E6252]">
+                          {getQuestionResponderSummary(question)}
+                        </p>
+                      </td>
+                      <td className="px-5 py-5">
+                        <div className="flex flex-col items-end gap-2">
+                          {question.has_attachment ? (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => void handleOpenAttachment(question)}
+                              disabled={isAttachmentBusy}
+                            >
+                              <ExternalLink className="size-4" aria-hidden="true" />
+                              {isAttachmentBusy ? "Abrindo..." : "Abrir anexo"}
+                            </Button>
+                          ) : null}
                           <Button
                             type="button"
                             size="sm"
@@ -304,10 +394,10 @@ const QuestionList = ({ className }: QuestionListProps) => {
               </tbody>
             </table>
           </div>
-        </div>
+        </PanelTableCard>
       )}
 
-      <footer className="flex flex-col gap-3 rounded-[24px] border border-[#E3D8CA] bg-[#F8F3EA] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <PanelFooterBar>
         <div className="text-sm text-[#6E6252]">
           {isFetching ? "Atualizando dados..." : resultsLabel}
         </div>
@@ -333,7 +423,7 @@ const QuestionList = ({ className }: QuestionListProps) => {
             Proxima
           </Button>
         </div>
-      </footer>
+      </PanelFooterBar>
     </section>
   );
 };

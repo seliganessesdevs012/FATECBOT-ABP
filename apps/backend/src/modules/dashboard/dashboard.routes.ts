@@ -7,7 +7,7 @@ const router: Router = Router();
 const controller = new DashboardController();
 
 router.use(authenticate);
-router.use(authorize("ADMIN"));
+router.use(authorize("ADMIN", "SECRETARIA"));
 
 router.get("/metrics", (request, response, next) =>
   controller.getMetrics(request, response, next),

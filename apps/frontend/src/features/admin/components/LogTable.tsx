@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { isAxiosError } from "axios";
 import {
   CalendarRange,
   CircleCheck,
@@ -11,8 +10,17 @@ import {
 
 import { ErrorAlert } from "@/components/shared/ErrorAlert";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
+import {
+  PanelEmptyState,
+  PanelFooterBar,
+  PanelPageIntro,
+  PanelSectionCard,
+  PanelStatCard,
+  PanelTableCard,
+} from "@/components/shared/panel/PanelScaffold";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { getApiErrorMessage } from "@/lib/api-feedback";
 import { cn } from "@/lib/utils";
 import { formatDateTime } from "@/utils/date.utils";
 
@@ -27,24 +35,6 @@ const FILTER_OPTIONS: { value: SatisfactionFilter; label: string }[] = [
   { value: "ATENDEU", label: "Atendeu" },
   { value: "NAO_ATENDEU", label: "Nao atendeu" },
 ];
-
-const getErrorMessage = (error: unknown, fallback: string): string => {
-  if (isAxiosError(error)) {
-    const data = error.response?.data;
-    if (data && typeof data === "object" && "message" in data) {
-      const message = data.message;
-      if (typeof message === "string" && message.trim().length > 0) {
-        return message;
-      }
-    }
-  }
-
-  if (error instanceof Error && error.message.trim().length > 0) {
-    return error.message;
-  }
-
-  return fallback;
-};
 
 const formatNavigationFlow = (flow: string[]) => {
   if (flow.length === 0) {
@@ -138,7 +128,7 @@ export default function LogTable({ className }: LogTableProps) {
     return (
       <ErrorAlert
         title="Erro ao carregar historico"
-        message={getErrorMessage(error, "Tente novamente em instantes.")}
+        message={getApiErrorMessage(error, "Tente novamente em instantes.")}
         onRetry={() => {
           void refetch();
         }}
@@ -148,44 +138,20 @@ export default function LogTable({ className }: LogTableProps) {
 
   return (
     <section className={cn("space-y-5", className)}>
-      <header className="space-y-4 rounded-[28px] border border-[#E3D8CA] bg-white p-5 shadow-[0_18px_40px_rgba(92,53,12,0.06)]">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 rounded-full bg-[#F6EFE4] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#7A6548]">
-              <Route className="size-3.5" aria-hidden="true" />
-              Historico de atendimentos
-            </div>
-            <div>
-              <h2 className="text-2xl font-black text-[#1C262E]">
-                Sessoes registradas pelo chatbot
-              </h2>
-              <p className="mt-1 max-w-2xl text-sm leading-relaxed text-[#6E6252]">
-                Analise o caminho percorrido no chatbot, a satisfacao registrada
-                e as perguntas vinculadas a cada atendimento.
-              </p>
-            </div>
-          </div>
+      <PanelPageIntro
+        icon={Route}
+        badge="Historico de atendimentos"
+        title="Sessoes registradas pelo chatbot"
+        description="Analise o caminho percorrido no chatbot, a satisfacao registrada e as perguntas vinculadas a cada atendimento."
+        aside={
+          <>
+            <PanelStatCard label="Atendeu na pagina" value={positiveCount} />
+            <PanelStatCard label="Nao atendeu na pagina" value={negativeCount} />
+          </>
+        }
+      />
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-[22px] bg-[#FCF8F2] px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--brand-secondary)]">
-                Atendeu nesta pagina
-              </p>
-              <p className="mt-2 text-2xl font-black text-[#1C262E]">
-                {positiveCount}
-              </p>
-            </div>
-            <div className="rounded-[22px] bg-[#FCF8F2] px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--brand-secondary)]">
-                Nao atendeu nesta pagina
-              </p>
-              <p className="mt-2 text-2xl font-black text-[#1C262E]">
-                {negativeCount}
-              </p>
-            </div>
-          </div>
-        </div>
-
+      <PanelSectionCard>
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_180px_180px_auto] lg:items-end">
           <Input
             value={searchTerm}
@@ -240,19 +206,15 @@ export default function LogTable({ className }: LogTableProps) {
             })}
           </div>
         </div>
-      </header>
+      </PanelSectionCard>
 
       {filteredLogs.length === 0 ? (
-        <div className="rounded-[28px] border border-dashed border-[#D8C9B3] bg-[#FFFDF9] px-6 py-12 text-center shadow-[0_18px_40px_rgba(92,53,12,0.04)]">
-          <p className="text-lg font-semibold text-[#1C262E]">
-            Nenhum atendimento para este recorte.
-          </p>
-          <p className="mt-2 text-sm text-[#6E6252]">
-            Ajuste busca, datas ou satisfacao para revisar outro conjunto.
-          </p>
-        </div>
+        <PanelEmptyState
+          title="Nenhum atendimento para este recorte."
+          description="Ajuste busca, datas ou satisfacao para revisar outro conjunto."
+        />
       ) : (
-        <div className="overflow-hidden rounded-[28px] border border-[#E3D8CA] bg-white shadow-[0_18px_40px_rgba(92,53,12,0.06)]">
+        <PanelTableCard>
           <div className="overflow-x-auto">
             <table className="min-w-full text-left text-sm">
               <thead className="bg-[var(--brand-secondary-soft)] text-xs uppercase tracking-[0.12em] text-[var(--brand-secondary)]">
@@ -349,10 +311,10 @@ export default function LogTable({ className }: LogTableProps) {
               </tbody>
             </table>
           </div>
-        </div>
+        </PanelTableCard>
       )}
 
-      <footer className="flex flex-col gap-3 rounded-[24px] border border-[#E3D8CA] bg-[#F8F3EA] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <PanelFooterBar>
         <div className="text-sm text-[#6E6252]">{resultsLabel}</div>
 
         <div className="flex items-center gap-2">
@@ -389,7 +351,7 @@ export default function LogTable({ className }: LogTableProps) {
             Proxima
           </Button>
         </div>
-      </footer>
+      </PanelFooterBar>
     </section>
   );
 }

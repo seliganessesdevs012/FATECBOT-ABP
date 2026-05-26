@@ -75,9 +75,14 @@ export default function AdminNodesPage() {
   };
 
   return (
-    <AdminLayout title="Care" hidePageHeader contentClassName="pt-0">
+    <AdminLayout
+      title="Care"
+      hidePageHeader
+      contentClassName="pt-0"
+      containerClassName="max-w-[1480px]"
+    >
       {feedback ? (
-        <div className="mx-auto w-full max-w-[1320px] px-5 pt-5 lg:px-8">
+        <div className="px-5 pt-5 lg:px-8">
           <ErrorAlert
             variant={feedback.variant}
             title={feedback.title}

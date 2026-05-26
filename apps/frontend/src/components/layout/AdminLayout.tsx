@@ -17,6 +17,11 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import fatecImg from "@/assets/login_fatec.png";
 import mascotImg from "@/assets/login_jacare.png";
 import { Button } from "@/components/ui/button";
+import {
+  ADMIN_ONLY_ROLES,
+  PANEL_ROUTE_PATHS,
+  hasRoleAccess,
+} from "@/features/admin/config/panel-access";
 import { useAdminShellStore } from "@/features/admin/stores/admin-shell.store";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { cn } from "@/lib/utils";
@@ -28,6 +33,7 @@ export interface AdminNavigationItem {
   icon: LucideIcon;
   helperText?: string;
   disabled?: boolean;
+  allowedRoles?: Role[];
 }
 
 export interface AdminLayoutProps {
@@ -37,40 +43,44 @@ export interface AdminLayoutProps {
   navigationItems?: AdminNavigationItem[];
   hidePageHeader?: boolean;
   contentClassName?: string;
+  containerClassName?: string;
 }
 
 const DEFAULT_NAVIGATION_ITEMS: AdminNavigationItem[] = [
   {
     label: "Dashboard",
-    to: "/admin",
+    to: PANEL_ROUTE_PATHS.home,
     icon: LayoutDashboard,
   },
   {
     label: "Usuarios",
-    to: "/admin/users",
+    to: PANEL_ROUTE_PATHS.users,
     icon: Users,
+    allowedRoles: ADMIN_ONLY_ROLES,
   },
   {
     label: "Care",
-    to: "/admin/nodes",
+    to: PANEL_ROUTE_PATHS.nodes,
     icon: Bot,
+    allowedRoles: ADMIN_ONLY_ROLES,
   },
   {
     label: "Tickets",
-    to: "/admin/tickets",
+    to: PANEL_ROUTE_PATHS.tickets,
     icon: Ticket,
   },
   {
     label: "Historico",
-    to: "/admin/logs",
+    to: PANEL_ROUTE_PATHS.logs,
     icon: ScrollText,
   },
   {
     label: "Configuracoes",
-    to: "/admin/settings",
+    to: PANEL_ROUTE_PATHS.settings,
     icon: Settings,
     helperText: "Disponivel em sprint futura",
     disabled: true,
+    allowedRoles: ADMIN_ONLY_ROLES,
   },
 ];
 
@@ -94,6 +104,7 @@ export function AdminLayout({
   navigationItems = DEFAULT_NAVIGATION_ITEMS,
   hidePageHeader = false,
   contentClassName,
+  containerClassName,
 }: AdminLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -107,8 +118,11 @@ export function AdminLayout({
   const roleLabel = user?.role ? ROLE_COPY[user.role] : "Area protegida";
   const userName = user?.name ?? "Usuario autenticado";
   const userEmail = user?.email ?? "Sessao ativa";
+  const visibleNavigationItems = navigationItems.filter(
+    item => !item.allowedRoles || hasRoleAccess(user?.role, item.allowedRoles),
+  );
   const currentSection =
-    navigationItems.find(item => isItemActive(location.pathname, item.to))
+    visibleNavigationItems.find(item => isItemActive(location.pathname, item.to))
       ?.label ?? "Painel";
 
   const handleLogout = () => {
@@ -179,7 +193,7 @@ export function AdminLayout({
             aria-label="Navegacao do painel"
           >
             <div className="space-y-4">
-            {navigationItems.map(item => {
+            {visibleNavigationItems.map(item => {
               const Icon = item.icon;
               const isActive = isItemActive(location.pathname, item.to);
 
@@ -278,41 +292,56 @@ export function AdminLayout({
 
         <div className="min-w-0 flex-1 bg-[#EEE9DA]">
           <div className="flex min-h-screen flex-col">
-            <header className="flex items-start justify-between px-4 py-3 lg:px-5">
-              <div>
-                {!hidePageHeader ? (
-                  <>
-                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#8C7E6C]">
-                      {currentSection}
-                    </p>
-                    <h2 className="mt-1 text-2xl font-black text-[#33383D]">
-                      {title}
-                    </h2>
-                    {description ? (
-                      <p className="mt-1 max-w-2xl text-sm leading-relaxed text-[#6F6A62]">
-                        {description}
-                      </p>
-                    ) : null}
-                  </>
-                ) : (
-                  <div className="h-10" />
+            <header className="px-4 py-3 lg:px-5">
+              <div
+                className={cn(
+                  "mx-auto flex w-full items-start justify-between gap-6",
+                  "max-w-[1320px]",
+                  containerClassName,
                 )}
-              </div>
+              >
+                <div>
+                  {!hidePageHeader ? (
+                    <>
+                      <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#8C7E6C]">
+                        {currentSection}
+                      </p>
+                      <h2 className="mt-1 text-2xl font-black text-[#33383D]">
+                        {title}
+                      </h2>
+                      {description ? (
+                        <p className="mt-1 max-w-2xl text-sm leading-relaxed text-[#6F6A62]">
+                          {description}
+                        </p>
+                      ) : null}
+                    </>
+                  ) : (
+                    <div className="h-10" />
+                  )}
+                </div>
 
-              <img
-                src={fatecImg}
-                alt="Fatec"
-                className="w-20 object-contain opacity-95 lg:w-24"
-              />
+                <img
+                  src={fatecImg}
+                  alt="Fatec"
+                  className="w-20 object-contain opacity-95 lg:w-24"
+                />
+              </div>
             </header>
 
             <main
               className={cn(
                 "flex-1 px-4 pb-4 lg:px-5 lg:pb-5",
-                contentClassName,
               )}
             >
-              {children}
+              <div
+                className={cn(
+                  "mx-auto w-full max-w-[1320px]",
+                  containerClassName,
+                  contentClassName,
+                )}
+              >
+                {children}
+              </div>
             </main>
           </div>
         </div>

@@ -1,15 +1,34 @@
 import { useMemo, useState } from "react";
-import { isAxiosError } from "axios";
-import { CheckCheck, Filter, Mail, MessageSquareText, Search, Ticket } from "lucide-react";
+import {
+  CheckCheck,
+  ExternalLink,
+  Filter,
+  Mail,
+  MessageSquareText,
+  Paperclip,
+  Search,
+  Ticket,
+} from "lucide-react";
 
 import { ErrorAlert } from "@/components/shared/ErrorAlert";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
+import {
+  PanelEmptyState,
+  PanelFooterBar,
+  PanelPageIntro,
+  PanelSectionCard,
+  PanelStatCard,
+  PanelTableCard,
+} from "@/components/shared/panel/PanelScaffold";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { getApiErrorMessage } from "@/lib/api-feedback";
 import { cn } from "@/lib/utils";
-import type { InquiryStatus } from "@/types/common.types";
+import type { InquiryStatus, Role } from "@/types/common.types";
 import { formatDateTime } from "@/utils/date.utils";
+import { formatFileSize, openBlobInNewTab } from "@/utils/file.utils";
 
+import { ticketsApi } from "../api/tickets.api";
 import { useTickets } from "../hooks/useTickets";
 import { useUpdateTicket } from "../hooks/useUpdateTicket";
 
@@ -23,24 +42,6 @@ const FILTER_OPTIONS: { value: StatusFilter; label: string }[] = [
   { value: "RESPONDIDA", label: "Respondidos" },
 ];
 
-const getErrorMessage = (error: unknown, fallback: string): string => {
-  if (isAxiosError(error)) {
-    const data = error.response?.data;
-    if (data && typeof data === "object" && "message" in data) {
-      const message = data.message;
-      if (typeof message === "string" && message.trim().length > 0) {
-        return message;
-      }
-    }
-  }
-
-  if (error instanceof Error && error.message.trim().length > 0) {
-    return error.message;
-  }
-
-  return fallback;
-};
-
 const getTicketStatusLabel = (status: InquiryStatus): string =>
   status === "ABERTA" ? "Aberto" : "Respondido";
 
@@ -48,6 +49,25 @@ const getTicketStatusClasses = (status: InquiryStatus): string =>
   status === "ABERTA"
     ? "bg-[#FFF1D9] text-[#8B5E13]"
     : "bg-[#E8F3EA] text-[#2E6A4F]";
+
+const getRoleLabel = (role: Role): string =>
+  role === "ADMIN" ? "Administrador" : "Secretaria";
+
+const getTicketResponderSummary = (ticket: {
+  status: InquiryStatus;
+  answered_at?: string | null;
+  answered_by_user?: { name: string; role: Role } | null;
+}): string => {
+  if (ticket.status === "ABERTA") {
+    return "Aguardando resposta da equipe.";
+  }
+
+  if (ticket.answered_by_user && ticket.answered_at) {
+    return `Respondido por ${ticket.answered_by_user.name} (${getRoleLabel(ticket.answered_by_user.role)}) em ${formatDateTime(ticket.answered_at)}.`;
+  }
+
+  return "Respondido antes da auditoria de responsavel estar disponivel.";
+};
 
 export interface TicketListProps {
   className?: string;
@@ -58,6 +78,13 @@ export default function TicketList({ className }: TicketListProps) {
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTicketId, setActiveTicketId] = useState<number | null>(null);
+  const [activeAttachmentId, setActiveAttachmentId] = useState<number | null>(
+    null,
+  );
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [attachmentErrorMessage, setAttachmentErrorMessage] = useState<
+    string | null
+  >(null);
 
   const apiStatusFilter = statusFilter === "TODOS" ? undefined : statusFilter;
   const { items, meta, isLoading, isFetching, isError, error, refetch } =
@@ -94,7 +121,7 @@ export default function TicketList({ className }: TicketListProps) {
   ).length;
   const isUpdating = updateTicketMutation.isPending;
   const updateErrorMessage = updateTicketMutation.isError
-    ? getErrorMessage(
+    ? getApiErrorMessage(
         updateTicketMutation.error,
         "Nao foi possivel atualizar o ticket.",
       )
@@ -118,14 +145,41 @@ export default function TicketList({ className }: TicketListProps) {
 
   const handleMarkAsAnswered = async (ticketId: number) => {
     setActiveTicketId(ticketId);
+    setSuccessMessage(null);
 
     try {
-      await updateTicketMutation.mutateAsync({
+      const updatedTicket = await updateTicketMutation.mutateAsync({
         id: ticketId,
         status: "RESPONDIDA",
       });
+
+      const responderName =
+        updatedTicket.answered_by_user?.name ?? "usuario autenticado";
+
+      setSuccessMessage(
+        `Ticket marcado como respondido com sucesso por ${responderName}.`,
+      );
     } finally {
       setActiveTicketId(null);
+    }
+  };
+
+  const handleOpenAttachment = async (ticketId: number) => {
+    setActiveAttachmentId(ticketId);
+    setAttachmentErrorMessage(null);
+
+    try {
+      const fileBlob = await ticketsApi.downloadAttachment(ticketId);
+      openBlobInNewTab(fileBlob);
+    } catch (downloadError) {
+      setAttachmentErrorMessage(
+        getApiErrorMessage(
+          downloadError,
+          "Nao foi possivel abrir o anexo deste ticket.",
+        ),
+      );
+    } finally {
+      setActiveAttachmentId(null);
     }
   };
 
@@ -137,7 +191,7 @@ export default function TicketList({ className }: TicketListProps) {
     return (
       <ErrorAlert
         title="Erro ao carregar tickets"
-        message={getErrorMessage(error, "Tente novamente em instantes.")}
+        message={getApiErrorMessage(error, "Tente novamente em instantes.")}
         onRetry={() => {
           void refetch();
         }}
@@ -147,44 +201,20 @@ export default function TicketList({ className }: TicketListProps) {
 
   return (
     <section className={cn("space-y-5", className)}>
-      <header className="space-y-4 rounded-[28px] border border-[#E3D8CA] bg-white p-5 shadow-[0_18px_40px_rgba(92,53,12,0.06)]">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 rounded-full bg-[#F6EFE4] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#7A6548]">
-              <Ticket className="size-3.5" aria-hidden="true" />
-              Atendimento interno
-            </div>
-            <div>
-              <h2 className="text-2xl font-black text-[#1C262E]">
-                Tickets recebidos pelo chatbot
-              </h2>
-              <p className="mt-1 max-w-2xl text-sm leading-relaxed text-[#6E6252]">
-                Acompanhe as perguntas encaminhadas para a equipe interna e
-                marque como respondidas aquelas ja tratadas fora da plataforma.
-              </p>
-            </div>
-          </div>
+      <PanelPageIntro
+        icon={Ticket}
+        badge="Atendimento interno"
+        title="Tickets recebidos pelo chatbot"
+        description="Acompanhe as perguntas encaminhadas para a equipe interna, abra os anexos recebidos e marque como respondidas aquelas ja tratadas fora da plataforma."
+        aside={
+          <>
+            <PanelStatCard label="Pendentes na pagina" value={openTickets} />
+            <PanelStatCard label="Respondidos na pagina" value={answeredTickets} />
+          </>
+        }
+      />
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-[22px] bg-[#FCF8F2] px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--brand-secondary)]">
-                Pendentes na pagina
-              </p>
-              <p className="mt-2 text-2xl font-black text-[#1C262E]">
-                {openTickets}
-              </p>
-            </div>
-            <div className="rounded-[22px] bg-[#FCF8F2] px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--brand-secondary)]">
-                Respondidos na pagina
-              </p>
-              <p className="mt-2 text-2xl font-black text-[#1C262E]">
-                {answeredTickets}
-              </p>
-            </div>
-          </div>
-        </div>
-
+      <PanelSectionCard>
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1.3fr)_auto] lg:items-end">
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#8A7C6A]" />
@@ -219,7 +249,17 @@ export default function TicketList({ className }: TicketListProps) {
             })}
           </div>
         </div>
-      </header>
+      </PanelSectionCard>
+
+      {successMessage ? (
+        <ErrorAlert
+          variant="info"
+          title="Ticket atualizado"
+          message={successMessage}
+          dismissible
+          onDismiss={() => setSuccessMessage(null)}
+        />
+      ) : null}
 
       {updateErrorMessage ? (
         <ErrorAlert
@@ -230,17 +270,22 @@ export default function TicketList({ className }: TicketListProps) {
         />
       ) : null}
 
+      {attachmentErrorMessage ? (
+        <ErrorAlert
+          title="Erro ao abrir anexo"
+          message={attachmentErrorMessage}
+          dismissible
+          onDismiss={() => setAttachmentErrorMessage(null)}
+        />
+      ) : null}
+
       {filteredItems.length === 0 ? (
-        <div className="rounded-[28px] border border-dashed border-[#D8C9B3] bg-[#FFFDF9] px-6 py-12 text-center shadow-[0_18px_40px_rgba(92,53,12,0.04)]">
-          <p className="text-lg font-semibold text-[#1C262E]">
-            Nenhum ticket para este recorte.
-          </p>
-          <p className="mt-2 text-sm text-[#6E6252]">
-            Ajuste a busca ou o filtro de status para revisar outro conjunto.
-          </p>
-        </div>
+        <PanelEmptyState
+          title="Nenhum ticket para este recorte."
+          description="Ajuste a busca ou o filtro de status para revisar outro conjunto."
+        />
       ) : (
-        <div className="overflow-hidden rounded-[28px] border border-[#E3D8CA] bg-white shadow-[0_18px_40px_rgba(92,53,12,0.06)]">
+        <PanelTableCard>
           <div className="overflow-x-auto">
             <table className="min-w-full text-left text-sm">
               <thead className="bg-[var(--brand-secondary-soft)] text-xs uppercase tracking-[0.12em] text-[var(--brand-secondary)]">
@@ -249,6 +294,7 @@ export default function TicketList({ className }: TicketListProps) {
                   <th className="px-5 py-4 font-semibold">Ticket</th>
                   <th className="px-5 py-4 font-semibold">Status</th>
                   <th className="px-5 py-4 font-semibold">Criado em</th>
+                  <th className="px-5 py-4 font-semibold">Responsavel</th>
                   <th className="px-5 py-4 text-right font-semibold">Acao</th>
                 </tr>
               </thead>
@@ -256,6 +302,7 @@ export default function TicketList({ className }: TicketListProps) {
                 {filteredItems.map(ticket => {
                   const isOpen = ticket.status === "ABERTA";
                   const isRowBusy = isUpdating && activeTicketId === ticket.id;
+                  const isAttachmentBusy = activeAttachmentId === ticket.id;
 
                   return (
                     <tr
@@ -280,6 +327,21 @@ export default function TicketList({ className }: TicketListProps) {
                                 ? `Sessao vinculada: #${ticket.session_log_id}`
                                 : "Sem sessao vinculada"}
                             </p>
+                            {ticket.has_attachment && ticket.attachment_name ? (
+                              <button
+                                type="button"
+                                className="inline-flex cursor-pointer items-center gap-2 rounded-full text-left text-xs font-medium text-[var(--brand-secondary)] transition-colors hover:text-[var(--brand-primary)]"
+                                onClick={() => void handleOpenAttachment(ticket.id)}
+                              >
+                                <Paperclip className="size-3.5" aria-hidden="true" />
+                                <span>{ticket.attachment_name}</span>
+                                {ticket.attachment_size_bytes ? (
+                                  <span className="text-[#8C7E6C]">
+                                    ({formatFileSize(ticket.attachment_size_bytes)})
+                                  </span>
+                                ) : null}
+                              </button>
+                            ) : null}
                           </div>
                         </div>
                       </td>
@@ -311,7 +373,24 @@ export default function TicketList({ className }: TicketListProps) {
                         <p>{formatDateTime(ticket.created_at)}</p>
                       </td>
                       <td className="px-5 py-5">
-                        <div className="flex justify-end">
+                        <p className="max-w-[250px] text-xs leading-relaxed text-[#6E6252]">
+                          {getTicketResponderSummary(ticket)}
+                        </p>
+                      </td>
+                      <td className="px-5 py-5">
+                        <div className="flex flex-col items-end gap-2">
+                          {ticket.has_attachment ? (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => void handleOpenAttachment(ticket.id)}
+                              disabled={isAttachmentBusy}
+                            >
+                              <ExternalLink className="size-4" aria-hidden="true" />
+                              {isAttachmentBusy ? "Abrindo..." : "Abrir anexo"}
+                            </Button>
+                          ) : null}
                           <Button
                             type="button"
                             size="sm"
@@ -338,10 +417,10 @@ export default function TicketList({ className }: TicketListProps) {
               </tbody>
             </table>
           </div>
-        </div>
+        </PanelTableCard>
       )}
 
-      <footer className="flex flex-col gap-3 rounded-[24px] border border-[#E3D8CA] bg-[#F8F3EA] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <PanelFooterBar>
         <div className="text-sm text-[#6E6252]">
           {isFetching ? "Atualizando dados..." : resultsLabel}
         </div>
@@ -367,7 +446,7 @@ export default function TicketList({ className }: TicketListProps) {
             Proxima
           </Button>
         </div>
-      </footer>
+      </PanelFooterBar>
     </section>
   );
 }

@@ -6,6 +6,7 @@ export default function AdminTicketsPage() {
     <AdminLayout
       title="Tickets internos"
       description="Gerencie os encaminhamentos feitos pelo chatbot para a equipe interna."
+      hidePageHeader
     >
       <TicketList />
     </AdminLayout>
