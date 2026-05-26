@@ -8,9 +8,9 @@
 
 ## Burndown e Demonstracao
 
-![Grafico de Burndown da Sprint 2](./burndown.png)
+![Grafico de Burndown da Sprint 2](./burndown2.PNG)
 
-**Link do Burndown da Sprint 2:** [Link Google](https://docs.google.com/spreadsheets/d/SEU_ID)
+**Link do Burndown da Sprint 2:** [Link Google](https://docs.google.com/spreadsheets/d/1pSj-2_RsHqxcnypaDYe_PIhw74WJXMK6gi8MiMOZ4MY/edit?gid=1935655043#gid=1935655043)
 
 🎥 **Video de demonstracao da Sprint 2:** [Assistir no YouTube/Drive](https://youtu.be/SEU_ID)
 
@@ -47,7 +47,7 @@ Esses itens ficam para a Sprint 3 ou para evolucoes posteriores.
 # FatecBot - Sprint 2 · Tabela de Tasks
 
 > **Sprint 2 - MVP completo**
-> Periodo: DD/MM -- DD/MM · Status: 🔵 Planejada
+> Periodo: 08/05 -- 25/05 · Status: 🟢 Entregue
 >
 > **Objetivo:** MVP completo com fluxos publicos e internos funcionais e backlog tecnico saneado.
 
@@ -75,8 +75,8 @@ Esses itens ficam para a Sprint 3 ou para evolucoes posteriores.
 | TASK-056 | `[FIGMA]` | Design    | Mockups do painel Admin                                                   | RF04                                                                | RNF01 · RNF04 | ⚪ Baixa   | **8** |
 | TASK-057 | `[FE]`    | Layouts   | `AdminLayout.tsx` + Home publica do chatbot                               | RF03 · RF04                                                         | RNF01         | 🟡 Alta    | **3** |
 | TASK-058 | `[FE]`    | Admin     | Paginas do painel Admin                                                   | RF03 · RF04                                                         | RNF01         | 🟢 Media   | **5** |
-| TASK-059 | `[UML]`   | Modelagem | Diagrama de Sequencia - Astah                                             | RF01 · RF03 · RF05 · RF07 · RF09                                    | —             | ⚪ Baixa   | **3** |
-| TASK-060 | `[UML]`   | Modelagem | Diagrama de Atividades - Astah                                            | RF01 · RF05 · RF06 · RF07 · RF08                                    | —             | ⚪ Baixa   | **3** |
+| TASK-059 | `[DOC]`   | Docs | Correção  do modelo de Banco de Dados Relacional - Astah                                             | RF01 · RF03 · RF05 · RF07 · RF09 · RF09                                    | —             | ⚪ Baixa   | **3** |
+| TASK-060 | `[DOC]`   | Docs | Burndown Sprint 2      |  —  | —             | ⚪ Baixa   | **3** |
 | TASK-061 | `[BE]`    | Questions | `questions.service.ts` - extensao para listagem e status                  | RF05 · RF08                                                         | —             | 🟡 Alta    | **2** |
 | TASK-062 | `[BE]`    | Questions | `questions.controller.ts` + `questions.routes.ts` - rotas protegidas      | RF05 · RF11                                                         | —             | 🟡 Alta    | **2** |
 | TASK-063 | `[FE]`    | Questions | `questions.api.ts` - chamadas para secretaria                             | RF06                                                                | —             | 🟢 Media   | **2** |
