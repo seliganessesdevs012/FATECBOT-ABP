@@ -118,7 +118,7 @@ referência operacional daquela sprint.
 
 ## 📄 Documentação de Testes <a id="documento-teste"></a>
 
-- [Testes de navegação do chatbot](./documento-de-teste.pdf)
+- [Documentação de teste](./documento-de-teste.pdf)
 
 
 
