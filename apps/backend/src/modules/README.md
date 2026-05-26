@@ -2,7 +2,7 @@
 
 O coração da aplicação. Cada módulo representa um **domínio de negócio** — um conjunto de funcionalidades relacionadas. Toda lógica de negócio, validação de entrada e acesso ao banco vive aqui.
 
-> **Nota de estado da Sprint 1:** os módulos com código implementado no repositório atual são `auth/`, `chatbot/` e `questions/`. As documentações de `nodes/`, `users/` e `logs/` permanecem como referência estrutural para as próximas sprints.
+> **Estado atual:** os módulos com código implementado no repositório atual são `auth/`, `chatbot/`, `dashboard/`, `questions/`, `nodes/`, `users/` e `logs/`.
 
 ---
 
@@ -12,6 +12,7 @@ O coração da aplicação. Cada módulo representa um **domínio de negócio** 
 modules/
 ├── auth/
 ├── chatbot/
+├── dashboard/
 ├── questions/
 ├── nodes/
 ├── users/
@@ -40,13 +41,13 @@ Define os endpoints do módulo, aplica os middlewares corretos e conecta cada ro
 router.post("/", validate(createQuestionSchema), controller.create);
 router.get(
   "/",
-  authMiddleware,
+  authenticate,
   authorize("ADMIN", "SECRETARIA"),
   controller.list,
 );
 router.patch(
   "/:id",
-  authMiddleware,
+  authenticate,
   authorize("ADMIN", "SECRETARIA"),
   controller.update,
 );
@@ -109,6 +110,16 @@ Gerencia as perguntas enviadas pelos alunos à secretaria. Criação é pública
 - `POST /questions` — público — aluno envia pergunta
 - `GET /questions` — ADMIN ou SECRETARIA
 - `PATCH /questions/:id` — ADMIN ou SECRETARIA
+- `GET /questions/:id/attachment` — ADMIN ou SECRETARIA
+
+---
+
+### `dashboard/`
+
+Agrega métricas do painel interno: tickets abertos, taxa de satisfação, média
+de cliques e distribuição de cliques.
+
+**Endpoint:** `GET /dashboard/metrics` — ADMIN ou SECRETARIA.
 
 ---
 
@@ -132,7 +143,7 @@ Gerencia os usuários da secretaria (ADMIN e SECRETARIA). O admin cria, lista e 
 
 Somente leitura. Expõe os registros de sessão gerados pelo módulo `chatbot` para visualização no painel do administrador.
 
-**Endpoint:** `GET /logs` — ADMIN.
+**Endpoint:** `GET /logs` — ADMIN ou SECRETARIA.
 
 ---
 

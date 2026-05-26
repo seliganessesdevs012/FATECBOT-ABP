@@ -55,7 +55,7 @@ de erro retorna `422` com detalhes por campo — o controller nunca é chamado.
 ```ts
 const loginSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(1),
+  password: z.string().min(6),
 })
 ```
 
@@ -64,15 +64,15 @@ const loginSchema = z.object({
 Contém toda a lógica de negócio da autenticação. Segue esta sequência:
 
 1. Busca o usuário pelo e-mail no banco via Prisma
-2. Se não encontrar, lança `AppError('Credenciais inválidas', 401)` — **nunca** informe se foi o e-mail ou a senha que errou
-3. Verifica a senha com `comparePassword` de `utils/hash.utils.ts` (Argon2id)
-4. Se a senha não bater, lança `AppError('Credenciais inválidas', 401)`
-5. Gera o JWT com `generateToken` de `utils/jwt.utils.ts` contendo `id`, `role` e `exp`
+2. Se não encontrar, lança `AppError('E-mail ou senha inválidos', 401)` — **nunca** informe se foi o e-mail ou a senha que errou
+3. Verifica a senha com `comparePassword` de `utils/hash.util.ts` (Argon2id)
+4. Se a senha não bater, lança `AppError('E-mail ou senha inválidos', 401)`
+5. Gera o JWT com `generateToken` de `utils/jwt.utils.ts` contendo `sub`, `role` e `exp`
 6. Retorna o token e os dados públicos do usuário
 
 ```ts
 // ✅ Mensagem de erro idêntica para e-mail e senha — nunca revele qual campo falhou
-throw new AppError('Credenciais inválidas', 401)
+throw new AppError('E-mail ou senha inválidos', 401)
 ```
 
 ### auth.controller.ts
@@ -130,7 +130,7 @@ Prisma busca usuário por email → 401 se não encontrado
         ↓
 Argon2id compara senha com hash → 401 se não bater
         ↓
-JWT gerado com { id, role, exp }
+JWT gerado com { sub, role, exp }
         ↓
 200 → { token, user: { id, email, role } }
 ```

@@ -51,11 +51,11 @@ modules/nodes/
 
 ### nodes.routes.ts
 
-Todas as rotas são protegidas por `authMiddleware` + `authorize('ADMIN')`.
+Todas as rotas são protegidas por `authenticate` + `authorize('ADMIN')`.
 Bodies de `POST` e `PATCH` são validados com Zod antes de chegar ao controller:
 
 ```ts
-router.use(authMiddleware)
+router.use(authenticate)
 router.use(authorize('ADMIN'))
 
 router.get('/', nodesController.getAll)
@@ -66,15 +66,16 @@ router.delete('/:id', nodesController.remove)
 
 ### nodes.service.ts
 
-**`getAll`** — lista todos os nós com seus metadados. Não expande filhos
-recursivamente — o frontend monta a árvore com base no `parentId`.
+**`listNodes`** — lista todos os nós ativos com seus metadados. Não expande filhos
+recursivamente — o frontend monta a árvore com base no `parent_id` e recebe
+`childrenCount` para bloquear ações quando necessário.
 
-**`create`** — cria um novo nó. Valida que o `parentId`, se informado,
-existe no banco. Nós raiz têm `parentId: null`.
+**`createNode`** — cria um novo nó. Valida que o `parent_id`, se informado,
+existe no banco. Nós raiz têm `parent_id: null`. Quando há PDF de evidência,
+o arquivo é salvo em storage e `evidence_source` passa a refletir o nome do arquivo.
 
-**`update`** — atualiza campos de um nó existente. Não permite alterar
-o `parentId` — mover um nó na árvore não é suportado para evitar
-inconsistências na hierarquia.
+**`updateNode`** — atualiza campos de um nó existente. Permite alterar
+`parent_id`, desde que o novo pai exista e o nó não seja pai de si mesmo.
 
 **`remove`** — remove um nó. **Bloqueado se o nó tiver filhos** — a
 árvore nunca pode ficar com filhos órfãos:
@@ -82,7 +83,7 @@ inconsistências na hierarquia.
 ```ts
 // ✅ Verificação antes de deletar
 const childCount = await prisma.chatNode.count({
-  where: { parentId: id },
+  where: { parent_id: id, is_active: true },
 })
 
 if (childCount > 0) {
@@ -100,8 +101,8 @@ Chama o service e formata a resposta HTTP. Não contém lógica de negócio:
 ```ts
 // ✅ Controller fino — apenas orquestra
 async remove(req: Request, res: Response) {
-  await nodesService.remove(req.params.id)
-  res.status(204).send()
+  await nodesService.deleteNode(Number(req.params.id))
+  res.status(200).json({ success: true, data: null })
 }
 ```
 
@@ -111,30 +112,44 @@ async remove(req: Request, res: Response) {
 // Body esperado no POST /nodes
 interface CreateNodeDto {
   title: string
-  content?: string       // obrigatório para nós do tipo ANSWER
-  nodeType: 'MENU' | 'ANSWER'
-  parentId: string | null
-  order: number          // posição entre os irmãos — começa em 0
+  slug: string
+  prompt?: string | null
+  answer_summary?: string | null
+  evidence_excerpt?: string | null
+  evidence_source?: string | null
+  evidence_file_name?: string | null
+  evidence_file_mime_type?: string | null
+  evidence_file_data?: Uint8Array | null
+  parent_id: number | null
+  display_order: number
+  is_active?: boolean
 }
 
 // Body esperado no PATCH /nodes/:id
 interface UpdateNodeDto {
   title?: string
-  content?: string
-  nodeType?: 'MENU' | 'ANSWER'
-  order?: number
+  slug?: string
+  prompt?: string | null
+  answer_summary?: string | null
+  evidence_excerpt?: string | null
+  evidence_source?: string | null
+  evidence_file_name?: string | null
+  evidence_file_mime_type?: string | null
+  evidence_file_data?: Uint8Array | null
+  parent_id?: number | null
+  display_order?: number
+  is_active?: boolean
 }
 
 // Resposta retornada ao frontend
 interface NodeResponse {
-  id: string
+  id: number
   title: string
-  content: string | null
-  nodeType: 'MENU' | 'ANSWER'
-  parentId: string | null
-  order: number
-  createdAt: string
-  updatedAt: string
+  slug: string
+  parent_id: number | null
+  display_order: number
+  is_active: boolean
+  childrenCount: number
 }
 ```
 
@@ -144,32 +159,35 @@ interface NodeResponse {
 
 ```
 ChatNode
-├── id        String    @id
-├── title     String
-├── content   String?
-├── nodeType  NodeType  (MENU | ANSWER)
-├── parentId  String?   → ChatNode (auto-referência)
-├── order     Int
-├── createdAt DateTime
-├── updatedAt DateTime
-├── children  ChatNode[]
-└── chunks    DocumentChunk[]
+├── id               Int      @id @default(autoincrement())
+├── title            String
+├── slug             String   @unique
+├── prompt           String?
+├── answer_summary   String?
+├── evidence_excerpt String?
+├── evidence_source  String?
+├── parent_id        Int?     → ChatNode (auto-referência)
+├── display_order    Int
+├── is_active        Boolean
+├── created_at       DateTime
+├── updated_at       DateTime
+└── children         ChatNode[]
 ```
 
 A estrutura é uma **árvore recursiva auto-referenciada** — cada nó
-aponta para seu pai via `parentId`. O nó raiz tem `parentId: null`.
+aponta para seu pai via `parent_id`. O nó raiz tem `parent_id: null`.
 
 ***
 
 ## 🌿 Tipos de nó <a id="tipos"></a>
 
-| Tipo | Tem filhos | Tem conteúdo | Comportamento no chatbot |
-| ---- | :--------: | :----------: | ------------------------ |
-| `MENU` | ✅ Sim | ❌ Não | Exibe título e lista de filhos como botões de opção |
-| `ANSWER` | ❌ Não | ✅ Sim | Exibe conteúdo como resposta final + chunks de evidência |
+| Tipo prático | Tem filhos | Tem resposta | Comportamento no chatbot |
+| ------------ | :--------: | :----------: | ------------------------ |
+| Nó com filhos | ✅ Sim | Opcional | Exibe prompt/título e lista de filhos como botões de opção |
+| Nó folha | ❌ Não | ✅ `answer_summary` | Exibe resposta final + evidência, se preenchida |
 
-> ⚠️ Um nó `MENU` sem filhos ou um nó `ANSWER` sem conteúdo são estados
-> inválidos — o service deve validar isso na criação e atualização.
+> ⚠️ O código atual não usa `nodeType`. A distinção prática é feita pela
+> presença ou ausência de filhos.
 
 ***
 
@@ -190,11 +208,9 @@ Documentação completa com exemplos de request/response em
 ## 📐 Regras de Contribuição <a id="regras"></a>
 
 - **Nunca permita remover** um nó com filhos — a integridade da árvore é inegociável
-- Nós do tipo `ANSWER` **devem ter** `content` — valide isso no service, não apenas no schema Zod
-- Nós do tipo `MENU` **não devem ter** `content` — o campo é ignorado se enviado
-- O campo `order` define a posição do nó entre seus irmãos — o frontend depende disso para renderizar as opções na ordem correta
+- O campo `display_order` define a posição do nó entre seus irmãos — o frontend depende disso para renderizar as opções na ordem correta
 - **Não exponha** as rotas deste módulo publicamente — a leitura pública dos nós é exclusividade de `modules/chatbot/`
-- Mover um nó de pai (`parentId`) não é suportado — rejeite alterações de `parentId` no `update` com `400 Bad Request`
+- Ao alterar `parent_id`, valide que o novo pai existe e que o nó não aponta para si mesmo
 
 ***
 

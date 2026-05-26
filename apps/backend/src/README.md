@@ -27,11 +27,12 @@ Ele **não** chama `.listen()`; essa responsabilidade fica em `index.ts`, o que
 mantém o app importável por testes de integração.
 
 ```ts
-app.use(loggerMiddleware)       // 1. loga tudo
-app.use(cors())                 // 2. libera o frontend
-app.use(express.json())         // 3. habilita req.body
-app.use('/api/v1', routes)      // 4. monta as rotas
-app.use(errorMiddleware)        // 5. captura todos os erros
+app.use(cors())                         // 1. libera o frontend
+app.use(loggerMiddleware)               // 2. loga tudo
+app.use(express.json({ limit: '10mb' })) // 3. habilita req.body
+app.get('/api/v1/health', ...)          // 4. health check público
+app.use('/api/v1', routes)              // 5. monta as rotas
+app.use(errorMiddleware)                // 6. captura todos os erros
 ```
 
 A ordem importa — middlewares são executados na sequência em que são registrados.
@@ -43,7 +44,7 @@ efetivamente sobe o processo HTTP:
 
 ```ts
 import { env } from '@/config/env'
-import { app } from '@/server'
+import app from '@/server'
 
 app.listen(env.PORT, () => {
   console.log(`HTTP server running on port ${env.PORT}`)
@@ -78,10 +79,11 @@ O coração da aplicação. Cada módulo representa um domínio de negócio e se
 modules/
 ├── auth/        # Login e geração de JWT
 ├── chatbot/     # Navegação na árvore de nós e sessões
+├── dashboard/   # Métricas agregadas do painel
 ├── questions/   # Perguntas enviadas pelos alunos
 ├── nodes/       # CRUD dos nós do chatbot (ADMIN)
 ├── users/       # Usuários da secretaria (ADMIN)
-└── logs/        # Visualização de sessões (ADMIN)
+└── logs/        # Visualização de sessões (ADMIN/SECRETARIA)
 ```
 
 → Veja [`modules/README.md`](./modules/README.md)
@@ -106,7 +108,7 @@ Define o `AppError` — classe que estende `Error` com um `statusCode` HTTP. Tod
 
 ### `utils/`
 
-Funções puras sem estado e sem dependência de Express ou Prisma. Contém utilitários de hash de senha (`hash.utils.ts`), geração e validação de JWT (`jwt.utils.ts`) e cálculo de paginação (`pagination.utils.ts`).
+Funções puras sem estado e sem dependência de Express ou Prisma. Contém utilitários de hash de senha (`hash.util.ts`), geração e validação de JWT (`jwt.utils.ts`) e cálculo de paginação (`pagination.utils.ts`).
 
 → Veja [`utils/README.md`](./utils/README.md)
 
@@ -118,10 +120,8 @@ Funções puras sem estado e sem dependência de Express ou Prisma. Contém util
 Cliente
   └─► Express (server.ts)
         ├─ loggerMiddleware       — loga método + path
-        ├─ authMiddleware         — valida JWT, popula req.user
-        ├─ rbacMiddleware         — verifica role
         ├─ routes/index.ts        — direciona ao módulo correto
-        │     └─ module.routes    — valida body com Zod
+        │     └─ module.routes    — aplica auth/RBAC quando necessário e valida body com Zod
         │           └─ controller — extrai req, chama service
         │                 └─ service — lógica + Prisma
         └─ errorMiddleware        — formata qualquer erro em JSON

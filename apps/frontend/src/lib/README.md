@@ -40,7 +40,10 @@ api.interceptors.request.use(config => {
 api.interceptors.response.use(
   res => res,
   err => {
-    if (err.response?.status === 401) {
+    const isLoginRequest = String(err.config?.url ?? '').includes('/auth/login')
+    const isAlreadyOnLoginPage = window.location.pathname === '/login'
+
+    if (err.response?.status === 401 && !isLoginRequest && !isAlreadyOnLoginPage) {
       useAuthStore.getState().clearAuth()
       window.location.href = '/login'
     }
@@ -65,10 +68,6 @@ export const queryClient = new QueryClient({
     queries: {
       staleTime: 1000 * 60 * 5,   // dados frescos por 5 minutos
       retry: 1,                    // 1 retry em caso de erro de rede
-      refetchOnWindowFocus: false, // não refaz fetch ao focar a janela
-    },
-    mutations: {
-      retry: 0,                    // mutations não fazem retry automático
     },
   },
 })

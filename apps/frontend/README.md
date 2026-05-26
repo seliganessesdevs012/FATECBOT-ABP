@@ -147,6 +147,7 @@ ambiente antes do crescimento das features.
 | Build           | `pnpm build`   | Gera bundle otimizado em `dist/`          |
 | Preview         | `pnpm preview` | Serve o build de produção localmente      |
 | Lint            | `pnpm lint`    | ESLint no projeto                         |
+| Testes          | `pnpm test`    | Executa Vitest em modo run                |
 
 > Scripts de test no monorepo são executados pela raiz (`pnpm test`).
 
@@ -158,9 +159,9 @@ Copie `.env.example` para `.env`:
 
 ```bash
 # URL base da API REST — deve apontar para o backend
-# Em Docker: http://localhost:3333
+# Em Docker: http://localhost:3000/api/v1
 # Em produção: https://api.seu-dominio.com
-VITE_API_URL=http://localhost:3333
+VITE_API_URL=http://localhost:3000/api/v1
 
 # Habilita React Query Devtools (true em dev, false em produção)
 VITE_ENABLE_DEVTOOLS=true
@@ -177,19 +178,19 @@ VITE_USE_MOCKS=false
 
 ## 🗺️ Rotas da Aplicação <a id="rotas-da-aplicação"></a>
 
-> **Estado atual da Sprint 1:** as rotas montadas no `router.tsx` são `/`, `/login`, `/admin` e `/secretary`.
-> As demais rotas abaixo permanecem documentadas como estrutura-alvo para as próximas sprints.
+> **Estado atual:** as rotas montadas no `router.tsx` são `/`, `/login`, `/admin`, `/admin/nodes`, `/admin/users`, `/admin/tickets`, `/admin/logs` e `/secretary`.
+> A rota `/secretary` é mantida como legado e redireciona para `/admin`.
 
 | Rota                   |    Acesso    | Componente de página             | Descrição                        |
 | ---------------------- | :----------: | -------------------------------- | -------------------------------- |
 | `/`                    |   Público    | `routes/index.tsx`               | Chatbot conversacional           |
 | `/login`               |   Público    | `routes/login.tsx`               | Formulário de autenticação       |
-| `/admin`               |   🔒 ADMIN   | `routes/admin/index.tsx`         | Página-base protegida do administrador |
-| `/admin/nodes`         |   🔒 ADMIN   | `routes/admin/nodes.tsx`         | Planejada para o CRUD de nós de navegação |
-| `/admin/users`         |   🔒 ADMIN   | `routes/admin/users.tsx`         | Planejada para a gestão de usuários da secretaria |
-| `/admin/logs`          |   🔒 ADMIN   | `routes/admin/logs.tsx`          | Planejada para a visualização de logs |
-| `/secretary`           | 🔒 SECRETARIA | `routes/secretary/index.tsx`    | Página-base protegida da secretária |
-| `/secretary/questions` | 🔒 SECRETARIA | `routes/secretary/questions.tsx` | Planejada para a gestão de perguntas recebidas |
+| `/admin`               | 🔒 ADMIN/SECRETARIA | `routes/admin/index.tsx`   | Dashboard do painel unificado |
+| `/admin/nodes`         |   🔒 ADMIN   | `routes/admin/nodes.tsx`         | CRUD de nós de navegação |
+| `/admin/users`         |   🔒 ADMIN   | `routes/admin/users.tsx`         | Gestão de usuários internos |
+| `/admin/tickets`       | 🔒 ADMIN/SECRETARIA | `routes/admin/tickets.tsx` | Gestão de perguntas recebidas |
+| `/admin/logs`          | 🔒 ADMIN/SECRETARIA | `routes/admin/logs.tsx`    | Visualização de logs |
+| `/secretary`           | 🔒 ADMIN/SECRETARIA | `routes/secretary/index.tsx` | Redireciona para `/admin` |
 
 > Rotas com 🔒 redirecionam para `/login` se o usuário não estiver autenticado
 > (`ProtectedRoute`) e retornam 403 se o role não tiver permissão (`RoleGuard`).
@@ -298,11 +299,11 @@ O `auth.store.ts` (Zustand) é a fonte de verdade para o estado de autenticaçã
 
 ### `features/admin` — RF04
 
-Documentado como estrutura-alvo do painel do administrador. No estado atual, a rota protegida `/admin` já existe e a camada de dados de nós (`nodesApi` + `useNodes`) está implementada; os componentes visuais de CRUD, usuários e logs permanecem para as próximas sprints.
+Implementa o painel unificado com dashboard, CRUD de nós, usuários internos, tickets e logs. Algumas áreas são compartilhadas com `SECRETARIA`; nós e usuários permanecem restritos a `ADMIN`.
 
 ### `features/secretary` — RF06
 
-Documentado como estrutura-alvo do painel da secretária. Na Sprint 1, a rota protegida `/secretary` já existe, mas a listagem e atualização de perguntas ainda não foram montadas.
+Permanece como domínio de API/hooks/componentes para perguntas recebidas. A rota legada `/secretary` redireciona para o painel unificado em `/admin`, e o fluxo operacional de perguntas é acessado por `/admin/tickets`.
 
 ---
 

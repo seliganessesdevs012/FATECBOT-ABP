@@ -14,11 +14,9 @@ das sessões e estabilização da aplicação para demonstração final.
 
 ## Foco esperado
 
-- Tela de perguntas da secretária
-- Atualização de status `OPEN → ANSWERED`
-- Visualização de logs de atendimento
-- Ajustes finais do chatbot
-- Testes e correções de integração
+- Responsividade
+- Testes e correções
+- Ajustes finais
 
 ***
 

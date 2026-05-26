@@ -24,7 +24,7 @@ Este módulo tem dois públicos distintos com responsabilidades diferentes:
 
 | Quem               | O que pode fazer                                 |    Acesso    |
 | ------------------ | ------------------------------------------------ | :----------: |
-| Aluno              | Enviar uma pergunta com e-mail e texto da dúvida |   Público    |
+| Aluno              | Enviar uma pergunta com e-mail, texto da dúvida e anexo opcional |   Público    |
 | Secretária / Admin | Listar perguntas e atualizar status              | 🔒 SEC/ADMIN |
 
 A separação de acesso é feita na própria rota — o mesmo módulo atende
@@ -64,13 +64,13 @@ router.post("/", questionsController.create);
 // Protegido — secretária e admin gerenciam
 router.get(
   "/",
-  authMiddleware,
+  authenticate,
   authorize("SECRETARIA", "ADMIN"),
   questionsController.getAll,
 );
 router.patch(
   "/:id",
-  authMiddleware,
+  authenticate,
   authorize("SECRETARIA", "ADMIN"),
   questionsController.updateStatus,
 );
@@ -80,9 +80,10 @@ Bodies de `POST` e `PATCH` são validados com Zod antes de chegar ao controller.
 
 ### questions.service.ts
 
-**`create`** — registra a pergunta no banco com status inicial `ABERTA`.
+**`createQuestion`** — registra a pergunta no banco com status inicial `ABERTA`.
 Não valida se o e-mail pertence a um aluno cadastrado — o acesso ao chatbot
-é público e sem autenticação:
+é público e sem autenticação. Quando há anexo, o arquivo chega em base64,
+é convertido para bytes e salvo no storage configurado:
 
 ```ts
 await prisma.question.create({
@@ -90,18 +91,19 @@ await prisma.question.create({
     requester_name: dto.requester_name,
     question: dto.question,
     requester_email: dto.requester_email,
+    session_log_id: dto.session_log_id ?? null,
     status: "ABERTA",
   },
 });
 ```
 
-**`getAll`** — lista todas as perguntas ordenadas pela mais recente.
-Suporta filtro opcional por `status` via query param:
+**`listQuestions`** — lista todas as perguntas ordenadas pela mais recente.
+Suporta filtro opcional por `status` e paginação via query params:
 
 ```ts
 // GET /questions?status=ABERTA
 const where = status ? { status } : {};
-return prisma.question.findMany({ where, orderBy: { createdAt: "desc" } });
+return prisma.question.findMany({ where, orderBy: { created_at: "desc" }, skip, take });
 ```
 
 **`updateStatus`** — atualiza o status de uma pergunta. Valida que a
@@ -110,6 +112,10 @@ se o `id` não existir no banco.
 
 > A transição canônica de status está definida em [`../../../../../docs/api-layer.md`](../../../../../docs/api-layer.md):
 > `Question` só pode ir de `ABERTA` para `RESPONDIDA`.
+
+**`getAttachment`** — resolve o anexo salvo para uma pergunta. Retorna arquivo
+do storage quando `attachment_storage_key` existe, ou o buffer legado quando
+`attachment_data` ainda está preenchido.
 
 ### questions.controller.ts
 
@@ -131,6 +137,10 @@ interface CreateQuestionDto {
   requester_name: string;
   question: string;
   requester_email: string;
+  session_log_id?: number | null;
+  attachment_name?: string | null;
+  attachment_mime_type?: string | null;
+  attachment_data?: Uint8Array | null;
 }
 
 // Body esperado no PATCH /questions/:id
@@ -144,7 +154,14 @@ interface QuestionResponse {
   requester_name: string;
   question: string;
   requester_email: string;
+  session_log_id?: number | null;
+  attachment_name?: string | null;
+  attachment_mime_type?: string | null;
+  attachment_size_bytes?: number | null;
+  has_attachment: boolean;
   status: "ABERTA" | "RESPONDIDA";
+  answered_at?: string | null;
+  answered_by_user?: AnsweredByUserDTO | null;
   created_at: string;
   updated_at: string;
 }
@@ -157,7 +174,7 @@ interface QuestionResponse {
 ```
 Aluno finaliza atendimento no chatbot
         ↓
-Preenche QuestionForm → POST /questions { text, email }
+Preenche QuestionForm → POST /questions { requester_name, question, requester_email, anexo opcional }
         ↓
 Pergunta criada com status ABERTA → 201
         ↓
@@ -185,13 +202,14 @@ Documentação completa com exemplos de request/response em
 | ------- | ----------------------- | :----------: | --------------------------- |
 | `POST`  | `/api/v1/questions`     |   Público    | Envia pergunta à secretaria |
 | `GET`   | `/api/v1/questions`     | 🔒 SEC/ADMIN | Lista perguntas recebidas   |
+| `GET`   | `/api/v1/questions/:id/attachment` | 🔒 SEC/ADMIN | Baixa anexo da pergunta |
 | `PATCH` | `/api/v1/questions/:id` | 🔒 SEC/ADMIN | Atualiza status da pergunta |
 
 ---
 
 ## 📐 Regras de Contribuição <a id="regras"></a>
 
-- O `POST /questions` é **sempre público** — nunca adicione `authMiddleware` nesta rota
+- O `POST /questions` é **sempre público** — nunca adicione `authenticate` nesta rota
 - O status inicial de toda pergunta criada é sempre `ABERTA` — nunca aceite status no body do `POST`
 - Não valide se o e-mail pertence a um aluno cadastrado — o chatbot é público e sem autenticação
 - O sistema **não envia e-mails** — apenas armazena o endereço para uso externo pela secretária

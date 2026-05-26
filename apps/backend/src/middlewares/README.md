@@ -38,8 +38,8 @@ Verifica se o `role` do usuário autenticado tem permissão para acessar a rota.
 
 ```ts
 // Uso nas rotas
-router.get('/', authMiddleware, authorize('ADMIN', 'SECRETARIA'), controller.list)
-router.delete('/:id', authMiddleware, authorize('ADMIN'), controller.remove)
+router.get('/', authenticate, authorize('ADMIN', 'SECRETARIA'), controller.list)
+router.delete('/:id', authenticate, authorize('ADMIN'), controller.remove)
 ```
 
 Se o role não estiver na lista permitida, responde `403` — sem chegar no controller.
@@ -58,7 +58,6 @@ O único lugar da aplicação que responde com erro. Captura tudo que chega via 
 |---|---|---|
 | `AppError` | Definido no erro | Responde com a mensagem controlada |
 | `ZodError` | `422` | Responde com os erros por campo |
-| `PrismaClientKnownRequestError` | Varia | Trata P2002, P2025 e similares |
 | Qualquer outro | `500` | Loga internamente, responde mensagem genérica |
 
 Erros inesperados nunca vazam stack trace ou detalhes internos para o cliente — apenas são logados no servidor.
@@ -76,7 +75,7 @@ POST /api/v1/auth/login — 2026-03-25T10:00:00.000Z
 GET  /api/v1/questions  — 2026-03-25T10:00:01.234Z
 ```
 
-**Deve ser registrado primeiro no `server.ts`** — antes de todas as rotas, para garantir que toda requisição seja logada independente do resultado.
+É registrado logo após o `cors()` no `server.ts`, antes do parser JSON e das rotas.
 
 ***
 
@@ -85,11 +84,12 @@ GET  /api/v1/questions  — 2026-03-25T10:00:01.234Z
 A ordem importa — middlewares são executados na sequência em que são registrados:
 
 ```
-1. loggerMiddleware      → loga tudo, inclusive erros
-2. cors                  → libera o frontend antes de qualquer processamento
-3. express.json()        → sem isso, req.body chega undefined
-4. rotas (/api/v1)       → auth e rbac são aplicados por rota dentro dos módulos
-5. errorMiddleware       → último — captura erros de todos os anteriores
+1. cors                  → libera o frontend antes de qualquer processamento
+2. loggerMiddleware      → loga tudo após CORS
+3. express.json({ limit: "10mb" }) → sem isso, req.body chega undefined
+4. health check          → `/api/v1/health`
+5. rotas (/api/v1)       → auth e rbac são aplicados por rota dentro dos módulos
+6. errorMiddleware       → último — captura erros de todos os anteriores
 ```
 
 ***
@@ -98,7 +98,7 @@ A ordem importa — middlewares são executados na sequência em que são regist
 
 - Middlewares específicos de um módulo ficam **dentro do módulo** — esta pasta é só para os globais
 - O `errorMiddleware` deve sempre ser o último registrado no `server.ts`
-- O `loggerMiddleware` deve sempre ser o primeiro
+- O `loggerMiddleware` deve permanecer antes do parser JSON e das rotas
 - Nunca responda com `res.json()` de erro fora do `errorMiddleware` — use sempre `next(error)`
 
 ***

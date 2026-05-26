@@ -1,7 +1,8 @@
 # 🔌 Camada de API
 
 > Documentação completa de todos os endpoints REST do **FatecBot**.
-> Base URL: `http://localhost:3333/api/v1`
+> Base URL: `http://localhost:3000/api/v1` no Docker Compose da raiz.
+> Em execução local do backend isolado, use o `PORT` configurado em `apps/backend/.env`.
 >
 > Todas as rotas protegidas exigem o header:
 >
@@ -20,7 +21,8 @@
 - [Perguntas](#perguntas)
 - [Nós de Navegação (Admin)](#nós-de-navegação-admin)
 - [Usuários (Admin)](#usuários-admin)
-- [Logs (Admin)](#logs-admin)
+- [Dashboard](#dashboard)
+- [Logs](#logs)
 - [Códigos de Status](#códigos-de-status)
 
 ***
@@ -87,6 +89,7 @@ E retornam metadados em `meta`:
 Os query params previstos neste documento são:
 
 - `GET /questions`: `status`, `page`, `limit`
+- `GET /users`: `page`, `limit`
 - `GET /logs`: `flag`, `from`, `to`, `page`, `limit`
 - Endpoints sem query params documentados aqui não devem aceitar filtros implícitos sem atualização deste contrato
 
@@ -334,11 +337,12 @@ Registra o log de atendimento e a avaliação de satisfação ao encerrar uma se
 {
   "navigation_flow": ["root", "dsm", "dsm-estagio", "dsm-estagio-duracao"],
   "flag": "ATENDEU",
+  "node_id": 13,
   "session_log_id": 12
 }
 ```
 
-`session_log_id` é opcional. Quando omitido, a API cria uma nova sessão.
+`node_id` é obrigatório. `session_log_id` é opcional. Quando omitido, a API cria uma nova sessão.
 Quando informado, a API atualiza a sessão existente com o fluxo acumulado
 da conversa e adiciona a nova avaliação ao histórico interno da sessão.
 
@@ -374,13 +378,18 @@ Envia uma pergunta do aluno à Secretaria Acadêmica.
 }
 ```
 
-**Request** — com anexo (multipart/form-data)
+**Request** — com anexo em JSON
 
-```
-requester_name: João Silva
-question: Posso solicitar aproveitamento de uma disciplina cursada em 2015?
-requester_email: joao.silva@fatec.sp.gov.br
-attachment: [arquivo PDF/JPG/PNG — máx. 5MB]
+```json
+{
+  "requester_name": "João Silva",
+  "question": "Posso solicitar aproveitamento de uma disciplina cursada em 2015?",
+  "requester_email": "joao.silva@fatec.sp.gov.br",
+  "session_log_id": 12,
+  "attachment_name": "historico.pdf",
+  "attachment_mime_type": "application/pdf",
+  "attachment_data": "JVBERi0xLjQ..."
+}
 ```
 
 **Response `201 Created`**
@@ -389,9 +398,20 @@ attachment: [arquivo PDF/JPG/PNG — máx. 5MB]
 {
   "success": true,
   "data": {
-    "id": 1,
-    "status": "ABERTA",
-    "created_at": "2026-03-27T20:18:00.000Z"
+      "id": 1,
+      "requester_name": "João Silva",
+      "question": "Posso solicitar aproveitamento de uma disciplina cursada em 2015?",
+      "requester_email": "joao.silva@fatec.sp.gov.br",
+      "session_log_id": null,
+      "attachment_name": null,
+      "attachment_mime_type": null,
+      "attachment_size_bytes": null,
+      "has_attachment": false,
+      "status": "ABERTA",
+      "answered_at": null,
+      "answered_by_user": null,
+      "created_at": "2026-03-27T20:18:00.000Z",
+      "updated_at": "2026-03-27T20:18:00.000Z"
   }
 }
 ```
@@ -401,7 +421,7 @@ attachment: [arquivo PDF/JPG/PNG — máx. 5MB]
 ```json
 {
   "success": false,
-  "message": "Dados inválidos",
+  "message": "Erro de validacao",
   "errors": [{ "field": "requester_email", "message": "E-mail inválido" }]
 }
 ```
@@ -441,7 +461,14 @@ Authorization: Bearer <token>
       "requester_name": "João Silva",
       "question": "Posso solicitar aproveitamento de uma disciplina cursada em 2015?",
       "requester_email": "joao.silva@fatec.sp.gov.br",
+      "session_log_id": null,
+      "attachment_name": "historico.pdf",
+      "attachment_mime_type": "application/pdf",
+      "attachment_size_bytes": 245760,
+      "has_attachment": true,
       "status": "ABERTA",
+      "answered_at": null,
+      "answered_by_user": null,
       "created_at": "2026-03-27T20:18:00.000Z",
       "updated_at": "2026-03-27T20:18:00.000Z"
     }
@@ -487,17 +514,67 @@ Content-Type: application/json
   "success": true,
   "data": {
     "id": 1,
+    "requester_name": "João Silva",
+    "question": "Posso solicitar aproveitamento de uma disciplina cursada em 2015?",
+    "requester_email": "joao.silva@fatec.sp.gov.br",
+    "session_log_id": null,
+    "attachment_name": null,
+    "attachment_mime_type": null,
+    "attachment_size_bytes": null,
+    "has_attachment": false,
     "status": "RESPONDIDA",
+    "answered_at": "2026-03-27T21:00:00.000Z",
+    "answered_by_user": {
+      "id": 2,
+      "name": "Secretaria Academica",
+      "email": "secretaria@fatec.sp.gov.br",
+      "role": "SECRETARIA"
+    },
+    "created_at": "2026-03-27T20:18:00.000Z",
     "updated_at": "2026-03-27T21:00:00.000Z"
   }
 }
 ```
+
+### `GET /questions/:id/attachment`
+
+Baixa o anexo salvo para uma pergunta.
+
+- **Acesso:** 🔒 Protegido
+- **Role exigida:** `SECRETARIA` ou `ADMIN`
+
+**Response `200 OK`**
+
+Retorna o arquivo com `Content-Type` igual ao MIME type salvo e `Content-Disposition: inline`.
 
 ***
 
 ## 🌿 Nós de Navegação (Admin) <a id="nós-de-navegação-admin"></a>
 
 > Todas as rotas abaixo exigem `role: ADMIN`.
+
+### `GET /nodes`
+
+Lista os nós ativos para montagem da árvore administrativa.
+
+**Response `200 OK`**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 20,
+      "title": "Novo tópico",
+      "slug": "dsm-novo-topico",
+      "parent_id": 2,
+      "display_order": 5,
+      "is_active": true,
+      "childrenCount": 0
+    }
+  ]
+}
+```
 
 ### `POST /nodes`
 
@@ -513,6 +590,9 @@ Cria um novo nó na árvore de navegação.
   "answer_summary": "Resposta objetiva do bot para este nó.",
   "evidence_excerpt": null,
   "evidence_source": null,
+  "evidence_file_name": null,
+  "evidence_file_mime_type": null,
+  "evidence_file_data": null,
   "parent_id": 2,
   "display_order": 5,
   "is_active": true
@@ -531,7 +611,7 @@ Cria um novo nó na árvore de navegação.
     "parent_id": 2,
     "display_order": 5,
     "is_active": true,
-    "created_at": "2026-03-28T10:00:00.000Z"
+    "childrenCount": 0
   }
 }
 ```
@@ -558,7 +638,12 @@ Atualiza parcialmente um nó existente.
   "success": true,
   "data": {
     "id": 20,
-    "answer_summary": "Conteúdo atualizado com novas informações do calendário."
+    "title": "Novo tópico",
+    "slug": "dsm-novo-topico",
+    "parent_id": 2,
+    "display_order": 5,
+    "is_active": true,
+    "childrenCount": 0
   }
 }
 ```
@@ -595,7 +680,7 @@ Remove um nó. Se o nó possuir filhos, a operação é bloqueada.
 
 ### `GET /users`
 
-Lista os usuários com perfil `SECRETARIA`.
+Lista os usuários internos (`ADMIN` e `SECRETARIA`) com paginação.
 
 **Response `200 OK`**
 
@@ -621,7 +706,7 @@ Lista os usuários com perfil `SECRETARIA`.
 
 ### `POST /users`
 
-Cria um novo usuário da secretaria.
+Cria um novo usuário interno.
 
 **Request**
 
@@ -650,22 +735,51 @@ Cria um novo usuário da secretaria.
 
 ### `DELETE /users/:id`
 
-Remove um usuário. Um administrador não pode remover a si próprio.
+Remove um usuário. A API bloqueia a remoção do único usuário com role `ADMIN`.
 
-**Response `403 Forbidden`** — tentativa de auto-remoção
+**Response `409 Conflict`** — tentativa de remover o único administrador
 
 ```json
 {
   "success": false,
-  "message": "Um administrador não pode remover sua própria conta."
+  "message": "Nao e possivel remover o unico admin"
 }
 ```
 
 ***
 
-## 📊 Logs (Admin) <a id="logs-admin"></a>
+## 📊 Dashboard <a id="dashboard"></a>
 
-> Todas as rotas abaixo exigem `role: ADMIN`.
+> A rota abaixo exige `role: ADMIN` ou `SECRETARIA`.
+
+### `GET /dashboard/metrics`
+
+Retorna métricas agregadas do painel.
+
+**Response `200 OK`**
+
+```json
+{
+  "success": true,
+  "data": {
+    "unansweredTickets": 3,
+    "positiveRateLast7Days": 82,
+    "positiveRateAllTime": 76,
+    "averageClicks": 3.4,
+    "recentSessionsAnalyzed": 120,
+    "totalSessions": 450,
+    "clickDistribution": [
+      { "clicks": 1, "sessions": 20, "percentage": 17 }
+    ]
+  }
+}
+```
+
+***
+
+## 📊 Logs <a id="logs"></a>
+
+> Todas as rotas abaixo exigem `role: ADMIN` ou `SECRETARIA`.
 
 ### `GET /logs`
 

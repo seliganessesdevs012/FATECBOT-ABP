@@ -21,24 +21,12 @@ Lê as variáveis de ambiente do Vite via `import.meta.env`, valida com Zod e ex
 import { z } from 'zod'
 
 const envSchema = z.object({
-  VITE_API_URL: z.string().url('VITE_API_URL deve ser uma URL válida'),
-  VITE_ENABLE_DEVTOOLS: z
-    .enum(['true', 'false'])
-    .default('false'),
-  VITE_USE_MOCKS: z
-    .enum(['true', 'false'])
-    .default('false'),
-  })
+  VITE_API_URL: z.string().url(),
+  VITE_ENABLE_DEVTOOLS: z.string().default('false'),
+  VITE_USE_MOCKS: z.string().default('false'),
+})
 
-const parsed = envSchema.safeParse(import.meta.env)
-
-if (!parsed.success) {
-  console.error('Variáveis de ambiente inválidas:')
-  console.error(parsed.error.flatten().fieldErrors)
-  throw new Error('Configuração de ambiente inválida. Verifique o .env.')
-}
-
-export const env = parsed.data
+export const env = envSchema.parse(import.meta.env)
 ```
 
 **Por que não acessar `import.meta.env` diretamente nos componentes?**
@@ -77,7 +65,7 @@ const api = axios.create({ baseURL: import.meta.env.VITE_API_URL })
 
 - `import.meta.env` só pode ser acessado dentro deste arquivo
 - Nunca exporte o schema Zod — apenas o objeto `env` validado
-- Variáveis booleanas chegam como string (`'true'`/`'false'`) — use `z.enum(['true', 'false'])`, não `z.boolean()`
+- Variáveis booleanas chegam como string (`'true'`/`'false'`) — mantenha a leitura como string ou normalize explicitamente antes de usar como booleano
 
 ***
 

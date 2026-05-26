@@ -23,7 +23,7 @@ Você vai precisar de **Docker** e **Git** instalados. Só isso.
 ```bash
 git clone <repositorio>
 cd fatecbot
-cp .env.example .env
+# Crie um arquivo .env na raiz com as variáveis descritas no README principal
 docker compose up --build
 ```
 
@@ -63,7 +63,7 @@ Leia [`project-standards.md`](./project-standards.md). Ele cobre as convenções
 
 Com o projeto rodando e a estrutura clara, abra o backlog da sprint atual:
 
-- **[`sprint1/README.md`](./sprint1/README.md)** — tarefas detalhadas com contratos de entrada e saída
+- **[`sprint3/README.md`](./sprint3/README.md)** — sprint mais recente do fluxo de entrega documentado
 
 Cada task diz exatamente quais arquivos ela possui, o que ela exporta e de quais outras tasks ela depende. Leia o contrato da sua task antes de escrever qualquer código.
 
@@ -71,7 +71,7 @@ Cada task diz exatamente quais arquivos ela possui, o que ela exporta e de quais
 
 ## Precisa de ajuda com a stack?
 
-Os READMEs de [`../apps/frontend/`](../apps/frontend/README.md) e [`../apps/backend/`](../apps/backend/README.md) concentram hoje as referências práticas mais úteis sobre stack, rotas montadas e setup da Sprint 1. Consulte esses arquivos quando travar em algo específico.
+Os READMEs de [`../apps/frontend/`](../apps/frontend/README.md) e [`../apps/backend/`](../apps/backend/README.md) concentram hoje as referências práticas mais úteis sobre stack, rotas montadas e setup atual. Consulte esses arquivos quando travar em algo específico.
 
 ---
 

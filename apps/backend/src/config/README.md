@@ -45,13 +45,13 @@ jwt.sign(payload, secret) // seguro
 
 ## `database.ts`
 
-Exporta uma instância única do `PrismaClient` compartilhada em toda a aplicação. Instanciar o Prisma múltiplas vezes abre várias connection pools desnecessárias — com o singleton, todo o projeto usa a mesma conexão.
+Exporta uma instância única `db` do `PrismaClient` com adapter `@prisma/adapter-pg` e pool de `pg`, compartilhada em toda a aplicação. Instanciar o Prisma múltiplas vezes abre várias connection pools desnecessárias — com o singleton, todo o projeto usa a mesma conexão.
 
 ```ts
 // Importado assim em qualquer módulo que precisa do banco
-import { prisma } from '@/config/database'
+import { db } from '@/config/database'
 
-const questions = await prisma.question.findMany()
+const questions = await db.question.findMany()
 ```
 
 **Por que singleton?**

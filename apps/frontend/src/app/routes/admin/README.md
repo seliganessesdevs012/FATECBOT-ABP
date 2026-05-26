@@ -4,7 +4,7 @@
 > Cada arquivo representa uma tela do painel e é responsável apenas por compor
 > layout e features — a lógica de negócio vive em `features/admin/`.
 
-> **Nota de estado da Sprint 1:** no `router.tsx`, apenas a rota base `/admin` está montada hoje, usando `index.tsx`. Os demais arquivos desta pasta permanecem como placeholders documentados para as próximas sprints.
+> **Estado atual:** `router.tsx` monta `/admin`, `/admin/nodes`, `/admin/users`, `/admin/tickets` e `/admin/logs`. `documents.tsx` existe no diretório, mas não está registrado no roteador.
 
 ---
 
@@ -23,9 +23,9 @@ As páginas de admin são o ponto de encontro entre o layout autenticado e as fe
 de gestão de conteúdo (RF04). Elas **não implementam** lógica de dados — apenas
 orquestram quais componentes de `features/admin/` aparecem em cada tela.
 
-Todo acesso a esta pasta é protegido por **duas camadas** declaradas em `router.tsx`:
+Todo acesso montado desta pasta é protegido por **duas camadas** declaradas em `router.tsx`:
 
-Requisição → ProtectedRoute (valida autenticação) → RoleGuard('ADMIN') → Página
+Requisição → ProtectedRoute (valida autenticação) → RoleGuard(roles permitidas) → Página
 
 > ⚠️ **Nunca remova ou mova** o `RoleGuard` para dentro dos componentes de página.
 > A proteção por role deve ser declarada no roteador, não nas folhas da árvore.
@@ -36,12 +36,13 @@ Requisição → ProtectedRoute (valida autenticação) → RoleGuard('ADMIN') �
 
 | Arquivo         | Rota               | Descrição                                                  | RF   |
 | --------------- | ------------------ | ---------------------------------------------------------- | ---- |
-| `index.tsx`     | `/admin`           | Página-base protegida atualmente montada no roteador       | RF03 · RF09 · RF10 |
-| `dashboard.tsx` | `/admin`           | Estrutura planejada para a visão geral do painel           | RF04 |
-| `nodes.tsx`     | `/admin/nodes`     | Estrutura planejada para o CRUD de nós de navegação        | RF04 |
-| `documents.tsx` | `/admin/documents` | Estrutura planejada para gestão de documentos e chunks     | RF02 |
-| `users.tsx`     | `/admin/users`     | Estrutura planejada para criação e remoção de usuários     | RF04 |
-| `logs.tsx`      | `/admin/logs`      | Estrutura planejada para visualização de logs              | RF08 |
+| `index.tsx`     | `/admin`           | Reexporta `dashboard.tsx`                                  | RF03 · RF09 · RF10 |
+| `dashboard.tsx` | `/admin`           | Visão geral do painel com métricas                         | RF04 · RF08 |
+| `nodes.tsx`     | `/admin/nodes`     | CRUD de nós de navegação                                   | RF04 |
+| `tickets.tsx`   | `/admin/tickets`   | Gestão das perguntas/tickets recebidos                     | RF05 · RF06 |
+| `users.tsx`     | `/admin/users`     | Criação e remoção de usuários internos                     | RF04 |
+| `logs.tsx`      | `/admin/logs`      | Visualização de logs                                       | RF08 |
+| `documents.tsx` | —                  | Arquivo vazio, não montado no roteador atual               | — |
 
 ---
 
@@ -61,21 +62,23 @@ filhos — essa regra é aplicada e validada no backend.
 
 ### documents.tsx
 
-Tela de gestão de documentos oficiais (Regulamento Geral, Manual de Estágio,
-Calendário Acadêmico, PPCs). Cada documento pode ter múltiplos chunks indexados,
-usados como evidência nas respostas do chatbot (RF02).
+Arquivo vazio no estado atual e não montado no `router.tsx`.
 
 ### users.tsx
 
-Tela de gestão dos usuários do perfil Secretária Acadêmica. O administrador pode
-criar novos usuários e remover existentes. **Não é possível criar outros administradores
-por esta interface** — o administrador padrão é criado via seed.
+Tela de gestão de usuários internos. O administrador pode criar usuários `ADMIN`
+ou `SECRETARIA` e remover existentes; o backend impede remover o único admin.
 
 ### logs.tsx
 
 Tela de visualização dos logs de atendimento registrados pelo sistema (RF08).
 Exibe o fluxo de navegação, perguntas enviadas, avaliações de satisfação e
 data/hora de cada interação. Somente leitura — nenhuma ação de escrita disponível.
+
+### tickets.tsx
+
+Tela de gestão das perguntas encaminhadas pelo chatbot. Usa `TicketList` para
+listar, filtrar, baixar anexos e marcar tickets como respondidos.
 
 ---
 

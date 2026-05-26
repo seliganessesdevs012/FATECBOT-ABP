@@ -56,7 +56,7 @@ Resumo da estrutura do backend:
 - `prisma/`: schema, migrations e seed.
 - `src/config/`: validação de env e conexão com banco.
 - `src/middlewares/`: auth, RBAC, logger e tratamento global de erro.
-- `src/modules/`: domínios de negócio (`auth`, `chatbot`, `questions`, `nodes`, `users`, `logs`).
+- `src/modules/`: domínios de negócio (`auth`, `chatbot`, `dashboard`, `questions`, `nodes`, `users`, `logs`).
 - `src/routes/index.ts`: composição de rotas em `/api/v1`.
 - `src/utils/`: utilitários de hash, JWT e paginação.
 
@@ -79,7 +79,7 @@ O backend sobe automaticamente junto com o banco via Docker Compose na raiz do p
 docker compose up --build
 ```
 
-A API estará disponível em `http://localhost:3333`.
+A API estará disponível em `http://localhost:3000`.
 
 > O setup completo e canônico do monorepo está em [`../../docs/first-steps.md`](../../docs/first-steps.md).
 
@@ -106,10 +106,13 @@ pnpm db:seed
 pnpm dev
 ```
 
+Na execução local sem Docker, o `.env.example` do backend define `PORT=3333`.
+
 ### Verificar se a API está respondendo
 
 ```bash
-curl http://localhost:3333/api/v1/health
+curl http://localhost:3000/api/v1/health
+# Em execução local com o .env.example do backend: http://localhost:3333/api/v1/health
 # → { "success": true }
 ```
 
@@ -168,6 +171,11 @@ JWT_EXPIRES_IN=8h
 # ── Servidor ────────────────────────────────────────────────────
 PORT=3333
 NODE_ENV=development
+NODE_EVIDENCE_DIR=storage/node-evidence
+QUESTION_ATTACHMENT_DIR=storage/question-attachments
+ARGON2_MEMORY_COST=65536
+ARGON2_TIME_COST=3
+ARGON2_PARALLELISM=1
 ```
 
 > ⚠️ O `env.ts` valida estas variáveis com Zod no startup.
@@ -180,7 +188,7 @@ NODE_ENV=development
 
 Documentação completa com exemplos de request/response em [`docs/api-layer.md`](../../docs/api-layer.md).
 
-> **Estado atual da Sprint 1:** no `src/routes/index.ts`, os endpoints montados hoje são `POST /auth/login`, `GET /nodes/root`, `GET /nodes/:id`, `POST /sessions/log`, `POST /questions` e `GET /health`. As rotas administrativas e a gestão interna de perguntas continuam documentadas abaixo como arquitetura-alvo para as próximas sprints.
+> **Estado atual:** no `src/routes/index.ts`, os módulos montados hoje são `auth`, `chatbot`, `dashboard`, `questions`, `logs`, `nodes` e `users`, todos sob `/api/v1`.
 
 ### Resumo rápido
 
@@ -192,15 +200,17 @@ Documentação completa com exemplos de request/response em [`docs/api-layer.md`
 | `POST`   | `/sessions/log`  |   Público    | Registra log de sessão e satisfação                                        |
 | `POST`   | `/questions`     |   Público    | Envia pergunta com nome, e-mail e anexo opcional (PDF/JPG/PNG · máx. 5 MB) |
 | `GET`    | `/questions`     | 🔒 SEC/ADMIN | Lista perguntas recebidas                                                  |
+| `GET`    | `/questions/:id/attachment` | 🔒 SEC/ADMIN | Baixa anexo de uma pergunta                                      |
 | `PATCH`  | `/questions/:id` | 🔒 SEC/ADMIN | Atualiza status da pergunta                                                |
+| `GET`    | `/dashboard/metrics` | 🔒 SEC/ADMIN | Retorna métricas agregadas do painel                                  |
 | `GET`    | `/nodes`         |   🔒 ADMIN   | Lista todos os nós                                                         |
 | `POST`   | `/nodes`         |   🔒 ADMIN   | Cria novo nó de navegação                                                  |
 | `PATCH`  | `/nodes/:id`     |   🔒 ADMIN   | Atualiza nó existente                                                      |
 | `DELETE` | `/nodes/:id`     |   🔒 ADMIN   | Remove nó (bloqueado se tiver filhos)                                      |
-| `GET`    | `/users`         |   🔒 ADMIN   | Lista usuários da secretaria                                               |
-| `POST`   | `/users`         |   🔒 ADMIN   | Cria usuário da secretaria                                                 |
+| `GET`    | `/users`         |   🔒 ADMIN   | Lista usuários internos                                                    |
+| `POST`   | `/users`         |   🔒 ADMIN   | Cria usuário interno                                                       |
 | `DELETE` | `/users/:id`     |   🔒 ADMIN   | Remove usuário                                                             |
-| `GET`    | `/logs`          |   🔒 ADMIN   | Lista logs de atendimento                                                  |
+| `GET`    | `/logs`          | 🔒 SEC/ADMIN | Lista logs de atendimento                                                  |
 | `GET`    | `/health`        |   Público    | Health check da API                                                        |
 
 ---
@@ -221,11 +231,15 @@ Se a validação falhar, o middleware de erro retorna `422 Unprocessable Entity`
 ```ts
 // Exemplo em nodes.routes.ts
 const createNodeSchema = z.object({
-  title: z.string().min(1).max(255),
-  content: z.string().min(1),
-  nodeType: z.enum(["MENU", "ANSWER"]),
-  parentId: z.string().uuid().nullable(),
-  order: z.number().int().min(0),
+  title: z.string().min(1),
+  slug: z.string().min(1),
+  prompt: z.string().nullable().optional(),
+  answer_summary: z.string().nullable().optional(),
+  evidence_excerpt: z.string().nullable().optional(),
+  evidence_source: z.string().nullable().optional(),
+  parent_id: z.number().nullable().optional(),
+  display_order: z.number(),
+  is_active: z.boolean().optional(),
 });
 ```
 
@@ -245,7 +259,7 @@ Erro desconhecido  → 500 + "Erro interno do servidor" (sem vazar stack trace)
 A proteção de rotas é feita em **duas camadas** no Express:
 
 ```
-Requisição → authMiddleware (valida JWT) → authorize('ADMIN') (valida role) → Controller
+Requisição → authenticate (valida JWT) → authorize('ADMIN') (valida role) → Controller
 ```
 
 O frontend esconde ou mostra elementos de UI baseado no role, mas **isso é apenas UX**.

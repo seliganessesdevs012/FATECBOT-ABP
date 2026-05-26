@@ -2,7 +2,7 @@
 
 > Módulo responsável pela visualização dos logs de atendimento registrados
 > pelo sistema. Expõe os registros de sessão para auditoria e análise de uso
-> pelo Administrador (RF08). Somente leitura — nenhuma escrita ocorre aqui.
+> por Administradores e Secretárias (RF08). Somente leitura — nenhuma escrita ocorre aqui.
 
 ---
 
@@ -21,7 +21,7 @@
 
 Este módulo é **exclusivamente de leitura**. Os logs são criados pelo
 `modules/chatbot/` quando o usuário conclui um atendimento e registra
-sua avaliação — este módulo apenas os expõe para consulta pelo Administrador.
+sua avaliação — este módulo apenas os expõe para consulta interna.
 
 | Responsabilidade                      | Arquivo              |
 | ------------------------------------- | -------------------- |
@@ -38,7 +38,7 @@ sua avaliação — este módulo apenas os expõe para consulta pelo Administrad
 modules/logs/
 ├── logs.controller.ts  # Recebe req, chama service, devolve resposta HTTP
 ├── logs.service.ts     # Lógica de consulta, filtros e paginação
-├── logs.routes.ts      # Define rota protegida (🔒 ADMIN)
+├── logs.routes.ts      # Define rota protegida (🔒 ADMIN/SECRETARIA)
 └── logs.types.ts       # LogFiltersDto, SessionLogResponse
 ```
 
@@ -48,13 +48,13 @@ modules/logs/
 
 ### logs.routes.ts
 
-Rota única protegida por `authMiddleware` + `authorize('ADMIN')`:
+Rota única protegida por `authenticate` + `authorize("ADMIN", "SECRETARIA")`:
 
 ```ts
-router.use(authMiddleware);
-router.use(authorize("ADMIN"));
+router.use(authenticate);
+router.use(authorize("ADMIN", "SECRETARIA"));
 
-router.get("/", logsController.getAll);
+router.get("/", validateLogsQuery, logsController.getLogs);
 ```
 
 Os filtros são recebidos via **query params** — não há body nesta rota.
@@ -73,7 +73,7 @@ const where: Prisma.SessionLogWhereInput = {};
 
 if (flag) where.flag = flag;
 if (from || to) {
-  where.createdAt = {
+  where.created_at = {
     ...(from && { gte: new Date(from) }),
     ...(to && { lte: new Date(to) }),
   };
@@ -82,7 +82,7 @@ if (from || to) {
 const [logs, total] = await prisma.$transaction([
   prisma.sessionLog.findMany({
     where,
-    orderBy: { createdAt: "desc" },
+    orderBy: { created_at: "desc" },
     skip: (page - 1) * limit,
     take: limit,
   }),
@@ -98,15 +98,11 @@ Não contém lógica de negócio:
 ```ts
 // ✅ Controller fino — inclui metadados de paginação na resposta
 async getAll(req: Request, res: Response) {
-  const result = await logsService.getAll(req.query)
+  const result = await logsService.getLogs(req.query)
   res.status(200).json({
     success: true,
-    data: result.logs,
-    meta: {
-      total: result.total,
-      page: result.page,
-      limit: result.limit,
-    },
+    data: result.data,
+    meta: result.meta,
   })
 }
 ```
@@ -129,11 +125,16 @@ interface SessionLogResponse {
   navigation_flow: string[];
   flag: "ATENDEU" | "NAO_ATENDEU";
   created_at: string;
+  questions: {
+    id: number;
+    question: string;
+    status: "ABERTA" | "RESPONDIDA";
+  }[];
 }
 
 // Resposta paginada
 interface PaginatedLogsResponse {
-  logs: SessionLogResponse[];
+  data: SessionLogResponse[];
   meta: {
     total: number;
     page: number;
@@ -167,7 +168,7 @@ Documentação completa com exemplos de request/response em
 
 | Método | Rota           |  Acesso  | Descrição                 |
 | ------ | -------------- | :------: | ------------------------- |
-| `GET`  | `/api/v1/logs` | 🔒 ADMIN | Lista logs de atendimento |
+| `GET`  | `/api/v1/logs` | 🔒 ADMIN/SECRETARIA | Lista logs de atendimento |
 
 ---
 
@@ -177,7 +178,7 @@ Documentação completa com exemplos de request/response em
 - A criação de logs é responsabilidade exclusiva de `modules/chatbot/` — nunca importe o Prisma de logs direto no chatbot, use o model `SessionLog` via Prisma normalmente
 - **Sempre pagine** os resultados — logs podem crescer rapidamente e uma query sem `limit` pode travar o banco
 - Os filtros de data devem usar `gte` e `lte` no Prisma — nunca filtre em memória após buscar todos os registros
-- Rotas deste módulo são **sempre protegidas** — nunca remova o `authMiddleware` ou o `authorize('ADMIN')`
+- Rotas deste módulo são **sempre protegidas** — nunca remova o `authenticate` ou o `authorize("ADMIN", "SECRETARIA")`
 - O `navigation_flow` é uma trilha de navegação — não resolva títulos de nós neste módulo para manter a query simples
 
 ---
