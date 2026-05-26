@@ -151,7 +151,7 @@ _Dashboard com estatisticas essenciais sobre os usos do chatbot._
 
 #### Default
 
-![Users list](designer/users-default.Ppng)
+![Users list](designer/users-default.png)
 
 #### Novo usuário
 

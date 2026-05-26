@@ -31,7 +31,7 @@ Não exige autenticação — o acesso é **totalmente público** (RF03).
 | Registro de satisfação e log de sessão          | `api/chatbot.api.ts`      |
 | Orquestração do estado de navegação, histórico e sessão | `hooks/useChatNavigation` |
 | Interface visual da conversa                    | `components/ChatWindow`   |
-| Tipagem dos nós, chunks e sessão                | `types/chatbot.types.ts`  |
+| Tipagem dos nós, evidências e sessão            | `types/chatbot.types.ts`  |
 
 ---
 
@@ -49,7 +49,7 @@ features/chatbot/
 │   │
 │   ├── OptionButton.tsx           # Botão de opção navegável (filhos de nó MENU)
 │   │
-│   ├── EvidenceCard.tsx           # Exibe chunk de documento com fonte e página
+│   ├── EvidenceCard.tsx           # Exibe evidência documental com fonte e download
 │   │
 │   ├── SatisfactionRating.tsx     # Botões "Gostei / Não gostei" com submit
 │   │
@@ -77,9 +77,9 @@ com responsabilidade única.
 ```ts
 // ✅ Padrão adotado em api/
 export const chatbotApi = {
-  getRoot: () => api.get<ChatNode>("/nodes/root").then((res) => res.data),
-  getNode: (id: string) =>
-    api.get<ChatNode>(`/nodes/${id}`).then((res) => res.data),
+  getRootNode: () => api.get<ApiResponse<ChatNode>>("/nodes/root").then((res) => res.data.data),
+  getNodeById: (id: number) =>
+    api.get<ApiResponse<ChatNode>>(`/nodes/${id}`).then((res) => res.data.data),
 };
 ```
 
@@ -93,15 +93,15 @@ persistido da sessão quando o usuário começa a avaliar respostas.
 // ✅ Padrão adotado — estado de navegação centralizado
 export function useChatNavigation() {
   const [history, setHistory] = useState<ChatNode[]>([]);
-  const [currentNodeId, setCurrentNodeId] = useState<string | null>(null);
+  const [currentNodeId, setCurrentNodeId] = useState<number | null>(null);
 
   const { data: currentNode } = useQuery({
     queryKey: ["node", currentNodeId],
     queryFn: () =>
-      currentNodeId ? chatbotApi.getNode(currentNodeId) : chatbotApi.getRoot(),
+      currentNodeId ? chatbotApi.getNodeById(currentNodeId) : chatbotApi.getRootNode(),
   });
 
-  const navigateTo = (nodeId: string) => {
+  const navigateTo = (nodeId: number) => {
     if (currentNode) setHistory((prev) => [...prev, currentNode]);
     setCurrentNodeId(nodeId);
   };
@@ -147,8 +147,8 @@ Os demais recebem dados e callbacks via props — sem acesso direto a hooks de d
 Página carrega → GET /nodes/root → exibe nó raiz com opções
         ↓
 Usuário escolhe opção → GET /nodes/:id → exibe nó filho
-        ↓  (repete até atingir nó do tipo ANSWER)
-Nó ANSWER exibido → mostra resposta + EvidenceCard (se houver chunk)
+        ↓  (repete até atingir nó sem filhos)
+Nó folha exibido → mostra answer_summary + EvidenceCard (se houver evidência)
         ↓
 Usuário avalia → POST /sessions/log → cria ou atualiza a mesma sessão
         ↓
@@ -157,8 +157,8 @@ Usuário pode voltar ao nó raiz → continua no mesmo histórico visual e persi
 Usuário pode enviar dúvida → POST /questions → encaminha à secretaria (RF05)
 ```
 
-> ⚠️ Nós do tipo `MENU` sempre têm filhos e exibem `OptionButton`.
-> Nós do tipo `ANSWER` nunca têm filhos — exibem a resposta, o `EvidenceCard`,
+> ⚠️ O código atual não usa `nodeType`: nós com `children` funcionam como menus.
+> Nós sem filhos são tratados como folhas — exibem a resposta, o `EvidenceCard`,
 > os controles de satisfação e a ação para voltar ao início sem abrir uma nova sessão.
 
 ---

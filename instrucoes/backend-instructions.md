@@ -17,8 +17,8 @@ Cada módulo em `src/modules/<dominio>/` segue SEMPRE essa estrutura:
 ## Regras obrigatórias
 - Erros de negócio: `throw new AppError('mensagem', statusCode)`
 - Validação de request body: sempre com schema Zod antes do controller
-- Rotas protegidas: `authMiddleware` + `authorize('ADMIN' | 'SECRETARIA')`
-- Senhas: Argon2id via `hash.utils.ts` — nunca bcrypt ou md5
+- Rotas protegidas: `authenticate` + `authorize('ADMIN' | 'SECRETARIA')`
+- Senhas: Argon2id via `hash.util.ts` — nunca bcrypt ou md5
 - Resposta de sucesso: `{ success: true, data: {} }`
 - Resposta de erro: `{ success: false, message: '', errors?: [] }`
 - Paginação: query params `?page=1&limit=20`, retornar `meta: { total, page, limit }`

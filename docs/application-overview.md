@@ -4,10 +4,10 @@
 > o modelo de dados, o fluxo de navegação do chatbot e a topologia de containers.
 > É o ponto de partida para qualquer novo membro da equipe entender o sistema como um todo.
 
-> **Nota de estado da Sprint 1:** no código atual, o fluxo público do chatbot, o login,
-> os guards de rota, `POST /api/v1/questions` e as páginas-base `/admin` e `/secretary`
-> estão presentes. CRUD administrativo, listagem/atualização de perguntas e visualização
-> de logs continuam documentados aqui como arquitetura-alvo para as próximas sprints.
+> **Nota de estado atual:** o código implementa o fluxo público do chatbot, login,
+> guards de rota, perguntas com anexos, CRUD administrativo de nós e usuários,
+> listagem/atualização de perguntas, métricas de dashboard e visualização de logs.
+> A rota `/secretary` permanece como caminho legado e redireciona para o painel unificado em `/admin`.
 
 ***
 
@@ -30,8 +30,8 @@ Existem três perfis com escopos distintos:
 | Perfil                   | Autenticação |  Papel JWT   | O que pode fazer                                                     |
 | ------------------------ | :----------: | :----------: | -------------------------------------------------------------------- |
 | **Aluno / Visitante**    |  ❌ Pública  |      —       | Navegar no chatbot, enviar pergunta à secretaria, avaliar satisfação |
-| **Secretária Acadêmica** |    ✅ JWT    | `SECRETARIA` | Listar perguntas recebidas, atualizar status (aberta / respondida)   |
-| **Administrador**        |    ✅ JWT    |   `ADMIN`    | CRUD de nós e usuários da secretaria; visualizar logs de atendimento |
+| **Secretária Acadêmica** |    ✅ JWT    | `SECRETARIA` | Acessar dashboard, tickets e logs; listar perguntas recebidas e atualizar status |
+| **Administrador**        |    ✅ JWT    |   `ADMIN`    | Acessar dashboard, tickets e logs; CRUD de nós e usuários internos |
 
 > ⚠️ O controle de acesso **deve ser aplicado no backend** via middleware.
 > Proteção apenas no frontend (esconder botões) **não é suficiente** e viola o RF10/RF11.
@@ -117,6 +117,7 @@ Nós com filhos funcionam como menus; nós sem filhos são folhas e exibem `answ
 | `evidence_source`  | String? | Fonte da evidência (ex: "Regulamento Geral das Fatecs, Art. 38") |
 | `parent_id`        | Int?    | Referência ao nó pai. `null` indica nó raiz                      |
 | `display_order`    | Int     | Ordenação dos filhos dentro do mesmo pai                         |
+| `is_active`        | Boolean | Indica se o nó aparece nas listagens administrativas ativas       |
 
 #### `SessionLog`
 
@@ -126,8 +127,9 @@ Registra cada sessão de atendimento completa (RF08).
 | ----------------- | ----- | ------------------------------------------------------------------ |
 | `navigation_flow` | JSON  | Array de slugs visitados em ordem cronológica                      |
 | `flag`            | Enum? | `ATENDEU`, `NAO_ATENDEU` ou `null` (não avaliado)                  |
+| `node_id`         | Int?  | Nó associado à avaliação mais recente                              |
 | `feedback_history`| JSON? | Histórico de respostas avaliadas na mesma sessão, em ordem         |
-| `inquiry_ids`     | JSON  | Array de IDs de `Question` originados nesta sessão (pode ser `[]`) |
+| `inquiry_ids`     | JSON? | Campo legado opcional; perguntas atuais se vinculam por `session_log_id` |
 
 #### `Question`
 
@@ -141,7 +143,12 @@ Pergunta enviada pelo aluno à Secretaria Acadêmica (RF05/RF06).
 | `status`               | Enum    | `ABERTA` (em aberto) ou `RESPONDIDA`                |
 | `attachment_name`      | String? | Nome original do arquivo anexado                    |
 | `attachment_mime_type` | String? | MIME type do anexo (ex: `application/pdf`)          |
-| `attachment_data`      | Bytes?  | Conteúdo binário do arquivo (PDF, JPG ou PNG, ≤5MB) |
+| `attachment_storage_key` | String? | Chave do arquivo salvo no storage local              |
+| `attachment_size_bytes` | Int?    | Tamanho do arquivo salvo                             |
+| `attachment_data`      | Bytes?  | Campo legado para conteúdo binário do arquivo         |
+| `session_log_id`       | Int?    | Sessão de atendimento que originou a pergunta         |
+| `answered_by_user_id`  | Int?    | Usuário que marcou a pergunta como respondida         |
+| `answered_at`          | DateTime?| Data/hora em que a pergunta foi marcada respondida    |
 
 ***
 
@@ -227,7 +234,8 @@ Aplicável aos perfis **Secretária Acadêmica** e **Administrador** (RF09, RNF0
          ▼
 [Redirecionamento por role]
   ADMIN      → /admin
-  SECRETARIA → /secretary
+  SECRETARIA → /admin
+  /secretary → redireciona para /admin
          │
          ▼
 [A cada requisição a rota protegida]
@@ -257,8 +265,8 @@ Disponível ao fim de qualquer atendimento no chatbot (RF05/RF06).
   → Resposta: 201 Created
          │
          ▼
-[Fluxo previsto para as próximas sprints]
-  → Área da secretária e gestão de perguntas permanecem documentadas como alvo de implementação
+[Área interna]
+  → Dashboard, tickets e logs ficam no painel unificado em /admin
          │
          ▼
 [Secretária atualiza o status]

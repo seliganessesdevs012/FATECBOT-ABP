@@ -4,7 +4,7 @@
 > Cobre o CRUD de nós de navegação, usuários da secretaria
 > e a visualização de logs de atendimento (RF04, RF08).
 
-> **Nota de estado atual:** a camada de dados de nós já possui implementação funcional em `api/nodes.api.ts` e `hooks/useNodes.ts`. Os componentes visuais do painel admin e os fluxos de usuários e logs continuam documentados aqui como arquitetura-alvo das próximas tasks.
+> **Estado atual:** dashboard, nós, usuários, tickets e logs possuem APIs/componentes funcionais. `documents.api.ts` e `useDocuments.ts` existem como arquivos vazios e não estão integrados ao roteador atual.
 
 ***
 
@@ -36,18 +36,26 @@ features/admin/
 ├── api/                        # Funções de acesso à API REST
 │   ├── nodes.api.ts            # GET, POST, PATCH, DELETE /nodes
 │   ├── users.api.ts            # GET, POST, DELETE /users
+│   ├── tickets.api.ts          # GET, PATCH /questions + download de anexo
+│   ├── dashboard.api.ts        # GET /dashboard/metrics
+│   ├── documents.api.ts        # Vazio no estado atual
 │   └── logs.api.ts             # GET /logs
 │
 ├── components/                 # Componentes visuais exclusivos do admin
-│   ├── NodeTree/               # Árvore de navegação do chatbot (MENU/ANSWER)
-│   ├── NodeForm/               # Formulário de criação e edição de nó
-│   ├── UserList/               # Tabela de usuários da secretaria
-│   ├── UserForm/               # Formulário de criação de usuário
-│   └── LogTable/               # Tabela de logs de atendimento (somente leitura)
+│   ├── AdminDashboardOverview.tsx
+│   ├── NodeTree.tsx
+│   ├── NodeInspector.tsx
+│   ├── NodeEditor.tsx
+│   ├── UserList.tsx
+│   ├── TicketList.tsx
+│   └── LogTable.tsx
 │
 └── hooks/                      # Hooks de dados com TanStack Query
+    ├── useAdminDashboard.ts    # useQuery para métricas do dashboard
     ├── useNodes.ts             # useQuery + useMutation para nós
-    ├── useUsers.ts             # useQuery + useMutation para usuários
+    ├── useTickets.ts           # useQuery para tickets
+    ├── useUpdateTicket.ts      # useMutation para status de tickets
+    ├── useDocuments.ts         # Vazio no estado atual
     └── useLogs.ts              # useQuery para logs (somente leitura)
 ```
 
@@ -124,9 +132,11 @@ export function NodeForm({ onSuccess }: NodeFormProps) {
 
 | Requisito | Funcionalidade                         | Hook       | Componente              |
 | --------- | -------------------------------------- | ---------- | ----------------------- |
-| **RF04**  | CRUD de nós de navegação               | `useNodes` | `NodeTree`, `NodeForm`  |
-| **RF04**  | Criar e remover usuários da secretaria | `useUsers` | `UserList`, `UserForm`  |
+| **RF04**  | CRUD de nós de navegação               | `useNodes` | `NodeTree`, `NodeEditor`, `NodeInspector` |
+| **RF04**  | Criar e remover usuários internos      | TanStack Query no componente | `UserList` |
+| **RF05/RF06** | Gerenciar tickets/perguntas        | `useTickets`, `useUpdateTicket` | `TicketList` |
 | **RF08**  | Visualizar logs de atendimento         | `useLogs`  | `LogTable`              |
+| **RF08**  | Métricas agregadas do painel           | `useAdminDashboard` | `AdminDashboardOverview` |
 
 ***
 

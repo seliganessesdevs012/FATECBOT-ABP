@@ -1,10 +1,10 @@
 # 🗂️ routes/secretary — Painel da Secretária
 
-> Componentes de página das rotas protegidas da secretária acadêmica (`/secretary/*`).
+> Componentes de página legados da secretária acadêmica (`/secretary/*`).
 > Cada arquivo representa uma tela do painel e é responsável apenas por compor
 > layout e features — a lógica de negócio vive em `features/secretary/`.
 
-> **Nota de estado da Sprint 1:** no `router.tsx`, apenas a rota base `/secretary` está montada hoje, usando `index.tsx`. Os demais arquivos desta pasta permanecem como placeholders documentados para as próximas sprints.
+> **Estado atual:** no `router.tsx`, apenas `/secretary` está montada e seu `index.tsx` redireciona para `/admin`. `dashboard.tsx` e `questions.tsx` existem no diretório, mas não estão registrados no roteador atual.
 
 ---
 
@@ -19,14 +19,14 @@
 
 ## 🎯 Responsabilidade <a id="responsabilidade"></a>
 
-As páginas da secretária são o ponto de encontro entre o layout autenticado e as features
-de gestão de perguntas (RF06). Elas **não implementam** lógica de dados — apenas
-orquestram quais componentes de `features/secretary/` aparecem em cada tela.
+As páginas da secretária foram preservadas como caminho legado. O fluxo operacional
+atual de perguntas usa o painel unificado em `/admin/tickets`, com dados vindos
+das APIs de perguntas.
 
 Todo acesso a esta pasta é protegido por **duas camadas** declaradas em `router.tsx`:
 
 ```
-Requisição → ProtectedRoute (valida autenticação) → RoleGuard('SECRETARIA') → Página
+Requisição → ProtectedRoute (valida autenticação) → RoleGuard(ADMIN/SECRETARIA) → Redirect para /admin
 ```
 
 > ⚠️ **Nunca remova ou mova** o `RoleGuard` para dentro dos componentes de página.
@@ -38,9 +38,9 @@ Requisição → ProtectedRoute (valida autenticação) → RoleGuard('SECRETARI
 
 | Arquivo         | Rota                   | Descrição                                                         | RF   |
 | --------------- | ---------------------- | ----------------------------------------------------------------- | ---- |
-| `index.tsx`     | `/secretary`           | Página-base protegida atualmente montada no roteador             | RF03 · RF09 · RF10 |
-| `dashboard.tsx` | `/secretary`           | Estrutura planejada para a visão geral do painel da secretária   | RF06 |
-| `questions.tsx` | `/secretary/questions` | Estrutura planejada para listagem e atualização de perguntas     | RF06 |
+| `index.tsx`     | `/secretary`           | Redireciona para `/admin`                                        | RF03 · RF09 · RF10 |
+| `dashboard.tsx` | —                      | Arquivo vazio, não montado no roteador atual                     | — |
+| `questions.tsx` | —                      | Arquivo vazio, não montado no roteador atual                     | — |
 
 ---
 
@@ -48,16 +48,12 @@ Requisição → ProtectedRoute (valida autenticação) → RoleGuard('SECRETARI
 
 ### dashboard.tsx
 
-Tela inicial do painel da secretária. Exibe um resumo das perguntas recebidas,
-destacando as pendentes de resposta. Compõe cards e indicadores de
-`features/secretary/components/`.
+Arquivo vazio no estado atual e não montado no `router.tsx`.
 
 ### questions.tsx
 
-Tela principal do fluxo de trabalho da secretária. Lista todas as perguntas enviadas
-pelos alunos via chatbot (RF05), com filtro por status (`ABERTA`, `RESPONDIDA`).
-A secretária pode atualizar o status de cada pergunta — a ação dispara uma `PATCH`
-na API via mutation do TanStack Query, definida em `features/secretary/`.
+Arquivo vazio no estado atual e não montado no `router.tsx`. O fluxo equivalente
+está disponível em `/admin/tickets`.
 
 > ⚠️ Esta tela é somente de **gestão de status** — a comunicação com o aluno
 > ocorre fora do sistema, pelo e-mail institucional informado no envio da pergunta.
@@ -69,7 +65,7 @@ na API via mutation do TanStack Query, definida em `features/secretary/`.
 - Componentes de página **importam apenas** de `features/secretary/`, `components/shared/` e utilitários de app
 - **Nunca** faça fetch, mutation ou acesso direto ao Axios dentro desta pasta
 - Toda nova rota de secretária deve ser declarada em `app/router.tsx` antes de criar o arquivo de página aqui
-- O nome do arquivo deve espelhar o segmento de rota: `/secretary/questions` → `questions.tsx`
+- Quando uma rota de secretária voltar a ser montada, o nome do arquivo deve espelhar o segmento de rota
 - Mantenha os arquivos pequenos — se o arquivo passar de ~50 linhas, a lógica provavelmente está no lugar errado
 
 ---

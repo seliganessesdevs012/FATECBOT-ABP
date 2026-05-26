@@ -7,6 +7,7 @@ Funções utilitárias puras de uso global. Sem estado, sem side effects, sem co
 ```
 utils/
 ├── date.utils.ts        # Formatação e manipulação de datas
+├── file.utils.ts        # Helpers de arquivo e Blob
 ├── string.utils.ts      # Formatação de strings
 └── pagination.utils.ts  # Helpers para paginação
 ```
@@ -85,6 +86,22 @@ export const getPageRange = (page: number, limit: number): { skip: number; take:
 
 export const hasNextPage = (page: number, total: number, limit: number): boolean => {
   return page < getTotalPages(total, limit)
+}
+```
+
+***
+
+## `file.utils.ts`
+
+Helpers para exibição e abertura de arquivos retornados pela API.
+
+```ts
+export const formatFileSize = (sizeInBytes?: number | null): string => {
+  // Retorna "", "512 B", "12.4 KB" ou "1.5 MB"
+}
+
+export const openBlobInNewTab = (blob: Blob): void => {
+  // Cria uma URL temporária, abre em nova aba e revoga depois de 60s
 }
 ```
 

@@ -55,16 +55,9 @@ export type Role = 'ADMIN' | 'SECRETARIA'
 export type InquiryStatus = 'ABERTA' | 'RESPONDIDA'
 export type Satisfaction = 'ATENDEU' | 'NAO_ATENDEU'
 export type UUID = string
-
-export interface AuthUser {
-  id: number
-  name: string
-  email: string
-  role: Role
-}
 ```
 
-`AuthUser` é global porque é consumido pelo `auth.store`, pelos guards `ProtectedRoute` e `RoleGuard`, e pelo `AdminLayout` — todos fora de uma única feature.
+`AuthUser` vive em `features/auth/types/auth.types.ts`; os tipos globais aqui ficam restritos a aliases compartilhados entre múltiplos domínios.
 
 ***
 

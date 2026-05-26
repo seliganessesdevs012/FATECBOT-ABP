@@ -8,24 +8,24 @@ Funções utilitárias puras e reutilizáveis. Nenhum arquivo aqui tem estado, n
 
 ```
 utils/
-├── hash.utils.ts       # Gera e compara hashes de senha com Argon2id
+├── hash.util.ts        # Gera e compara hashes de senha com Argon2id
 ├── jwt.utils.ts        # Gera e valida tokens JWT
-└── pagination.utils.ts # Calcula offset/limit a partir de page/pageSize
+└── pagination.utils.ts # Calcula offset/limit a partir de page/limit
 ```
 
 ---
 
-## `hash.utils.ts`
+## `hash.util.ts`
 
 Abstrai o `Argon2id` em duas funções simples. Senhas **nunca** são armazenadas em texto puro — sempre passam por aqui antes de ir ao banco. O Argon2id é memory-hard (64 MiB por hash), venceu a Password Hashing Competition em 2015 e oferece resistência superior ao bcrypt contra ataques com GPU/ASIC.
 
 ```ts
 // No service de users — ao criar usuário
 const hashed = await hashPassword(plainPassword);
-await prisma.user.create({ data: { ...dto, password: hashed } });
+await db.user.create({ data: { ...dto, password_hash: hashed } });
 
 // No service de auth — ao fazer login
-const isValid = await comparePassword(plainPassword, user.password);
+const isValid = await comparePassword(plainPassword, user.password_hash);
 if (!isValid) throw new AppError("Email ou senha inválidos.", 401);
 ```
 
@@ -39,7 +39,7 @@ Abstrai o `jsonwebtoken` em duas funções. O token gerado carrega o `sub` (ID d
 
 ```ts
 // No service de auth — após validar senha
-const token = generateToken({ sub: user.id, role: user.role });
+const token = generateToken({ sub: user.id.toString(), role: user.role });
 return { token };
 
 // No auth.middleware — ao validar a requisição
@@ -53,7 +53,7 @@ Se o token estiver expirado ou com assinatura inválida, `verifyToken` lança �
 
 ## `pagination.utils.ts`
 
-Converte os parâmetros de query (`page`, `pageSize`) nos valores que o Prisma espera (`skip`, `take`). Centraliza também os valores padrão para que não fiquem espalhados nos services.
+Converte os parâmetros de query (`page`, `limit`) nos valores que o Prisma espera (`skip`, `take`). Centraliza também os valores padrão para que não fiquem espalhados nos services.
 
 ```ts
 // No service de questions
@@ -64,12 +64,12 @@ const [data, total] = await prisma.$transaction([
   prisma.question.count(),
 ]);
 
-return { data, total, page, pageSize };
+return { data, total, page, limit };
 ```
 
 **Por que centralizar?**
 
-Sem isso, cada service implementaria a lógica de `(page - 1) * pageSize` na mão — com valores padrão diferentes, possibilidade de `NaN` se `page` vier como string inválida, e sem tratamento de página negativa. O `paginate()` trata tudo isso em um lugar só.
+Sem isso, cada service implementaria a lógica de `(page - 1) * limit` na mão — com valores padrão diferentes, possibilidade de `NaN` se `page` vier como string inválida, e sem tratamento de página negativa. O `paginate()` trata tudo isso em um lugar só.
 
 ---
 

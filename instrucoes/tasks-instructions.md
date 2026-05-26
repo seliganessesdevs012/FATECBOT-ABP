@@ -214,7 +214,7 @@ model Question       { id Int @id @default(autoincrement()), requester_name Stri
 
 **Arquivos exclusivos desta task:**
 
-- `apps/backend/src/utils/hash.utils.ts`
+- `apps/backend/src/utils/hash.util.ts`
 - `apps/backend/src/utils/jwt.utils.ts`
 - `apps/backend/src/utils/pagination.utils.ts`
 
@@ -225,14 +225,14 @@ model Question       { id Int @id @default(autoincrement()), requester_name Stri
 
 **Saída:**
 
-- `hash.utils.ts` exporta `hashPassword(plain: string): Promise<string>` e `comparePassword(plain: string, hash: string): Promise<boolean>` usando Argon2id
+- `hash.util.ts` exporta `hashPassword(plain: string): Promise<string>` e `comparePassword(plain: string, hash: string): Promise<boolean>` usando Argon2id
 - `jwt.utils.ts` exporta `generateToken(payload: TokenPayload): string` e `verifyToken(token: string): TokenPayload`
 - `pagination.utils.ts` exporta `paginate(page, limit)` retornando `{ skip, take }`
 
 **Contrato de saída (módulo):**
 
 ```ts
-// utils/hash.utils.ts
+// utils/hash.util.ts
 export async function hashPassword(plain: string): Promise<string>;
 export async function comparePassword(
   plain: string,
@@ -551,7 +551,7 @@ export const env: { VITE_API_URL: string; VITE_ENABLE_DEVTOOLS: boolean };
 **Saída:**
 
 - `provider.tsx` compõe `QueryClientProvider`, `BrowserRouter` e futuro `AuthProvider`
-- `router.tsx` define todas as rotas com placeholders de componente (`<div>TODO</div>`) para as páginas ainda não implementadas
+- `router.tsx` define as rotas atuais (`/`, `/login`, `/admin`, `/admin/nodes`, `/admin/users`, `/admin/tickets`, `/admin/logs`, `/secretary`) com `ProtectedRoute` e `RoleGuard` nas áreas internas
 - Rotas previstas: `/`, `/login`, `/admin/*`, `/secretary/*`
 
 ---
@@ -647,7 +647,7 @@ export const env: { VITE_API_URL: string; VITE_ENABLE_DEVTOOLS: boolean };
 - `docker-compose.yml`
 - `apps/backend/Dockerfile`
 - `apps/frontend/Dockerfile`
-- `.env.example` (raiz)
+- `.env` (raiz, criado manualmente a partir das variáveis documentadas no README principal)
 - `pnpm-workspace.yaml`
 
 **Entrada:**
@@ -656,9 +656,9 @@ export const env: { VITE_API_URL: string; VITE_ENABLE_DEVTOOLS: boolean };
 
 **Saída:**
 
-- `docker compose up --build` sobe os 3 containers: `postgres:16-alpine`, `backend:node20-alpine` em `:3333`, `frontend:node20-alpine` em `:5173`
+- `docker compose up --build` sobe os 3 containers: `postgres:16-alpine`, backend Node 20 em `:3000`, frontend Node 20 em `:5173`
 - Health check no backend container aguarda o Postgres estar pronto
-- Variáveis de ambiente documentadas no `.env.example` da raiz
+- Variáveis de ambiente documentadas no README principal para criação do `.env` da raiz
 
 ---
 
@@ -1482,7 +1482,7 @@ export class QuestionsService {
 }
 ```
 
-> **Nota:** na Sprint 1, implementar apenas `createQuestion`. Os demais métodos são esqueletos para Sprint 3.
+> **Nota histórica da Sprint 1:** naquele momento, implementar apenas `createQuestion`. No código atual, listagem, atualização de status e download de anexos também estão implementados.
 
 ---
 
@@ -2193,7 +2193,7 @@ export function useQuestions(statusFilter?: InquiryStatus): {
 
 ---
 
-### 📊 Módulo Logs (Admin)
+### 📊 Módulo Logs (Admin/Secretaria)
 
 ---
 

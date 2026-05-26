@@ -54,7 +54,7 @@ modules/chatbot/
 
 ### chatbot.routes.ts
 
-Define três rotas, todas **públicas** — sem `authMiddleware`:
+Define quatro rotas, todas **públicas** — sem `authenticate`:
 
 ```ts
 router.get("/nodes/root", chatbotController.getRootNode);
@@ -168,7 +168,7 @@ Usuário avalia → POST /sessions/log
 SessionLog criado ou atualizado no banco → 201
 ```
 
-> ⚠️ No código atual da Sprint 1, a diferenciação prática usada pelo frontend é
+> ⚠️ No código atual, a diferenciação prática usada pelo frontend é
 > entre nós com filhos e nós folha. As respostas finais exibem `answer_summary`
 > e, quando disponível, `evidence_excerpt` + `evidence_source`.
 
@@ -183,13 +183,14 @@ Documentação completa com exemplos de request/response em
 | ------ | ---------------------- | :-----: | ------------------------------ |
 | `GET`  | `/api/v1/nodes/root`   | Público | Retorna o nó raiz com filhos   |
 | `GET`  | `/api/v1/nodes/:id`    | Público | Retorna nó com filhos e campos de resposta |
+| `GET`  | `/api/v1/nodes/:id/evidence` | Público | Baixa PDF de evidência do nó |
 | `POST` | `/api/v1/sessions/log` | Público | Registra sessão e satisfação   |
 
 ---
 
 ## 📐 Regras de Contribuição <a id="regras"></a>
 
-- As rotas deste módulo são **sempre públicas** — nunca adicione `authMiddleware` aqui
+- As rotas deste módulo são **sempre públicas** — nunca adicione `authenticate` aqui
 - O service **nunca** retorna o objeto Prisma diretamente — mapeie sempre para os tipos de `chatbot.types.ts` antes de retornar
 - A ordem dos filhos de um nó deve **sempre** respeitar o campo `order` — nunca confie na ordem de inserção do banco
 - Lógica de CRUD de nós não pertence aqui — qualquer criação, edição ou remoção vai em `modules/nodes/`

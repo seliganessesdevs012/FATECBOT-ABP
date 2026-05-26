@@ -19,10 +19,12 @@ Cria um roteador Express único, registra cada módulo no seu caminho base e o e
 
 ```ts
 router.use("/auth", authRoutes);
+router.use("/", chatbotRoutes);
+router.use("/dashboard", dashboardRoutes);
 router.use("/questions", questionRoutes);
+router.use("/logs", logRoutes);
 router.use("/nodes", nodeRoutes);
 router.use("/users", userRoutes);
-router.use("/logs", logRoutes);
 ```
 
 No `server.ts`, o roteador inteiro é montado com o prefixo global da API:
@@ -35,6 +37,10 @@ O que resulta nos caminhos finais:
 
 ```
 POST   /api/v1/auth/login
+GET    /api/v1/nodes/root
+GET    /api/v1/nodes/:id
+POST   /api/v1/sessions/log
+GET    /api/v1/dashboard/metrics
 GET    /api/v1/questions
 POST   /api/v1/nodes
 GET    /api/v1/logs
@@ -64,7 +70,7 @@ app.use("/api/v1/nodes", nodeRoutes);
 ## Regras de contribuição
 
 - Todo novo módulo **deve** ser registrado aqui com seu prefixo
-- Os prefixos devem ser **substantivos no plural** e em inglês — `/questions`, `/users`, `/nodes`
+- Os prefixos de recursos devem ser **substantivos em inglês**; use plural para coleções (`/questions`, `/users`, `/nodes`, `/logs`) e mantenha exceções explícitas já adotadas (`/auth`, `/dashboard`)
 - Nenhuma rota é definida diretamente aqui — apenas montagem de roteadores externos
 
 ---
