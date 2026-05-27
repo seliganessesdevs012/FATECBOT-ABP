@@ -55,7 +55,7 @@ Esses itens ficam para a Sprint 3 ou para evolucoes posteriores.
 
 ## Tabela de Rastreabilidade - Sprint 2
 
-**Link da tabela de Tasks com atribuicoes para cada desenvolvedor:** [Tabela de atribuicoes](https://docs.google.com/spreadsheets/d/SEU_ID)
+**Link da tabela de Tasks com atribuicoes para cada desenvolvedor:** [Tabela de atribuicoes](https://docs.google.com/spreadsheets/d/1pSj-2_RsHqxcnypaDYe_PIhw74WJXMK6gi8MiMOZ4MY/edit?usp=sharing)
 
 > 🎯 **Total Sprint 2: 138 pts** · 38 tasks
 > Escala Fibonacci: **1** tipo/config · **2** arquivo simples · **3** logica media · **5 ou 8** multiplos arquivos ou logica complexa
