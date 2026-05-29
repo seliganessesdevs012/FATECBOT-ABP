@@ -6,6 +6,41 @@
 
 ---
 
+### US-11 · RF09 - Correção do Modelo de Banco de Dados Relacional
+
+> **Tasks:** TASK-059
+
+**Como** desenvolvedor
+**Quero** corrigir o modelo relacional no Astah
+**Para que** o esquema do banco suporte corretamente a navegação conversacional, o encaminhamento de perguntas e a rastreabilidade das sessões no backend.
+
+**Critérios de Aceitação:**
+
+- O modelo deve declarar chaves estrangeiras, índices e cardinalidades necessários para suportar RF01, RF03, RF05, RF07 e RF09.
+- Incluir relacionamento que vincule `Question` a `SessionLog` via `session_log_id` quando aplicável.
+- Gerar a versão exportada do diagrama (Astah) e anexá-la ao repositório de design.
+- Atualizar o backlog de rastreabilidade e documentar as diferenças corrigidas.
+- Revisão do diagrama aprovada pelo time de desenvolvimento.
+
+
+### US-11 · RF09 - Correção do Modelo de Banco de Dados Relacional
+
+> **Tasks:** TASK-059
+
+**Como** desenvolvedor
+**Quero** corrigir o modelo relacional no Astah
+**Para que** o esquema do banco suporte corretamente a navegação conversacional, o encaminhamento de perguntas e a rastreabilidade das sessões no backend.
+
+**Critérios de Aceitação:**
+
+- O modelo deve declarar chaves estrangeiras, índices e cardinalidades necessários para suportar RF01, RF03, RF05, RF07 e RF09.
+- Incluir relacionamento que vincule `Question` a `SessionLog` via `session_log_id` quando aplicável.
+- Gerar a versão exportada do diagrama (Astah) e anexá-la ao repositório de design.
+- Atualizar o backlog de rastreabilidade e documentar as diferenças corrigidas.
+- Revisão do diagrama aprovada pelo time de desenvolvimento.
+
+---
+
 ## Princípios de Leitura
 
 | Símbolo      | Significado                                                                              |
@@ -92,7 +127,7 @@
 | TASK-056 | 🎨 FIGMA | 🎨 Design    | Mockups do painel Admin                                                   | Como administrador, quero criar, editar e excluir nos de navegacao, para manter o conteudo do bot sempre atualizado. | Projeta as principais telas administrativas para orientar implementação consistente.                                        | RF04                                                                       | RNF01 · RNF04 | ⚪ Baixa   | 8   |
 | TASK-057 | 🔵 FE    | 🖥️ Layouts   | AdminLayout.tsx + Home pública do chatbot                                 | Como visitante, quero usar o chatbot sem me cadastrar, para tirar duvidas de forma agil e sem friccao. | Consolida o layout administrativo e formaliza a landing pública já implementada na rota `/`, com CTA para abrir o `ChatWindow`. | RF03 · RF04                                                                | RNF01         | 🟡 Alta    | 3   |
 | TASK-058 | 🔵 FE    | 🖥️ Admin     | Páginas do painel Admin                                                   | Como visitante, quero usar o chatbot sem me cadastrar, para tirar duvidas de forma agil e sem friccao. | Monta as páginas de dashboard, nós e usuários do painel.                                                                    | RF03 · RF04                                                                | RNF01         | 🟢 Média   | 5   |
-| TASK-059 | 📐 UML   | 📐 Modelagem | Diagrama de Sequência — Astah                                             | Como aluno, quero navegar por menus e submenus do chatbot, para encontrar a informacao que preciso sem contato direto com a secretaria. | Modela os fluxos de navegação, autenticação e envio de pergunta em diagramas de sequência.                                  | RF01 · RF03 · RF05 · RF07 · RF09                                           | —             | ⚪ Baixa   | 3   |
+| TASK-059 | 📄 DOCS   | 📄 Docs | Correção do modelo de Banco de Dados Relacional - Astah                                             | Como desenvolvedor, quero corrigir o modelo relacional no Astah.            | RF01 · RF03 · RF05 · RF07 · RF09 · RF09                                   | - | —             | ⚪ Baixa   | 3   |
 | TASK-060 | 📐 UML   | 📐 Modelagem | Diagrama de Atividades — Astah                                            | Como aluno, quero navegar por menus e submenus do chatbot, para encontrar a informacao que preciso sem contato direto com a secretaria. | Documenta o fluxo do chatbot e da gestão de perguntas com swimlanes e decisões.                                             | RF01 · RF05 · RF06 · RF07 · RF08                                           | —             | ⚪ Baixa   | 3   |
 | TASK-061 | 🟣 BE    | ❓ Questions | questions.service.ts — extensão para listagem e status                    | Como aluno, quero poder enviar uma duvida diretamente a secretaria ao final do atendimento, para receber suporte em casos nao cobertos pelo bot. | Amplia o fluxo de perguntas para incluir acompanhamento e atualização de situação.                                          | RF05 · RF08                                                                | —             | 🟡 Alta    | 2   |
 | TASK-062 | 🟣 BE    | ❓ Questions | questions.controller.ts + questions.routes.ts — rotas protegidas          | Como aluno, quero poder enviar uma duvida diretamente a secretaria ao final do atendimento, para receber suporte em casos nao cobertos pelo bot. | Disponibiliza listagem e atualização de perguntas com acesso protegido.                                                     | RF05 · RF11                                                                | —             | 🟡 Alta    | 2   |

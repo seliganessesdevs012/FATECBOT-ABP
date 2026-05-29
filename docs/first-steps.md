@@ -63,7 +63,7 @@ Leia [`project-standards.md`](./project-standards.md). Ele cobre as convenções
 
 Com o projeto rodando e a estrutura clara, abra o backlog da sprint atual:
 
-- **[`sprint3/README.md`](./sprint3/README.md)** — sprint mais recente do fluxo de entrega documentado
+- **[`sprint2/README.md`](./sprint2/README.md)** — sprint mais recente do fluxo de entrega documentado
 
 Cada task diz exatamente quais arquivos ela possui, o que ela exporta e de quais outras tasks ela depende. Leia o contrato da sua task antes de escrever qualquer código.
 
