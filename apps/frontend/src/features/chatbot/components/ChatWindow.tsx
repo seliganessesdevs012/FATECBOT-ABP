@@ -11,7 +11,11 @@ import { useChatNavigation } from "../hooks/useChatNavigation";
 import mascotImg from "../../../assets/message_jacare.png";
 import { SatisfactionRating } from "./SatisfactionRating";
 
-export function ChatWindow() {
+interface ChatWindowProps {
+  onBackHome?: () => void;
+}
+
+export function ChatWindow({ onBackHome }: ChatWindowProps) {
   const {
     currentNode,
     isLoading,
@@ -189,10 +193,20 @@ export function ChatWindow() {
         </div>
 
         <div className="min-w-0 flex-1 rounded-[28px] bg-[#EEE7D8] p-5 shadow-[0_20px_50px_rgba(92,53,12,0.08)] md:p-7 lg:flex lg:h-full lg:min-h-0 lg:flex-col">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <span className="text-sm font-semibold uppercase tracking-[0.25em] text-[#B20000]">
               {nodeTitle}
             </span>
+
+            {onBackHome && (
+              <button
+                type="button"
+                onClick={onBackHome}
+                className="cursor-pointer rounded-xl border-2 border-[#7D0000] bg-white px-4 py-2 text-sm font-semibold text-[#7D0000] transition-colors hover:bg-[#7D0000] hover:text-white"
+              >
+                Voltar para Home
+              </button>
+            )}
           </div>
 
           <div className="mt-6 flex flex-col gap-4 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-2">

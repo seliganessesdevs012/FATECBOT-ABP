@@ -11,7 +11,7 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
 
   if (isChatOpen) {
-    return <ChatWindow />;
+    return <ChatWindow onBackHome={() => setIsChatOpen(false)} />;
   }
 
   return (
