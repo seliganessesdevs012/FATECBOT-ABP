@@ -17,6 +17,7 @@
 - [Regras de contribuição](#regras-de-contribuicao)
 - [Diagramas de caso de uso](#-diagrama-de-casos-de-uso)
 - [Diagramas de classe](#-diagrama-de-classe)
+- [Diagramas de sequência](#-diagrama-de-sequencia)
 - [Modelo Relacional - Banco de dados](#️-modelo-relacional--banco-de-dados)
 - [Documentos de Testes](#-documento-teste)
 
@@ -91,7 +92,7 @@ referência operacional daquela sprint.
 
 ---
 
-## 📐 Diagrama de Casos de Uso
+## 📐 Diagrama de Casos de Uso <a id="diagrama-de-casos-de-uso"></a>
 
 ![Diagrama de Casos de Uso](uml/casos-de-uso.jpg)
 
@@ -99,11 +100,18 @@ referência operacional daquela sprint.
 
 ---
 
-## 📐 Diagrama de Classe
+## 📐 Diagrama de Classe <a id="diagrama-de-classe"></a>
 
 ![Diagrama de Classe](uml/diagrama-de-classe.jpg)
 
 - [Arquivo editável (.asta)](uml/diagrama-classe.asta)
+
+---
+## 📐 Diagrama de Sequência <a id="diagrama-de-sequencia"></a>
+
+![Diagrama de Sequência](uml/diagrama-de-sequencia.jpg)
+
+- [Arquivo editável (.asta)](uml/diagrama-de-sequencia.asta)
 ---
 
 
