@@ -4,7 +4,7 @@
 > É o único ponto de entrada para obter um token válido no sistema —
 > todas as rotas protegidas dependem do que este módulo emite (RF09, RNF08).
 
-***
+---
 
 ## 📑 Índice
 
@@ -15,22 +15,24 @@
 - [Endpoint](#endpoint)
 - [Regras de Contribuição](#regras)
 
-***
+---
 
 ## 🎯 Responsabilidade <a id="responsabilidade"></a>
 
-Este módulo faz **uma coisa apenas**: receber credenciais, validá-las e devolver
-um token JWT. Ele não gerencia usuários (isso é responsabilidade de `modules/users/`)
-e não controla acesso a rotas (isso é responsabilidade dos middlewares `auth` e `rbac`).
+Este módulo recebe credenciais, valida-as, devolve um token JWT e também
+permite trocar a senha da conta autenticada. Ele não gerencia usuários (isso é
+responsabilidade de `modules/users/`) e não controla acesso a rotas (isso é
+responsabilidade dos middlewares `auth` e `rbac`).
 
-| Responsabilidade | Arquivo |
-| ---------------- | ------- |
-| Receber e validar o body da requisição | `auth.routes.ts` |
-| Buscar usuário e verificar senha | `auth.service.ts` |
+| Responsabilidade                        | Arquivo              |
+| --------------------------------------- | -------------------- |
+| Receber e validar o body da requisição  | `auth.routes.ts`     |
+| Buscar usuário e verificar senha        | `auth.service.ts`    |
+| Trocar a senha da conta autenticada     | `auth.service.ts`    |
 | Retornar o token JWT e dados do usuário | `auth.controller.ts` |
-| Tipagem dos DTOs e responses | `auth.types.ts` |
+| Tipagem dos DTOs e responses            | `auth.types.ts`      |
 
-***
+---
 
 ## 📁 Estrutura de Arquivos <a id="estrutura"></a>
 
@@ -38,30 +40,31 @@ e não controla acesso a rotas (isso é responsabilidade dos middlewares `auth` 
 modules/auth/
 ├── auth.controller.ts   # Recebe req, chama service, devolve resposta HTTP
 ├── auth.service.ts      # Busca usuário no banco, verifica hash, gera JWT
-├── auth.routes.ts       # Define POST /auth/login com validação Zod
+├── auth.routes.ts       # Define POST /auth/login e PATCH /auth/change-password
 └── auth.types.ts        # LoginDto, LoginResponse, AuthPayload (payload do JWT)
 ```
 
-***
+---
 
 ## 🧱 Camadas <a id="camadas"></a>
 
 ### auth.routes.ts
 
-Define a rota `POST /auth/login` e aplica a validação do body com Zod
-antes de passar para o controller. Se a validação falhar, o middleware
-de erro retorna `422` com detalhes por campo — o controller nunca é chamado.
+Define as rotas `POST /auth/login` e `PATCH /auth/change-password` e aplica
+a validação do body com Zod antes de passar para o controller. Se a validação
+falhar, o middleware de erro retorna `422` com detalhes por campo — o controller
+nunca é chamado.
 
 ```ts
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
-})
+});
 ```
 
 ### auth.service.ts
 
-Contém toda a lógica de negócio da autenticação. Segue esta sequência:
+Contém toda a lógica de negócio da autenticação. O fluxo de login segue esta sequência:
 
 1. Busca o usuário pelo e-mail no banco via Prisma
 2. Se não encontrar, lança `AppError('E-mail ou senha inválidos', 401)` — **nunca** informe se foi o e-mail ou a senha que errou
@@ -70,9 +73,18 @@ Contém toda a lógica de negócio da autenticação. Segue esta sequência:
 5. Gera o JWT com `generateToken` de `utils/jwt.utils.ts` contendo `sub`, `role` e `exp`
 6. Retorna o token e os dados públicos do usuário
 
+O fluxo de troca de senha segue a mesma filosofia de controller fino e validação
+centralizada no service:
+
+1. Recebe o `userId` da sessão autenticada e o body com `currentPassword` e `newPassword`
+2. Busca o usuário pelo `id`
+3. Verifica a senha atual com `comparePassword`
+4. Gera um novo hash com `hashPassword`
+5. Atualiza `password_hash` no banco sem expor o campo na resposta
+
 ```ts
 // ✅ Mensagem de erro idêntica para e-mail e senha — nunca revele qual campo falhou
-throw new AppError('E-mail ou senha inválidos', 401)
+throw new AppError("E-mail ou senha inválidos", 401);
 ```
 
 ### auth.controller.ts
@@ -92,30 +104,30 @@ async login(req: Request, res: Response) {
 ```ts
 // Body esperado na requisição
 export interface LoginDTO {
-      email: string;
-      password: string;
+  email: string;
+  password: string;
 }
 
 export interface AuthPayload {
-      sub: string;
-      role: "ADMIN" | "SECRETARIA";
-      exp: number;
+  sub: string;
+  role: "ADMIN" | "SECRETARIA";
+  exp: number;
 }
 
 export interface AuthUserResponse {
-      id: number;
-      name: string;
-      email: string;
-      role: "ADMIN" | "SECRETARIA";
+  id: number;
+  name: string;
+  email: string;
+  role: "ADMIN" | "SECRETARIA";
 }
 
 export interface LoginResponse {
-      token: string;
-      user: AuthUserResponse;
+  token: string;
+  user: AuthUserResponse;
 }
 ```
 
-***
+---
 
 ## 🔄 Fluxo de autenticação <a id="fluxo"></a>
 
@@ -140,18 +152,19 @@ JWT gerado com { sub, role, exp }
 > O middleware `auth.middleware.ts` valida o token antes de liberar
 > qualquer rota protegida.
 
-***
+---
 
 ## 🔌 Endpoint <a id="endpoint"></a>
 
 Documentação completa com exemplos de request/response em
 [`docs/api-layer.md`](../../../../../docs/api-layer.md).
 
-| Método | Rota | Acesso | Descrição |
-| ------ | ---- | :----: | --------- |
-| `POST` | `/api/v1/auth/login` | Público | Autentica e retorna JWT |
+| Método  | Rota                           |       Acesso        | Descrição                             |
+| ------- | ------------------------------ | :-----------------: | ------------------------------------- |
+| `POST`  | `/api/v1/auth/login`           |       Público       | Autentica e retorna JWT               |
+| `PATCH` | `/api/v1/auth/change-password` | 🔒 ADMIN/SECRETARIA | Atualiza a senha da conta autenticada |
 
-***
+---
 
 ## 📐 Regras de Contribuição <a id="regras"></a>
 
@@ -160,6 +173,6 @@ Documentação completa com exemplos de request/response em
 - Alterações no payload do JWT (`AuthPayload`) exigem atualização em `auth.types.ts` e em `middlewares/auth.middleware.ts`
 - Não adicione lógica de criação ou edição de usuários aqui — isso pertence a `modules/users/`
 
-***
+---
 
 > _Próximo documento: [`../users/README.md`](../users/README.md)_

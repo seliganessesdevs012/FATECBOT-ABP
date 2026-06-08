@@ -1,4 +1,8 @@
-import type { AuthUser, LoginPayload } from "@/features/auth/types/auth.types";
+import type {
+  AuthUser,
+  ChangePasswordPayload,
+  LoginPayload,
+} from "@/features/auth/types/auth.types";
 import type {
   ChatNode,
   ChatNodeChild,
@@ -67,7 +71,7 @@ interface MockDashboardMetrics {
 const MOCK_DELAY_MS = 120;
 
 const wait = async (ms = MOCK_DELAY_MS): Promise<void> =>
-  new Promise(resolve => {
+  new Promise((resolve) => {
     window.setTimeout(resolve, ms);
   });
 
@@ -391,7 +395,12 @@ const mockLogs: MockSessionLog[] = [
   },
   {
     id: 2,
-    navigation_flow: ["root", "ja-sou-aluno", "estagio", "documentacao-estagio"],
+    navigation_flow: [
+      "root",
+      "ja-sou-aluno",
+      "estagio",
+      "documentacao-estagio",
+    ],
     flag: "NAO_ATENDEU",
     created_at: "2026-05-19T09:45:00.000Z",
     questions: [],
@@ -405,7 +414,12 @@ const mockLogs: MockSessionLog[] = [
   },
   {
     id: 4,
-    navigation_flow: ["root", "ja-sou-aluno", "estagio", "duracao-minima-estagio"],
+    navigation_flow: [
+      "root",
+      "ja-sou-aluno",
+      "estagio",
+      "duracao-minima-estagio",
+    ],
     flag: "ATENDEU",
     created_at: "2026-05-18T13:20:00.000Z",
     questions: [],
@@ -454,12 +468,17 @@ const mockSecretaryUser: AuthUser = {
   role: "SECRETARIA",
 };
 
+const mockAuthPasswords: Record<number, string> = {
+  1: "admin123",
+  99: "secretaria123",
+};
+
 const toNodeChildren = (parentId: number): ChatNodeChild[] =>
   mockNodes
-    .filter(node => node.parent_id === parentId && node.is_active)
+    .filter((node) => node.parent_id === parentId && node.is_active)
     .slice()
     .sort(compareByOrderAndTitle)
-    .map(node => ({
+    .map((node) => ({
       id: node.id,
       title: node.title,
       slug: node.slug,
@@ -473,7 +492,8 @@ const toNodeListItem = (node: MockNodeRecord): MockNodeListItem => ({
   parent_id: node.parent_id,
   display_order: node.display_order,
   is_active: node.is_active,
-  childrenCount: mockNodes.filter(child => child.parent_id === node.id).length,
+  childrenCount: mockNodes.filter((child) => child.parent_id === node.id)
+    .length,
 });
 
 const toChatNode = (node: MockNodeRecord): ChatNode => ({
@@ -491,7 +511,7 @@ const toChatNode = (node: MockNodeRecord): ChatNode => ({
 });
 
 const findNodeById = (id: number): MockNodeRecord => {
-  const node = mockNodes.find(item => item.id === id);
+  const node = mockNodes.find((item) => item.id === id);
 
   if (!node) {
     throw new Error("No nao encontrado.");
@@ -544,7 +564,9 @@ const getDateDaysAgo = (daysAgo: number): Date => {
 
 const buildDashboardMetrics = (): MockDashboardMetrics => {
   const recentFrom = getDateDaysAgo(6);
-  const recentLogs = mockLogs.filter(log => new Date(log.created_at) >= recentFrom);
+  const recentLogs = mockLogs.filter(
+    (log) => new Date(log.created_at) >= recentFrom,
+  );
   const latestLogs = mockLogs
     .slice()
     .sort((left, right) => right.created_at.localeCompare(left.created_at))
@@ -556,14 +578,15 @@ const buildDashboardMetrics = (): MockDashboardMetrics => {
   );
 
   return {
-    unansweredTickets: mockQuestions.filter(question => question.status === "ABERTA")
-      .length,
+    unansweredTickets: mockQuestions.filter(
+      (question) => question.status === "ABERTA",
+    ).length,
     positiveRateLast7Days: calculateRate(
-      recentLogs.filter(log => log.flag === "ATENDEU").length,
+      recentLogs.filter((log) => log.flag === "ATENDEU").length,
       recentLogs.length,
     ),
     positiveRateAllTime: calculateRate(
-      mockLogs.filter(log => log.flag === "ATENDEU").length,
+      mockLogs.filter((log) => log.flag === "ATENDEU").length,
       mockLogs.length,
     ),
     averageClicks:
@@ -575,7 +598,7 @@ const buildDashboardMetrics = (): MockDashboardMetrics => {
     clickDistribution: Array.from({ length: 8 }, (_, index) => {
       const clicks = index + 1;
       const sessions = latestLogs.filter(
-        log => toClicksCount(log.navigation_flow) === clicks,
+        (log) => toClicksCount(log.navigation_flow) === clicks,
       ).length;
 
       return {
@@ -598,15 +621,30 @@ export const mockBackend = {
       await wait();
 
       const normalizedEmail = payload.email.trim().toLowerCase();
-      const user =
-        normalizedEmail.includes("secretaria")
-          ? mockSecretaryUser
-          : mockAdminUser;
+      const user = normalizedEmail.includes("secretaria")
+        ? mockSecretaryUser
+        : mockAdminUser;
 
       return {
         token: buildMockToken(user.role),
         user,
       };
+    },
+    async changePassword(payload: ChangePasswordPayload): Promise<void> {
+      await wait();
+
+      const currentUser =
+        mockAuthPasswords[1] === payload.currentPassword
+          ? mockAdminUser
+          : mockAuthPasswords[99] === payload.currentPassword
+            ? mockSecretaryUser
+            : null;
+
+      if (!currentUser) {
+        throw new Error("Senha atual invalida.");
+      }
+
+      mockAuthPasswords[currentUser.id] = payload.newPassword;
     },
   },
 
@@ -616,7 +654,10 @@ export const mockBackend = {
 
       return {
         success: true,
-        data: mockNodes.slice().sort(compareByOrderAndTitle).map(toNodeListItem),
+        data: mockNodes
+          .slice()
+          .sort(compareByOrderAndTitle)
+          .map(toNodeListItem),
       };
     },
 
@@ -680,12 +721,15 @@ export const mockBackend = {
       const next: MockNodeRecord = {
         ...current,
         ...payload,
-        evidence_source: payload.evidence_file_name ?? payload.evidence_source ?? current.evidence_source,
+        evidence_source:
+          payload.evidence_file_name ??
+          payload.evidence_source ??
+          current.evidence_source,
         id: current.id,
         parent_id: current.parent_id,
       };
 
-      mockNodes = mockNodes.map(node => (node.id === id ? next : node));
+      mockNodes = mockNodes.map((node) => (node.id === id ? next : node));
 
       return {
         success: true,
@@ -696,11 +740,11 @@ export const mockBackend = {
     async remove(id: number): Promise<void> {
       await wait();
 
-      if (mockNodes.some(node => node.parent_id === id)) {
+      if (mockNodes.some((node) => node.parent_id === id)) {
         throw new Error("Remova os filhos antes de excluir este no.");
       }
 
-      mockNodes = mockNodes.filter(node => node.id !== id);
+      mockNodes = mockNodes.filter((node) => node.id !== id);
     },
   },
 
@@ -740,20 +784,22 @@ export const mockBackend = {
 
     async remove(id: number): Promise<void> {
       await wait();
-      mockUsers = mockUsers.filter(user => user.id !== id);
+      mockUsers = mockUsers.filter((user) => user.id !== id);
     },
   },
 
   questions: {
-    async list(params: {
-      status?: InquiryStatus;
-      page?: number;
-      limit?: number;
-    } = {}): Promise<PaginatedResponse<QuestionResponseDTO>> {
+    async list(
+      params: {
+        status?: InquiryStatus;
+        page?: number;
+        limit?: number;
+      } = {},
+    ): Promise<PaginatedResponse<QuestionResponseDTO>> {
       await wait();
 
       const filtered = mockQuestions
-        .filter(question =>
+        .filter((question) =>
           params.status ? question.status === params.status : true,
         )
         .slice()
@@ -768,7 +814,7 @@ export const mockBackend = {
     ): Promise<QuestionResponseDTO> {
       await wait();
 
-      const current = mockQuestions.find(question => question.id === id);
+      const current = mockQuestions.find((question) => question.id === id);
 
       if (!current) {
         throw new Error("Pergunta nao encontrada.");
@@ -790,7 +836,7 @@ export const mockBackend = {
         updated_at: new Date().toISOString(),
       };
 
-      mockQuestions = mockQuestions.map(question =>
+      mockQuestions = mockQuestions.map((question) =>
         question.id === id ? updatedQuestion : question,
       );
 
@@ -800,14 +846,16 @@ export const mockBackend = {
     async downloadAttachment(id: number): Promise<Blob> {
       await wait();
 
-      const current = mockQuestions.find(question => question.id === id);
+      const current = mockQuestions.find((question) => question.id === id);
 
       if (!current?.has_attachment) {
         throw new Error("Esta pergunta nao possui anexo.");
       }
 
       return new Blob(
-        [`Mock attachment for question ${id}: ${current.attachment_name ?? "anexo"}`],
+        [
+          `Mock attachment for question ${id}: ${current.attachment_name ?? "anexo"}`,
+        ],
         {
           type: current.attachment_mime_type ?? "application/octet-stream",
         },
@@ -816,23 +864,25 @@ export const mockBackend = {
   },
 
   logs: {
-    async list(params: {
-      flag?: Satisfaction;
-      from?: string;
-      to?: string;
-      page?: number;
-      limit?: number;
-    } = {}): Promise<PaginatedResponse<MockSessionLog>> {
+    async list(
+      params: {
+        flag?: Satisfaction;
+        from?: string;
+        to?: string;
+        page?: number;
+        limit?: number;
+      } = {},
+    ): Promise<PaginatedResponse<MockSessionLog>> {
       await wait();
 
       const filtered = mockLogs
-        .filter(log => (params.flag ? log.flag === params.flag : true))
-        .filter(log => isDateInRange(log.created_at, params.from, params.to))
-        .map(log => ({
+        .filter((log) => (params.flag ? log.flag === params.flag : true))
+        .filter((log) => isDateInRange(log.created_at, params.from, params.to))
+        .map((log) => ({
           ...log,
           questions: mockQuestions
-            .filter(question => question.session_log_id === log.id)
-            .map(question => ({
+            .filter((question) => question.session_log_id === log.id)
+            .map((question) => ({
               id: question.id,
               question: question.question,
               status: question.status,
