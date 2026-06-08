@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import {
   ADMIN_ONLY_ROLES,
   PANEL_ROUTE_PATHS,
+  SHARED_PANEL_ROLES,
   hasRoleAccess,
 } from "@/features/admin/config/panel-access";
 import { useAdminShellStore } from "@/features/admin/stores/admin-shell.store";
@@ -78,9 +79,8 @@ const DEFAULT_NAVIGATION_ITEMS: AdminNavigationItem[] = [
     label: "Configuracoes",
     to: PANEL_ROUTE_PATHS.settings,
     icon: Settings,
-    helperText: "Disponivel em sprint futura",
-    disabled: true,
-    allowedRoles: ADMIN_ONLY_ROLES,
+    helperText: "Troca de senha da conta",
+    allowedRoles: SHARED_PANEL_ROLES,
   },
 ];
 
@@ -108,22 +108,24 @@ export function AdminLayout({
 }: AdminLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const user = useAuthStore(state => state.user);
-  const clearAuth = useAuthStore(state => state.clearAuth);
+  const user = useAuthStore((state) => state.user);
+  const clearAuth = useAuthStore((state) => state.clearAuth);
   const isSidebarCollapsed = useAdminShellStore(
-    state => state.isSidebarCollapsed,
+    (state) => state.isSidebarCollapsed,
   );
-  const toggleSidebar = useAdminShellStore(state => state.toggleSidebar);
+  const toggleSidebar = useAdminShellStore((state) => state.toggleSidebar);
 
   const roleLabel = user?.role ? ROLE_COPY[user.role] : "Area protegida";
   const userName = user?.name ?? "Usuario autenticado";
   const userEmail = user?.email ?? "Sessao ativa";
   const visibleNavigationItems = navigationItems.filter(
-    item => !item.allowedRoles || hasRoleAccess(user?.role, item.allowedRoles),
+    (item) =>
+      !item.allowedRoles || hasRoleAccess(user?.role, item.allowedRoles),
   );
   const currentSection =
-    visibleNavigationItems.find(item => isItemActive(location.pathname, item.to))
-      ?.label ?? "Painel";
+    visibleNavigationItems.find((item) =>
+      isItemActive(location.pathname, item.to),
+    )?.label ?? "Painel";
 
   const handleLogout = () => {
     clearAuth();
@@ -193,75 +195,82 @@ export function AdminLayout({
             aria-label="Navegacao do painel"
           >
             <div className="space-y-4">
-            {visibleNavigationItems.map(item => {
-              const Icon = item.icon;
-              const isActive = isItemActive(location.pathname, item.to);
+              {visibleNavigationItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = isItemActive(location.pathname, item.to);
 
-              if (item.disabled) {
-                return (
-                  <div
-                    key={item.to}
-                    className={cn(
-                      "rounded-xl px-2 py-2 text-[#666666] opacity-65",
-                      isSidebarCollapsed && "lg:flex lg:justify-center",
-                    )}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <span className="inline-flex h-5 w-5 items-center justify-center text-[#575757]">
-                        <Icon className="size-4" aria-hidden="true" />
-                      </span>
-                      <div className={cn("min-w-0", isSidebarCollapsed && "lg:hidden")}>
-                        <p className="text-[0.98rem] font-black italic">{item.label}</p>
-                        {item.helperText ? (
-                          <p className="text-[0.68rem] leading-tight text-[#8A857E]">
-                            {item.helperText}
+                if (item.disabled) {
+                  return (
+                    <div
+                      key={item.to}
+                      className={cn(
+                        "rounded-xl px-2 py-2 text-[#666666] opacity-65",
+                        isSidebarCollapsed && "lg:flex lg:justify-center",
+                      )}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span className="inline-flex h-5 w-5 items-center justify-center text-[#575757]">
+                          <Icon className="size-4" aria-hidden="true" />
+                        </span>
+                        <div
+                          className={cn(
+                            "min-w-0",
+                            isSidebarCollapsed && "lg:hidden",
+                          )}
+                        >
+                          <p className="text-[0.98rem] font-black italic">
+                            {item.label}
                           </p>
-                        ) : null}
+                          {item.helperText ? (
+                            <p className="text-[0.68rem] leading-tight text-[#8A857E]">
+                              {item.helperText}
+                            </p>
+                          ) : null}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              }
+                  );
+                }
 
-              return (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  aria-label={item.label}
-                  title={isSidebarCollapsed ? item.label : undefined}
-                  className={cn(
-                    "group flex cursor-pointer items-center gap-2.5 rounded-xl px-2 py-2 transition-colors active:bg-[#ECE4D7]",
-                    isSidebarCollapsed && "lg:justify-center",
-                    isActive
-                      ? "bg-[#F3EEE3] text-[#3B3B3B]"
-                      : "text-[#575757] hover:bg-[#F7F2E9] hover:text-[#2E2E2E]",
-                  )}
-                >
-                  <span
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    aria-label={item.label}
+                    title={isSidebarCollapsed ? item.label : undefined}
                     className={cn(
-                      "inline-flex h-5 w-5 items-center justify-center",
+                      "group flex cursor-pointer items-center gap-2.5 rounded-xl px-2 py-2 transition-colors active:bg-[#ECE4D7]",
+                      isSidebarCollapsed && "lg:justify-center",
                       isActive
-                        ? "text-[#3F3F3F]"
-                        : "text-[#5A5A5A]",
+                        ? "bg-[#F3EEE3] text-[#3B3B3B]"
+                        : "text-[#575757] hover:bg-[#F7F2E9] hover:text-[#2E2E2E]",
                     )}
                   >
-                    <Icon className="size-4" aria-hidden="true" />
-                  </span>
+                    <span
+                      className={cn(
+                        "inline-flex h-5 w-5 items-center justify-center",
+                        isActive ? "text-[#3F3F3F]" : "text-[#5A5A5A]",
+                      )}
+                    >
+                      <Icon className="size-4" aria-hidden="true" />
+                    </span>
 
-                  <p
-                    className={cn(
-                      "text-[0.98rem] font-black italic",
-                      isSidebarCollapsed && "lg:hidden",
-                    )}
-                  >
-                    {item.label}
-                  </p>
-                </NavLink>
-              );
-            })}
+                    <p
+                      className={cn(
+                        "text-[0.98rem] font-black italic",
+                        isSidebarCollapsed && "lg:hidden",
+                      )}
+                    >
+                      {item.label}
+                    </p>
+                  </NavLink>
+                );
+              })}
             </div>
 
-            <div className={cn("space-y-3 px-2", isSidebarCollapsed && "lg:px-0")}>
+            <div
+              className={cn("space-y-3 px-2", isSidebarCollapsed && "lg:px-0")}
+            >
               <div
                 className={cn(
                   "rounded-2xl bg-[#F6F2E8] px-3 py-3 text-[0.72rem] text-[#7B766E]",
@@ -284,7 +293,9 @@ export function AdminLayout({
                 title={isSidebarCollapsed ? "Sair" : undefined}
               >
                 <LogOut className="size-4" aria-hidden="true" />
-                <span className={cn(isSidebarCollapsed && "lg:hidden")}>Sair</span>
+                <span className={cn(isSidebarCollapsed && "lg:hidden")}>
+                  Sair
+                </span>
               </Button>
             </div>
           </nav>
@@ -328,11 +339,7 @@ export function AdminLayout({
               </div>
             </header>
 
-            <main
-              className={cn(
-                "flex-1 px-4 pb-4 lg:px-5 lg:pb-5",
-              )}
-            >
+            <main className={cn("flex-1 px-4 pb-4 lg:px-5 lg:pb-5")}>
               <div
                 className={cn(
                   "mx-auto w-full max-w-[1320px]",
