@@ -14,7 +14,7 @@ const Home: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   if (isChatOpen) {
-    return <ChatWindow />;
+    return <ChatWindow onBackHome={() => setIsChatOpen(false)} />;
   }
 
   const handleOpenChat = () => {
@@ -128,6 +128,7 @@ const Home: React.FC = () => {
               className="w-105 object-contain md:w-205 xl:w-230"
             />
           </div>
+
 
           <img
             src={fatecImg}

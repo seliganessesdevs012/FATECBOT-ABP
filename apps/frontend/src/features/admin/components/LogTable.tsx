@@ -33,7 +33,7 @@ type SatisfactionFilter = "TODOS" | "ATENDEU" | "NAO_ATENDEU";
 const FILTER_OPTIONS: { value: SatisfactionFilter; label: string }[] = [
   { value: "TODOS", label: "Todos" },
   { value: "ATENDEU", label: "Atendeu" },
-  { value: "NAO_ATENDEU", label: "Nao atendeu" },
+  { value: "NAO_ATENDEU", label: "Não atendeu" },
 ];
 
 const formatNavigationFlow = (flow: string[]) => {
@@ -45,7 +45,7 @@ const formatNavigationFlow = (flow: string[]) => {
 };
 
 const getSatisfactionLabel = (flag: "ATENDEU" | "NAO_ATENDEU") =>
-  flag === "ATENDEU" ? "Atendeu" : "Nao atendeu";
+  flag === "ATENDEU" ? "Atendeu" : "Não atendeu";
 
 const getSatisfactionClasses = (flag: "ATENDEU" | "NAO_ATENDEU") =>
   flag === "ATENDEU"
@@ -121,7 +121,7 @@ export default function LogTable({ className }: LogTableProps) {
   };
 
   if (isLoading) {
-    return <LoadingSpinner message="Carregando historico de atendimentos..." />;
+    return <LoadingSpinner message="Carregando histórico de atendimentos..." />;
   }
 
   if (isError) {
@@ -140,23 +140,23 @@ export default function LogTable({ className }: LogTableProps) {
     <section className={cn("space-y-5", className)}>
       <PanelPageIntro
         icon={Route}
-        badge="Historico de atendimentos"
-        title="Sessoes registradas pelo chatbot"
-        description="Analise o caminho percorrido no chatbot, a satisfacao registrada e as perguntas vinculadas a cada atendimento."
+        badge="Histórico de atendimentos"
+        title="Sessões registradas pelo chatbot"
+        description="Analise o caminho percorrido no chatbot, a satisfação registrada e as perguntas vinculadas a cada atendimento."
         aside={
           <>
-            <PanelStatCard label="Atendeu na pagina" value={positiveCount} />
-            <PanelStatCard label="Nao atendeu na pagina" value={negativeCount} />
+            <PanelStatCard label="Atendeu na página" value={positiveCount} />
+            <PanelStatCard label="Não atendeu na página" value={negativeCount} />
           </>
         }
       />
 
       <PanelSectionCard>
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_180px_180px_auto] lg:items-end">
-          <Input
+            <Input
             value={searchTerm}
             onChange={event => setSearchTerm(event.target.value)}
-            placeholder="Buscar por sessao, caminho ou pergunta vinculada"
+            placeholder="Buscar por sessão, caminho ou pergunta vinculada"
             className="border-[#DDD1C0] bg-white"
           />
 
@@ -211,7 +211,7 @@ export default function LogTable({ className }: LogTableProps) {
       {filteredLogs.length === 0 ? (
         <PanelEmptyState
           title="Nenhum atendimento para este recorte."
-          description="Ajuste busca, datas ou satisfacao para revisar outro conjunto."
+          description="Ajuste a busca, datas ou satisfação para revisar outro conjunto."
         />
       ) : (
         <PanelTableCard>
@@ -219,9 +219,9 @@ export default function LogTable({ className }: LogTableProps) {
             <table className="min-w-full text-left text-sm">
               <thead className="bg-[var(--brand-secondary-soft)] text-xs uppercase tracking-[0.12em] text-[var(--brand-secondary)]">
                 <tr>
-                  <th className="px-5 py-4 font-semibold">Sessao</th>
+                  <th className="px-5 py-4 font-semibold">Sessão</th>
                   <th className="px-5 py-4 font-semibold">Caminho</th>
-                  <th className="px-5 py-4 font-semibold">Satisfacao</th>
+                  <th className="px-5 py-4 font-semibold">Satisfação</th>
                   <th className="px-5 py-4 font-semibold">Perguntas vinculadas</th>
                   <th className="px-5 py-4 font-semibold">Registrado em</th>
                 </tr>
@@ -234,8 +234,8 @@ export default function LogTable({ className }: LogTableProps) {
                   >
                     <td className="px-5 py-5">
                       <div className="space-y-1">
-                        <p className="font-semibold text-[#1C262E]">
-                          Sessao #{log.id}
+                          <p className="font-semibold text-[#1C262E]">
+                          Sessão #{log.id}
                         </p>
                         <p className="text-xs text-[#6E6252]">
                           {log.navigation_flow.length} etapa(s) registradas
@@ -314,7 +314,7 @@ export default function LogTable({ className }: LogTableProps) {
         </PanelTableCard>
       )}
 
-      <PanelFooterBar>
+            <PanelFooterBar>
         <div className="text-sm text-[#6E6252]">{resultsLabel}</div>
 
         <div className="flex items-center gap-2">
@@ -340,7 +340,7 @@ export default function LogTable({ className }: LogTableProps) {
             Anterior
           </Button>
           <span className="min-w-[92px] text-center text-sm font-semibold text-[#1C262E]">
-            Pagina {page} de {totalPages}
+            Página {page} de {totalPages}
           </span>
           <Button
             type="button"
@@ -348,7 +348,7 @@ export default function LogTable({ className }: LogTableProps) {
             onClick={() => setPage(current => current + 1)}
             disabled={!hasNextPage}
           >
-            Proxima
+            Próxima
           </Button>
         </div>
       </PanelFooterBar>

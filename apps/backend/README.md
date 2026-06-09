@@ -192,26 +192,27 @@ Documentação completa com exemplos de request/response em [`docs/api-layer.md`
 
 ### Resumo rápido
 
-| Método   | Rota             |    Acesso    | Descrição                                                                  |
-| -------- | ---------------- | :----------: | -------------------------------------------------------------------------- |
-| `POST`   | `/auth/login`    |   Público    | Autentica e retorna JWT                                                    |
-| `GET`    | `/nodes/root`    |   Público    | Retorna nó raiz do chatbot                                                 |
-| `GET`    | `/nodes/:id`     |   Público    | Retorna nó com filhos e evidência                                          |
-| `POST`   | `/sessions/log`  |   Público    | Registra log de sessão e satisfação                                        |
-| `POST`   | `/questions`     |   Público    | Envia pergunta com nome, e-mail e anexo opcional (PDF/JPG/PNG · máx. 5 MB) |
-| `GET`    | `/questions`     | 🔒 SEC/ADMIN | Lista perguntas recebidas                                                  |
-| `GET`    | `/questions/:id/attachment` | 🔒 SEC/ADMIN | Baixa anexo de uma pergunta                                      |
-| `PATCH`  | `/questions/:id` | 🔒 SEC/ADMIN | Atualiza status da pergunta                                                |
-| `GET`    | `/dashboard/metrics` | 🔒 SEC/ADMIN | Retorna métricas agregadas do painel                                  |
-| `GET`    | `/nodes`         |   🔒 ADMIN   | Lista todos os nós                                                         |
-| `POST`   | `/nodes`         |   🔒 ADMIN   | Cria novo nó de navegação                                                  |
-| `PATCH`  | `/nodes/:id`     |   🔒 ADMIN   | Atualiza nó existente                                                      |
-| `DELETE` | `/nodes/:id`     |   🔒 ADMIN   | Remove nó (bloqueado se tiver filhos)                                      |
-| `GET`    | `/users`         |   🔒 ADMIN   | Lista usuários internos                                                    |
-| `POST`   | `/users`         |   🔒 ADMIN   | Cria usuário interno                                                       |
-| `DELETE` | `/users/:id`     |   🔒 ADMIN   | Remove usuário                                                             |
-| `GET`    | `/logs`          | 🔒 SEC/ADMIN | Lista logs de atendimento                                                  |
-| `GET`    | `/health`        |   Público    | Health check da API                                                        |
+| Método   | Rota                        |       Acesso        | Descrição                                                                  |
+| -------- | --------------------------- | :-----------------: | -------------------------------------------------------------------------- |
+| `POST`   | `/auth/login`               |       Público       | Autentica e retorna JWT                                                    |
+| `PATCH`  | `/auth/change-password`     | 🔒 ADMIN/SECRETARIA | Atualiza a senha da conta autenticada                                      |
+| `GET`    | `/nodes/root`               |       Público       | Retorna nó raiz do chatbot                                                 |
+| `GET`    | `/nodes/:id`                |       Público       | Retorna nó com filhos e evidência                                          |
+| `POST`   | `/sessions/log`             |       Público       | Registra log de sessão e satisfação                                        |
+| `POST`   | `/questions`                |       Público       | Envia pergunta com nome, e-mail e anexo opcional (PDF/JPG/PNG · máx. 5 MB) |
+| `GET`    | `/questions`                |    🔒 SEC/ADMIN     | Lista perguntas recebidas                                                  |
+| `GET`    | `/questions/:id/attachment` |    🔒 SEC/ADMIN     | Baixa anexo de uma pergunta                                                |
+| `PATCH`  | `/questions/:id`            |    🔒 SEC/ADMIN     | Atualiza status da pergunta                                                |
+| `GET`    | `/dashboard/metrics`        |    🔒 SEC/ADMIN     | Retorna métricas agregadas do painel                                       |
+| `GET`    | `/nodes`                    |      🔒 ADMIN       | Lista todos os nós                                                         |
+| `POST`   | `/nodes`                    |      🔒 ADMIN       | Cria novo nó de navegação                                                  |
+| `PATCH`  | `/nodes/:id`                |      🔒 ADMIN       | Atualiza nó existente                                                      |
+| `DELETE` | `/nodes/:id`                |      🔒 ADMIN       | Remove nó (bloqueado se tiver filhos)                                      |
+| `GET`    | `/users`                    |      🔒 ADMIN       | Lista usuários internos                                                    |
+| `POST`   | `/users`                    |      🔒 ADMIN       | Cria usuário interno                                                       |
+| `DELETE` | `/users/:id`                |      🔒 ADMIN       | Remove usuário                                                             |
+| `GET`    | `/logs`                     |    🔒 SEC/ADMIN     | Lista logs de atendimento                                                  |
+| `GET`    | `/health`                   |       Público       | Health check da API                                                        |
 
 ---
 

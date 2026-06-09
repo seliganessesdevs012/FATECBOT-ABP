@@ -8,9 +8,22 @@ import mascotImg from "@/assets/college_jacare.png";
 import { cn } from "@/lib/utils";
 
 const questionFormSchema = z.object({
-  requester_name: z.string().min(3, "Nome deve ter no mínimo 3 caracteres"),
-  requester_email: z.string().email("Email inválido"),
-  question: z.string().min(10, "Pergunta deve ter no mínimo 10 caracteres"),
+  requester_name: z
+    .string()
+    .trim()
+    .min(3, "Nome deve ter no minimo 3 caracteres")
+    .max(50, "Nome deve ter no máximo 50 caracteres"),
+  requester_email: z
+    .string()
+    .trim()
+    .min(1, "Email é obrigatorio")
+    .max(50, "Email deve ter no máximo 50 caracteres")
+    .email("Email no formato inválido"),
+  question: z
+    .string()
+    .trim()
+    .min(10, "Pergunta deve ter no minimo 10 caracteres")
+    .max(2000, "Pergunta deve ter no máximo 2000 caracteres"),
   attachment: z
     .preprocess(
       (value) => {
@@ -24,7 +37,7 @@ const questionFormSchema = z.object({
         .optional()
         .refine(
           (file) => !file || file.size <= 5 * 1024 * 1024,
-          "Arquivo deve ter no máximo 5MB",
+          "Arquivo deve ter no maximo 5MB",
         )
         .refine(
           (file) =>
@@ -64,7 +77,13 @@ export function QuestionForm({
     reset,
   } = useForm<QuestionFormInput, undefined, QuestionFormData>({
     resolver: zodResolver(questionFormSchema),
-    mode: "onChange",
+    mode: "onTouched",
+    reValidateMode: "onChange",
+    defaultValues: {
+      requester_name: "",
+      requester_email: "",
+      question: "",
+    },
   });
 
   const onSubmit: SubmitHandler<QuestionFormData> = (data) => {
@@ -139,6 +158,7 @@ export function QuestionForm({
       {isExpanded && (
         <form
           onSubmit={handleSubmit(onSubmit)}
+          noValidate
           className={cn(
             isSidebar
               ? "flex max-h-[min(56vh,36rem)] flex-col border-t border-[#E7DED1] bg-white px-5 py-5"

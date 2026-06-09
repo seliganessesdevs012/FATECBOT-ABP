@@ -205,11 +205,11 @@ export default function TicketList({ className }: TicketListProps) {
         icon={Ticket}
         badge="Atendimento interno"
         title="Tickets recebidos pelo chatbot"
-        description="Acompanhe as perguntas encaminhadas para a equipe interna, abra os anexos recebidos e marque como respondidas aquelas ja tratadas fora da plataforma."
+        description="Acompanhe as perguntas encaminhadas para a equipe interna, abra os anexos recebidos e marque como respondidas aquelas já tratadas fora da plataforma."
         aside={
           <>
-            <PanelStatCard label="Pendentes na pagina" value={openTickets} />
-            <PanelStatCard label="Respondidos na pagina" value={answeredTickets} />
+            <PanelStatCard label="Pendentes na página" value={openTickets} />
+            <PanelStatCard label="Respondidos na página" value={answeredTickets} />
           </>
         }
       />
@@ -221,7 +221,7 @@ export default function TicketList({ className }: TicketListProps) {
             <Input
               value={searchTerm}
               onChange={event => setSearchTerm(event.target.value)}
-              placeholder="Buscar por nome, email ou conteudo do ticket"
+              placeholder="Buscar por nome, e-mail ou conteúdo do ticket"
               className="border-[#DDD1C0] bg-white pl-9"
             />
           </div>
@@ -294,8 +294,8 @@ export default function TicketList({ className }: TicketListProps) {
                   <th className="px-5 py-4 font-semibold">Ticket</th>
                   <th className="px-5 py-4 font-semibold">Status</th>
                   <th className="px-5 py-4 font-semibold">Criado em</th>
-                  <th className="px-5 py-4 font-semibold">Responsavel</th>
-                  <th className="px-5 py-4 text-right font-semibold">Acao</th>
+                  <th className="px-5 py-4 font-semibold">Responsável</th>
+                  <th className="px-5 py-4 text-right font-semibold">Ação</th>
                 </tr>
               </thead>
               <tbody>
@@ -352,10 +352,15 @@ export default function TicketList({ className }: TicketListProps) {
                               className="size-3.5"
                               aria-hidden="true"
                             />
-                            Conteudo
+                            Conteúdo
                           </p>
                           <p className="max-w-xl leading-relaxed text-[#2B2B2B]">
                             {ticket.question}
+                          </p>
+                          <p>
+                            {ticket.session_log_id
+                              ? `Sessão vinculada: #${ticket.session_log_id}`
+                              : "Sem sessão vinculada"}
                           </p>
                         </div>
                       </td>
@@ -406,8 +411,8 @@ export default function TicketList({ className }: TicketListProps) {
                             {isOpen
                               ? isRowBusy
                                 ? "Atualizando..."
-                                : "Marcar respondido"
-                              : "Ja respondido"}
+                                : "Marcar como respondido"
+                              : "Já respondido"}
                           </Button>
                         </div>
                       </td>
@@ -435,7 +440,7 @@ export default function TicketList({ className }: TicketListProps) {
             Anterior
           </Button>
           <span className="min-w-[92px] text-center text-sm font-semibold text-[#1C262E]">
-            Pagina {page} de {totalPages}
+            Página {page} de {totalPages}
           </span>
           <Button
             type="button"
@@ -443,7 +448,7 @@ export default function TicketList({ className }: TicketListProps) {
             onClick={() => setPage(current => current + 1)}
             disabled={!hasNextPage || isFetching}
           >
-            Proxima
+            Próxima
           </Button>
         </div>
       </PanelFooterBar>

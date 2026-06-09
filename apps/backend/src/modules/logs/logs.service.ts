@@ -56,7 +56,7 @@ export class LogsService {
                 return {
                     id: log.id,
                     navigation_flow: navigationFlow,
-                    flag: log.flag,
+                    flag: log.flag ?? "NAO_ATENDEU",
                     created_at: log.created_at.toISOString(),
                     questions: log.questions.map((q) => ({
                         id: q.id,

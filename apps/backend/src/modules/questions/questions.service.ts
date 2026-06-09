@@ -153,10 +153,7 @@ export class QuestionsService {
     data: QuestionResponseDTO[];
     meta: { total: number; page: number; limit: number };
   }> {
-    const { skip, take, page, limit } = paginate(query as {
-      page?: unknown;
-      limit?: unknown;
-    });
+    const { skip, take, page, limit } = paginate(query);
 
     const where = query.status ? { status: query.status } : {};
     const [total, questions] = await Promise.all([

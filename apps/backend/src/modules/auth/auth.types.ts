@@ -1,22 +1,27 @@
 export interface LoginDTO {
-      email: string;
-      password: string;
+  email: string;
+  password: string;
+}
+
+export interface ChangePasswordDTO {
+  currentPassword: string;
+  newPassword: string;
 }
 
 export interface AuthPayload {
-      sub: string;
-      role: "ADMIN" | "SECRETARIA";
-      exp: number;
+  sub: string;
+  role: "ADMIN" | "SECRETARIA";
+  exp: number;
 }
 
 export interface AuthUserResponse {
-      id: number;
-      name: string;
-      email: string;
-      role: "ADMIN" | "SECRETARIA";
+  id: number;
+  name: string;
+  email: string;
+  role: "ADMIN" | "SECRETARIA";
 }
 
 export interface LoginResponse {
-      token: string;
-      user: AuthUserResponse;
+  token: string;
+  user: AuthUserResponse;
 }

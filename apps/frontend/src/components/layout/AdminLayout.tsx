@@ -23,6 +23,7 @@ import { ResponsiveMenuModal } from "@/components/shared/ResponsiveMenuModal";
 import {
   ADMIN_ONLY_ROLES,
   PANEL_ROUTE_PATHS,
+  SHARED_PANEL_ROLES,
   hasRoleAccess,
 } from "@/features/admin/config/panel-access";
 import { useAdminShellStore } from "@/features/admin/stores/admin-shell.store";
@@ -56,7 +57,7 @@ const DEFAULT_NAVIGATION_ITEMS: AdminNavigationItem[] = [
     icon: LayoutDashboard,
   },
   {
-    label: "Usuarios",
+    label: "Usuários",
     to: PANEL_ROUTE_PATHS.users,
     icon: Users,
     allowedRoles: ADMIN_ONLY_ROLES,
@@ -73,23 +74,22 @@ const DEFAULT_NAVIGATION_ITEMS: AdminNavigationItem[] = [
     icon: Ticket,
   },
   {
-    label: "Historico",
+    label: "Histórico",
     to: PANEL_ROUTE_PATHS.logs,
     icon: ScrollText,
   },
   {
-    label: "Configuracoes",
+    label: "Configurações",
     to: PANEL_ROUTE_PATHS.settings,
     icon: Settings,
-    helperText: "Disponivel em sprint futura",
-    disabled: true,
-    allowedRoles: ADMIN_ONLY_ROLES,
+    helperText: "Troca de senha da conta",
+    allowedRoles: SHARED_PANEL_ROLES,
   },
 ];
 
 const ROLE_COPY: Record<Role, string> = {
   ADMIN: "Administrador",
-  SECRETARIA: "Secretaria academica",
+  SECRETARIA: "Secretaria acadêmica",
 };
 
 const isItemActive = (pathname: string, itemPath: string): boolean => {
@@ -111,25 +111,27 @@ export function AdminLayout({
 }: AdminLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const user = useAuthStore(state => state.user);
-  const clearAuth = useAuthStore(state => state.clearAuth);
+  const user = useAuthStore((state) => state.user);
+  const clearAuth = useAuthStore((state) => state.clearAuth);
   const isSidebarCollapsed = useAdminShellStore(
-    state => state.isSidebarCollapsed,
+    (state) => state.isSidebarCollapsed,
   );
-  const toggleSidebar = useAdminShellStore(state => state.toggleSidebar);
-  const mobileMenuOpen = useAdminShellStore(state => state.mobileMenuOpen);
-  const setMobileMenuOpen = useAdminShellStore(state => state.setMobileMenuOpen);
+  const toggleSidebar = useAdminShellStore((state) => state.toggleSidebar);
+  const mobileMenuOpen = useAdminShellStore((state) => state.mobileMenuOpen);
+  const setMobileMenuOpen = useAdminShellStore((state) => state.setMobileMenuOpen);
   const firstLinkRef = useRef<HTMLAnchorElement | null>(null);
 
-  const roleLabel = user?.role ? ROLE_COPY[user.role] : "Area protegida";
-  const userName = user?.name ?? "Usuario autenticado";
-  const userEmail = user?.email ?? "Sessao ativa";
+  const roleLabel = user?.role ? ROLE_COPY[user.role] : "Área protegida";
+  const userName = user?.name ?? "Usuário autenticado";
+  const userEmail = user?.email ?? "Sessão ativa";
   const visibleNavigationItems = navigationItems.filter(
-    item => !item.allowedRoles || hasRoleAccess(user?.role, item.allowedRoles),
+    (item) =>
+      !item.allowedRoles || hasRoleAccess(user?.role, item.allowedRoles),
   );
   const currentSection =
-    visibleNavigationItems.find(item => isItemActive(location.pathname, item.to))
-      ?.label ?? "Painel";
+    visibleNavigationItems.find((item) =>
+      isItemActive(location.pathname, item.to),
+    )?.label ?? "Painel";
 
   const handleLogout = () => {
     clearAuth();
@@ -196,13 +198,15 @@ export function AdminLayout({
               "flex flex-1 flex-col justify-between py-8",
               isSidebarCollapsed ? "px-3" : "px-5",
             )}
-            aria-label="Navegacao do painel"
+            aria-label="Navegação do painel"
           >
             <div className="space-y-4">
-              {visibleNavigationItems.map(item => {
+              {visibleNavigationItems.map((item) => {
+                // CORREÇÃO 1: Extrair o Icon e calcular o isActive antes de usar
                 const Icon = item.icon;
                 const isActive = isItemActive(location.pathname, item.to);
 
+                // CORREÇÃO 2: Fechar o bloco disabled corretamente com o "if"
                 if (item.disabled) {
                   return (
                     <div
@@ -216,8 +220,15 @@ export function AdminLayout({
                         <span className="inline-flex h-5 w-5 items-center justify-center text-[#575757]">
                           <Icon className="size-4" aria-hidden="true" />
                         </span>
-                        <div className={cn("min-w-0", isSidebarCollapsed && "lg:hidden")}>
-                          <p className="text-[0.98rem] font-black italic">{item.label}</p>
+                        <div
+                          className={cn(
+                            "min-w-0",
+                            isSidebarCollapsed && "lg:hidden",
+                          )}
+                        >
+                          <p className="text-[0.98rem] font-black italic">
+                            {item.label}
+                          </p>
                           {item.helperText ? (
                             <p className="text-[0.68rem] leading-tight text-[#8A857E]">
                               {item.helperText}
@@ -229,6 +240,7 @@ export function AdminLayout({
                   );
                 }
 
+                // Fluxo padrão (ativo)
                 return (
                   <NavLink
                     key={item.to}
@@ -246,9 +258,7 @@ export function AdminLayout({
                     <span
                       className={cn(
                         "inline-flex h-5 w-5 items-center justify-center",
-                        isActive
-                          ? "text-[#3F3F3F]"
-                          : "text-[#5A5A5A]",
+                        isActive ? "text-[#3F3F3F]" : "text-[#5A5A5A]",
                       )}
                     >
                       <Icon className="size-4" aria-hidden="true" />
@@ -267,7 +277,9 @@ export function AdminLayout({
               })}
             </div>
 
-            <div className={cn("space-y-3 px-2", isSidebarCollapsed && "lg:px-0")}>
+            <div
+              className={cn("space-y-3 px-2", isSidebarCollapsed && "lg:px-0")}
+            >
               <div
                 className={cn(
                   "rounded-2xl bg-[#F6F2E8] px-3 py-3 text-[0.72rem] text-[#7B766E]",
@@ -290,7 +302,9 @@ export function AdminLayout({
                 title={isSidebarCollapsed ? "Sair" : undefined}
               >
                 <LogOut className="size-4" aria-hidden="true" />
-                <span className={cn(isSidebarCollapsed && "lg:hidden")}>Sair</span>
+                <span className={cn(isSidebarCollapsed && "lg:hidden")}>
+                  Sair
+                </span>
               </Button>
             </div>
           </nav>
@@ -306,7 +320,6 @@ export function AdminLayout({
                   containerClassName,
                 )}
               >
-
                 <div>
                   {/* Menu Hamburguer (Sempre visível no mobile) */}
                   <div className="mb-2 lg:hidden">

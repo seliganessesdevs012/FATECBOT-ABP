@@ -13,7 +13,11 @@ import { useChatNavigation } from "../hooks/useChatNavigation";
 import mascotImg from "../../../assets/message_jacare.png";
 import { SatisfactionRating } from "./SatisfactionRating";
 
-export function ChatWindow() {
+interface ChatWindowProps {
+  onBackHome?: () => void;
+}
+
+export function ChatWindow({ onBackHome }: ChatWindowProps) {
   const {
     currentNode,
     isLoading,
@@ -208,6 +212,16 @@ export function ChatWindow() {
             <span className="text-sm font-semibold uppercase tracking-[0.25em] text-[#B20000]">
               {nodeTitle}
             </span>
+
+            {onBackHome && (
+              <button
+                type="button"
+                onClick={onBackHome}
+                className="cursor-pointer rounded-xl border-2 border-[#7D0000] bg-white px-4 py-2 text-sm font-semibold text-[#7D0000] transition-colors hover:bg-[#7D0000] hover:text-white"
+              >
+                Voltar para Home
+              </button>
+            )}
           </div>
 
           {/* Modal Responsivo injetando a Sidebar no Mobile */}

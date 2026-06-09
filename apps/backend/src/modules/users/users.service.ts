@@ -9,8 +9,8 @@ import type {
 } from "./users.types";
 
 export class UsersService {
-  async listUsers(query: { page?: unknown; limit?: unknown }): Promise<UsersListResponseDTO> {
-    const { skip, take, page, limit } = paginate(query as { page?: unknown; limit?: unknown });
+  async listUsers(query: { page?: string | number; limit?: string | number }): Promise<UsersListResponseDTO> {
+    const { skip, take, page, limit } = paginate(query);
 
     const [total, users] = await Promise.all([
       db.user.count(),

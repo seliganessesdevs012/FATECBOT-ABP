@@ -12,6 +12,11 @@ export interface LoginPayload {
   password: string;
 }
 
+export interface ChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+}
+
 export interface JWTPayload {
   sub: string;
   role: Role;

@@ -28,9 +28,9 @@ import {
 } from "../api/users.api";
 
 const createUserSchema = z.object({
-  name: z.string().min(3, "Nome deve ter no minimo 3 caracteres"),
-  email: z.string().email("Email invalido"),
-  password: z.string().min(6, "Senha deve ter no minimo 6 caracteres"),
+  name: z.string().min(3, "Nome deve ter no mínimo 3 caracteres"),
+  email: z.string().email("E-mail inválido"),
+  password: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
   role: z.enum(["ADMIN", "SECRETARIA"]),
 });
 
@@ -86,7 +86,7 @@ const UserList = ({ className }: UserListProps) => {
     mutationFn: usersApi.remove,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY });
-      setSuccessMessage("Usuario removido com sucesso.");
+      setSuccessMessage("Usuário removido com sucesso.");
     },
     onSettled: () => {
       setDeletingId(null);
@@ -110,13 +110,13 @@ const UserList = ({ className }: UserListProps) => {
   const createErrorMessage = createUserMutation.isError
     ? getApiErrorMessage(
         createUserMutation.error,
-        "Nao foi possivel criar usuario.",
+        "Não foi possível criar usuário.",
       )
     : null;
   const deleteErrorMessage = deleteUserMutation.isError
     ? getApiErrorMessage(
         deleteUserMutation.error,
-        "Nao foi possivel remover usuario.",
+        "Não foi possível remover usuário.",
       )
     : null;
 
@@ -130,7 +130,7 @@ const UserList = ({ className }: UserListProps) => {
 
   const handleDelete = (user: AdminUser) => {
     const confirmed = window.confirm(
-      `Remover o usuario ${user.name}? Esta acao nao pode ser desfeita.`,
+      `Remover o usuário ${user.name}? Esta ação não pode ser desfeita.`,
     );
 
     if (!confirmed || deleteUserMutation.isPending) {
@@ -153,13 +153,13 @@ const UserList = ({ className }: UserListProps) => {
   };
 
   if (listQuery.isLoading) {
-    return <LoadingSpinner message="Carregando usuarios..." />;
+    return <LoadingSpinner message="Carregando usuários..." />;
   }
 
   if (listQuery.isError) {
     return (
       <ErrorAlert
-        title="Erro ao carregar usuarios"
+        title="Erro ao carregar usuários"
         message={getApiErrorMessage(listQuery.error, "Tente novamente.")}
         onRetry={() => listQuery.refetch()}
       />
@@ -171,13 +171,13 @@ const UserList = ({ className }: UserListProps) => {
       <PanelPageIntro
         icon={Users}
         badge="Acessos internos"
-        title="Usuarios do painel"
-        description="Gerencie quem pode acessar o painel administrativo e operacional, mantendo controle entre perfis de secretaria e administracao."
+        title="Usuários do painel"
+        description="Gerencie quem pode acessar o painel administrativo e operacional, mantendo controle entre perfis de secretaria e administração."
         aside={
           <>
-            <PanelStatCard label="Usuarios exibidos" value={filteredUsers.length} supportingText={`Base atual: ${total} cadastro(s)`} />
+            <PanelStatCard label="Usuários exibidos" value={filteredUsers.length} supportingText={`Base atual: ${total} cadastro(s)`} />
             <PanelStatCard
-              label="Administracao"
+              label="Administração"
               value={users.filter(user => user.role === "ADMIN").length}
               supportingText={`Secretarias: ${users.filter(user => user.role === "SECRETARIA").length}`}
             />
@@ -193,7 +193,7 @@ const UserList = ({ className }: UserListProps) => {
               <Input
                 id="users-search"
                 type="search"
-                placeholder="Buscar por nome ou email"
+                placeholder="Buscar por nome ou e-mail"
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
               />
@@ -234,7 +234,7 @@ const UserList = ({ className }: UserListProps) => {
       {successMessage ? (
         <ErrorAlert
           variant="info"
-          title="Usuarios atualizados"
+          title="Usuários atualizados"
           message={successMessage}
           dismissible
           onDismiss={() => setSuccessMessage(null)}
@@ -243,7 +243,7 @@ const UserList = ({ className }: UserListProps) => {
 
       {createErrorMessage ? (
         <ErrorAlert
-          title="Erro ao criar usuario"
+          title="Erro ao criar usuário"
           message={createErrorMessage}
           dismissible
           onDismiss={() => createUserMutation.reset()}
@@ -252,7 +252,7 @@ const UserList = ({ className }: UserListProps) => {
 
       {deleteErrorMessage ? (
         <ErrorAlert
-          title="Erro ao remover usuario"
+          title="Erro ao remover usuário"
           message={deleteErrorMessage}
           dismissible
           onDismiss={() => deleteUserMutation.reset()}
@@ -263,8 +263,8 @@ const UserList = ({ className }: UserListProps) => {
         <PanelEmptyState
           title={
             users.length === 0
-              ? "Nenhum usuario cadastrado ate o momento."
-              : "Nenhum usuario corresponde aos filtros aplicados."
+              ? "Nenhum usuário cadastrado até o momento."
+              : "Nenhum usuário corresponde aos filtros aplicados."
           }
           description="Ajuste os filtros ou crie um novo acesso interno para continuar."
         />
@@ -275,10 +275,10 @@ const UserList = ({ className }: UserListProps) => {
               <thead className="bg-[var(--brand-secondary-soft)] text-xs uppercase tracking-[0.12em] text-[var(--brand-secondary)]">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium">Nome</th>
-                  <th className="px-4 py-3 text-left font-medium">Email</th>
+                  <th className="px-4 py-3 text-left font-medium">E-mail</th>
                   <th className="px-4 py-3 text-left font-medium">Perfil</th>
                   <th className="px-4 py-3 text-left font-medium">Criado em</th>
-                  <th className="px-4 py-3 text-right font-medium">Acoes</th>
+                  <th className="px-4 py-3 text-right font-medium">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#EFE5D9]">
@@ -374,7 +374,7 @@ const UserList = ({ className }: UserListProps) => {
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="user-email">Email</Label>
+                <Label htmlFor="user-email">E-mail</Label>
                 <Input
                   id="user-email"
                   type="email"
@@ -395,7 +395,7 @@ const UserList = ({ className }: UserListProps) => {
                 <Input
                   id="user-password"
                   type="password"
-                  placeholder="Senha temporaria"
+                  placeholder="Senha temporária"
                   aria-invalid={Boolean(errors.password)}
                   disabled={isCreateBusy}
                   {...register("password")}
