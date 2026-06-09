@@ -7,7 +7,9 @@
 
 ## Burndown e Demonstracao
 
-*(Adicionar links de burndown / gravações de demonstração se existirem)*
+![Grafico de Burndown da Sprint 3](./burndown3.PNG)
+
+**Link do Burndown da Sprint 3:** [Link Google](https://docs.google.com/spreadsheets/d/1pSj-2_RsHqxcnypaDYe_PIhw74WJXMK6gi8MiMOZ4MY/edit?usp=sharing)
 
 ***
 
@@ -26,18 +28,18 @@ das sessões e estabilização da aplicação para demonstração final.
 
 ***
 
-## Pendência operacional
+# FatecBot - Sprint 3 · Tabela de Tasks
 
-- [`tasks.md`](./tasks.md)
+> **Sprint 3 - Correções e ajustes completo**
+> Periodo: 29/05 -- 09/06 · Status: 🟢 Entregue
 
-O `tasks.md` desta sprint consolida o backlog operacional de fechamento do MVP.
 
-***
----
+## Tabela de Rastreabilidade - Sprint 3
 
-## Tabela de Tasks — Sprint 3
+**Link da tabela de Tasks com atribuicoes para cada desenvolvedor:** [Tabela de atribuicoes](https://docs.google.com/spreadsheets/d/1pSj-2_RsHqxcnypaDYe_PIhw74WJXMK6gi8MiMOZ4MY/edit?usp=sharing)
 
-> 🎯 **Total Sprint 3: 63 pts** · 21 tasks
+
+> 🎯 **Total Sprint 3: 72 pts** · 24 tasks
 > Escala Fibonacci: **1** tipo/config · **2** arquivo simples · **3** logica media · **5 ou 8** multiplos arquivos ou logica complexa
 
 | Task     | Tipo  | Módulo    | Nome                                                         | RFs                        | Prioridade | Pts |
@@ -66,6 +68,7 @@ O `tasks.md` desta sprint consolida o backlog operacional de fechamento do MVP.
 | TASK-105 | FE    | Chatbot   | Secretaria: Configuração                                       | —                          | 🟢 Média   | 3   |
 | TASK-106 | FE    | Admin     | Correções ortográficas: parte do Administrador                 | —                          | 🟢 Média   | 3   |
 | TASK-107 | FE    | Secretaria| Correções ortográficas: parte da Secretaria                 | —                          | 🟢 Média   | 3   |
+| TASK-108 |DOCS   |Docs       |Burndown Sprint 3                                           |  —                           | ⚪ Baixa   |3       |
 
 
 ---

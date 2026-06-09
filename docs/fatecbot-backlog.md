@@ -6,40 +6,6 @@
 
 ---
 
-### US-11 · RF09 - Correção do Modelo de Banco de Dados Relacional
-
-> **Tasks:** TASK-059
-
-**Como** desenvolvedor
-**Quero** corrigir o modelo relacional no Astah
-**Para que** o esquema do banco suporte corretamente a navegação conversacional, o encaminhamento de perguntas e a rastreabilidade das sessões no backend.
-
-**Critérios de Aceitação:**
-
-- O modelo deve declarar chaves estrangeiras, índices e cardinalidades necessários para suportar RF01, RF03, RF05, RF07 e RF09.
-- Incluir relacionamento que vincule `Question` a `SessionLog` via `session_log_id` quando aplicável.
-- Gerar a versão exportada do diagrama (Astah) e anexá-la ao repositório de design.
-- Atualizar o backlog de rastreabilidade e documentar as diferenças corrigidas.
-- Revisão do diagrama aprovada pelo time de desenvolvimento.
-
-
-### US-11 · RF09 - Correção do Modelo de Banco de Dados Relacional
-
-> **Tasks:** TASK-059
-
-**Como** desenvolvedor
-**Quero** corrigir o modelo relacional no Astah
-**Para que** o esquema do banco suporte corretamente a navegação conversacional, o encaminhamento de perguntas e a rastreabilidade das sessões no backend.
-
-**Critérios de Aceitação:**
-
-- O modelo deve declarar chaves estrangeiras, índices e cardinalidades necessários para suportar RF01, RF03, RF05, RF07 e RF09.
-- Incluir relacionamento que vincule `Question` a `SessionLog` via `session_log_id` quando aplicável.
-- Gerar a versão exportada do diagrama (Astah) e anexá-la ao repositório de design.
-- Atualizar o backlog de rastreabilidade e documentar as diferenças corrigidas.
-- Revisão do diagrama aprovada pelo time de desenvolvimento.
-
----
 
 ## Princípios de Leitura
 
@@ -128,7 +94,7 @@
 | TASK-057 | 🔵 FE    | 🖥️ Layouts   | AdminLayout.tsx + Home pública do chatbot                                 | Como visitante, quero usar o chatbot sem me cadastrar, para tirar duvidas de forma agil e sem friccao. | Consolida o layout administrativo e formaliza a landing pública já implementada na rota `/`, com CTA para abrir o `ChatWindow`. | RF03 · RF04                                                                | RNF01         | 🟡 Alta    | 3   |
 | TASK-058 | 🔵 FE    | 🖥️ Admin     | Páginas do painel Admin                                                   | Como visitante, quero usar o chatbot sem me cadastrar, para tirar duvidas de forma agil e sem friccao. | Monta as páginas de dashboard, nós e usuários do painel.                                                                    | RF03 · RF04                                                                | RNF01         | 🟢 Média   | 5   |
 | TASK-059 | 📄 DOCS   | 📄 Docs | Correção do modelo de Banco de Dados Relacional - Astah                                             | Como desenvolvedor, quero corrigir o modelo relacional no Astah.            | RF01 · RF03 · RF05 · RF07 · RF09 · RF09                                   | - | —             | ⚪ Baixa   | 3   |
-| TASK-060 | 📐 UML   | 📐 Modelagem | Diagrama de Atividades — Astah                                            | Como aluno, quero navegar por menus e submenus do chatbot, para encontrar a informacao que preciso sem contato direto com a secretaria. | Documenta o fluxo do chatbot e da gestão de perguntas com swimlanes e decisões.                                             | RF01 · RF05 · RF06 · RF07 · RF08                                           | —             | ⚪ Baixa   | 3   |
+| TASK-060 | 📄 DOCS   | 📄 Docs| Burndown sprint 2                                           | Como aluno, quero vizualizar o andamento do projeto em um gráfico de linha de Burndown                                             | -                                           | —             | ⚪ Baixa   | 3   |
 | TASK-061 | 🟣 BE    | ❓ Questions | questions.service.ts — extensão para listagem e status                    | Como aluno, quero poder enviar uma duvida diretamente a secretaria ao final do atendimento, para receber suporte em casos nao cobertos pelo bot. | Amplia o fluxo de perguntas para incluir acompanhamento e atualização de situação.                                          | RF05 · RF08                                                                | —             | 🟡 Alta    | 2   |
 | TASK-062 | 🟣 BE    | ❓ Questions | questions.controller.ts + questions.routes.ts — rotas protegidas          | Como aluno, quero poder enviar uma duvida diretamente a secretaria ao final do atendimento, para receber suporte em casos nao cobertos pelo bot. | Disponibiliza listagem e atualização de perguntas com acesso protegido.                                                     | RF05 · RF11                                                                | —             | 🟡 Alta    | 2   |
 | TASK-063 | 🔵 FE    | ❓ Questions | questions.api.ts — chamadas para secretária                               | Como secretaria academica, quero visualizar e atualizar o status das perguntas recebidas, para gerenciar os atendimentos pendentes com eficiencia. | Centraliza as ações de consulta e atualização de perguntas da área da secretaria.                                           | RF06                                                                       | —             | 🟢 Média   | 2   |
@@ -179,5 +145,6 @@
 | TASK-105 | 🔵 FE    | 🤖 Chatbot   | Secretaria: Configuração                                                    | Interface para a secretaria gerenciar encaminhamentos e status de nós.                                                       | Tela para gerenciar encaminhamentos, status de nós e histórico de uso, com chamadas API.                                    | —                                                                          | —             | 🟢 Média   | 3   |
 | TASK-106 | 🔵 FE    | 🖥️ Admin     | Correções ortográficas: parte do Administrador                               | Garantir que todas as strings visuais do frontend estejam em português brasileiro com acentuação correta.                    | Varredura e correção de textos em telas do admin (Tickets, Sessões, Configurações, Usuários e Care), atualização de mocks e testes que dependam de textos exatos. | —                                                                          | —             | 🟢 Média   | 3   |
 | TASK-107 | 🔵 FE    | 🖥️ Secretaria| Correções ortográficas: parte da Secretaria                                 | Garantir correções ortográficas na parte da Secretaria do frontend.                                                         | Revisar telas da Secretaria (Tickets, Histórico, Configuração), atualizar mocks, seeds e testes; ajustar asserts e snapshots conforme necessário.              | —                                                                          | —             | 🟢 Média   | 3   |
+| TASK-108 | 📄 DOCS   | 📄 Docs| Burndown sprint 3                                           | Como aluno, quero vizualizar o andamento do projeto em um gráfico de linha de Burndown                                             | -                                           | —             | ⚪ Baixa   | 3   |
 
 ---
