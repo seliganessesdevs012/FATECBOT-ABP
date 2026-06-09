@@ -11,7 +11,7 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
 
   if (isChatOpen) {
-    return <ChatWindow />;
+    return <ChatWindow onBackHome={() => setIsChatOpen(false)} />;
   }
 
   return (
@@ -80,6 +80,7 @@ const Home: React.FC = () => {
               className="w-[420px] object-contain md:w-[820px] xl:w-[920px]"
             />
           </div>
+
 
           <img
             src={fatecImg}
