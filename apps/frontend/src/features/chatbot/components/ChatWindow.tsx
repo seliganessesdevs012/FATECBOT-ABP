@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
+import { Menu } from "lucide-react"; // <-- Adicione o ícone Menu
 import { ChatSidebar } from "./ChatSidebar";
 import { EvidenceCard } from "./EvidenceCard";
 import { MessageBubble } from "./MessageBubble";
+import { ResponsiveMenuModal } from "@/components/shared/ResponsiveMenuModal";
 import type {
   ChatMessage,
-  ChatNodeChild,
+  ChatNodeChild,  
   ChatSidebarHistoryItem,
 } from "../types/chatbot.types";
 import { useChatNavigation } from "../hooks/useChatNavigation";
@@ -31,6 +33,8 @@ export function ChatWindow() {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const messageElementRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const isInitialLoading = isLoading && messages.length === 0;
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   function createMessageId(prefix: "bot" | "user") {
     messageCounter.current += 1;
@@ -180,7 +184,8 @@ export function ChatWindow() {
   return (
     <div className="min-h-screen w-full bg-[#F1EDE2] lg:h-screen lg:overflow-hidden lg:p-4">
       <div className="flex min-h-screen w-full flex-col gap-6 lg:h-full lg:min-h-0 lg:flex-row lg:gap-4">
-        <div className="w-full lg:h-full lg:w-[360px] lg:flex-shrink-0 xl:w-[380px]">
+        {/* Escondido no mobile, visível apenas no desktop */}
+        <div className="hidden lg:block lg:h-full lg:w-[360px] lg:flex-shrink-0 xl:w-[380px]">
           <ChatSidebar
             historyItems={historyItems}
             onHistoryItemClick={handleHistoryItemClick}
@@ -189,11 +194,40 @@ export function ChatWindow() {
         </div>
 
         <div className="min-w-0 flex-1 rounded-[28px] bg-[#EEE7D8] p-5 shadow-[0_20px_50px_rgba(92,53,12,0.08)] md:p-7 lg:flex lg:h-full lg:min-h-0 lg:flex-col">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {/* Botão Hambúrguer (Mobile) */}
+            <button
+              type="button"
+              aria-label="Abrir menu do chat"
+              className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl bg-white text-[#B20000] shadow-sm lg:hidden"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <Menu className="size-5" />
+            </button>
+            
             <span className="text-sm font-semibold uppercase tracking-[0.25em] text-[#B20000]">
               {nodeTitle}
             </span>
           </div>
+
+          {/* Modal Responsivo injetando a Sidebar no Mobile */}
+          <ResponsiveMenuModal
+            open={mobileMenuOpen}
+            title="Menu do Chat"
+            onClose={() => setMobileMenuOpen(false)}
+          >
+            {/* ADICIONADO 'flex h-[60vh] flex-col' PARA TRAVAR A ALTURA E GERAR O SCROLL */}
+            <div className="flex h-[60vh] flex-col sm:h-[70vh]">
+              <ChatSidebar
+                historyItems={historyItems}
+                onHistoryItemClick={(id) => {
+                  handleHistoryItemClick(id);
+                  setMobileMenuOpen(false); // Fecha o menu automaticamente ao clicar numa pergunta
+                }}
+                sessionLogId={sessionLogId}
+              />
+            </div>
+          </ResponsiveMenuModal>
 
           <div className="mt-6 flex flex-col gap-4 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-2">
             {messages.map((message) => (
