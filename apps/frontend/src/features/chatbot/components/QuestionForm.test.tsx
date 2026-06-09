@@ -7,10 +7,12 @@ import { QuestionForm } from "./QuestionForm";
 
 expect.extend(matchers);
 
+const submitQuestionMock = vi.hoisted(() => vi.fn());
+
 // Mock the useSubmitQuestion hook
 vi.mock("../hooks/useSubmitQuestion", () => ({
   useSubmitQuestion: () => ({
-    mutate: vi.fn((data, callbacks) => {
+    mutate: submitQuestionMock.mockImplementation((data, callbacks) => {
       // Simulate successful submission
       setTimeout(() => {
         callbacks.onSuccess({
@@ -64,7 +66,7 @@ describe("QuestionForm", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(/Nome deve ter no mínimo 3 caracteres/i)
+        screen.getByText(/Nome deve ter no minimo 3 caracteres/i)
       ).toBeInTheDocument();
     });
   });
@@ -79,7 +81,7 @@ describe("QuestionForm", () => {
     fireEvent.blur(emailInput);
 
     await waitFor(() => {
-      expect(screen.getByText(/Email inválido/i)).toBeInTheDocument();
+      expect(screen.getByText(/Email invalido/i)).toBeInTheDocument();
     });
   });
 
@@ -94,9 +96,48 @@ describe("QuestionForm", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(/Pergunta deve ter no mínimo 10 caracteres/i)
+        screen.getByText(/Pergunta deve ter no minimo 10 caracteres/i)
       ).toBeInTheDocument();
     });
+  });
+
+  it("validates required fields on submit", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<QuestionForm />);
+
+    await user.click(screen.getByRole("button", { name: /Enviar/i }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Nome deve ter no minimo 3 caracteres/i)
+      ).toBeInTheDocument();
+      expect(screen.getByText(/Email e obrigatorio/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Pergunta deve ter no minimo 10 caracteres/i)
+      ).toBeInTheDocument();
+    });
+    expect(submitQuestionMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects whitespace-only fields", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<QuestionForm />);
+
+    await user.type(screen.getByLabelText(/Nome/i), "   ");
+    await user.type(screen.getByLabelText(/Email/i), "   ");
+    await user.type(screen.getByLabelText(/Dúvida/i), "          ");
+    await user.click(screen.getByRole("button", { name: /Enviar/i }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Nome deve ter no minimo 3 caracteres/i)
+      ).toBeInTheDocument();
+      expect(screen.getByText(/Email e obrigatorio/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Pergunta deve ter no minimo 10 caracteres/i)
+      ).toBeInTheDocument();
+    });
+    expect(submitQuestionMock).not.toHaveBeenCalled();
   });
 
   it("validates attachment file size (max 5MB)", async () => {
@@ -128,7 +169,7 @@ describe("QuestionForm", () => {
     await waitFor(
       () => {
         expect(
-          screen.getByText(/Arquivo deve ter no máximo 5MB/i)
+          screen.getByText(/Arquivo deve ter no maximo 5MB/i)
         ).toBeInTheDocument();
       },
       { timeout: 3000 }

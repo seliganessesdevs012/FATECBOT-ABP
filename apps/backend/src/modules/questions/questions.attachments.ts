@@ -10,6 +10,12 @@ const ALLOWED_ATTACHMENT_MIME_TYPES = new Set([
   "image/png",
 ]);
 
+const ALLOWED_ATTACHMENT_EXTENSIONS_BY_MIME_TYPE = new Map([
+  ["application/pdf", new Set([".pdf"])],
+  ["image/jpeg", new Set([".jpg", ".jpeg"])],
+  ["image/png", new Set([".png"])],
+]);
+
 const MAX_ATTACHMENT_SIZE_BYTES = 5 * 1024 * 1024;
 
 const normalizeFileName = (fileName: string): string =>
@@ -47,11 +53,27 @@ export const validateQuestionAttachment = ({
     throw new AppError("O anexo precisa ter um nome de arquivo valido.", 400);
   }
 
+  const extension = path.extname(fileName).toLowerCase();
+
   if (!ALLOWED_ATTACHMENT_MIME_TYPES.has(mimeType)) {
     throw new AppError(
       "Formato de anexo invalido. Envie apenas PDF, PNG ou JPG.",
       400,
     );
+  }
+
+  if (
+    !extension ||
+    !ALLOWED_ATTACHMENT_EXTENSIONS_BY_MIME_TYPE.get(mimeType)?.has(extension)
+  ) {
+    throw new AppError(
+      "Extensao do anexo invalida para o tipo informado.",
+      400,
+    );
+  }
+
+  if (fileData.byteLength === 0) {
+    throw new AppError("O anexo enviado esta vazio.", 400);
   }
 
   if (fileData.byteLength > MAX_ATTACHMENT_SIZE_BYTES) {

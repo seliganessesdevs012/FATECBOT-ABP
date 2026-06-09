@@ -15,10 +15,8 @@ import jacareImg from "../../../assets/admin_jacare.png";
 import fatecImg from "../../../assets/login_fatec.png";
 
 const schema = z.object({
-  email: z.string().trim().refine((value) => value.includes("@"), {
-    message: "Necessita @",
-  }),
-  password: z.string().min(6),
+  email: z.string().email("Formato inválido de email"),
+  password: z.string(),
 });
 
 export const LoginForm: React.FC = () => {
@@ -29,12 +27,14 @@ export const LoginForm: React.FC = () => {
     formState: { errors },
   } = useForm<LoginPayload>({
     resolver: zodResolver(schema),
+    mode: "onChange",
+    reValidateMode: "onChange",
   });
 
   const { login, isLoading, error } = useLogin();
 
-  const emailError = errors.email?.message;
-  const passwordError = errors.password?.message;
+  const hasFieldErrors = Boolean(errors.email);
+  const hasAuthError = Boolean(error) && !hasFieldErrors;
 
   const onSubmit = (values: LoginPayload) => {
     login(values);
@@ -62,64 +62,53 @@ export const LoginForm: React.FC = () => {
             <img
               src={jacareImg}
               alt="Jacaré"
-              className="h-full w-full object-contain scale-x-[-1]"            />
+              className="h-full w-full object-contain scale-x-[-1]"
+            />
           </div>
           <h1 className="text-[52px] font-semibold leading-none text-black md:text-[68px]">
             FatecBot
           </h1>
         </div>
 
-<div
-  className={`w-full max-w-[760px] rounded-sm bg-[#F1EDE2] text-center text-base text-[#D4261A] transition-all duration-200 ${
-    error ? "mb-6 p-3 opacity-100" : "mb-0 h-0 overflow-hidden p-0 opacity-0"
-  }`}
->
-  {error && "Email ou senha inválida"}
-</div>
+        {hasAuthError && (
+          <div className="mb-6 rounded-sm bg-[#F1EDE2] p-3 text-center text-base text-[#D4261A] transition-all duration-200">
+            Email ou senha inválida
+          </div>
+        )}
 
         <form
           onSubmit={handleSubmit(onSubmit)}
           noValidate
           className="space-y-4"
         >
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Input
               id="email"
               type="email"
               placeholder="Email"
               disabled={isLoading}
-              aria-invalid={Boolean(emailError)}
+              aria-invalid={Boolean(errors.email)}
               className="h-12 border border-[#7D0000] px-4 text-base focus-visible:ring-[#B20000] md:h-14 md:text-lg"
               {...register("email")}
             />
-            {emailError && (
-              <p className="text-sm font-medium text-[#D4261A]">
-                {emailError}
-              </p>
+            {errors.email?.message && (
+              <p className="text-sm text-[#D4261A]">{errors.email.message}</p>
             )}
           </div>
 
-          <div className="space-y-2">
-            <Input
-              id="password"
-              type="password"
-              placeholder="Senha"
-              disabled={isLoading}
-              aria-invalid={Boolean(passwordError)}
-              className="h-12 border border-[#7D0000] px-4 text-base focus-visible:ring-[#B20000] md:h-14 md:text-lg"
-              {...register("password")}
-            />
-            {passwordError && (
-              <p className="text-sm font-medium text-[#D4261A]">
-                {passwordError}
-              </p>
-            )}
-          </div>
+          <Input
+            id="password"
+            type="password"
+            placeholder="Senha"
+            disabled={isLoading}
+            className="h-12 border border-[#7D0000] px-4 text-base focus-visible:ring-[#B20000] md:h-14 md:text-lg"
+            {...register("password")}
+          />
 
           <Button
             type="submit"
             className="mt-3 h-12 w-full cursor-pointer rounded-md bg-[#B20000] text-base text-white hover:bg-[#7D0000] md:h-14 md:text-lg"
-            disabled={isLoading}
+            disabled={isLoading || hasFieldErrors}
           >
             {isLoading ? (
               <div className="flex items-center justify-center gap-2">
