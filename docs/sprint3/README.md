@@ -65,7 +65,7 @@ O `tasks.md` desta sprint consolida o backlog operacional de fechamento do MVP.
 | TASK-104 | FE    | Resp      | Responsividade Secretaria: Configuração                       | —                          | 🟢 Média   | 2   |
 | TASK-105 | FE    | Chatbot   | Secretaria: Configuração                                       | —                          | 🟢 Média   | 3   |
 | TASK-106 | FE    | Admin     | Correções ortográficas: parte do Administrador                 | —                          | 🟢 Média   | 3   |
-| TASK-107 | FE    | Secretaria| Correções ortográficas: parte da Secretaria                   | —                          | 🟢 Média   | 3   |
+| TASK-107 | FE    | Secretaria| Correções ortográficas: parte da Secretaria                 | —                          | 🟢 Média   | 3   |
 
 
 ---
