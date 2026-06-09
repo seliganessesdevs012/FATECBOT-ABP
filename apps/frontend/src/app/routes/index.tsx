@@ -81,6 +81,7 @@ const Home: React.FC = () => {
             />
           </div>
 
+
           <img
             src={fatecImg}
             alt="Fatec"
