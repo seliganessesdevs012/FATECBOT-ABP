@@ -3,6 +3,7 @@ import cors from "cors";
 import routes from "./routes";
 import { loggerMiddleware } from "./middlewares/logger.middleware";
 import { errorMiddleware } from "./middlewares/error.middleware";
+import { AppError } from "./errors/AppError";
 
 const app: Express = express();
 
@@ -15,6 +16,10 @@ app.get("/api/v1/health", (_req, res) => {
 });
 
 app.use("/api/v1", routes);
+
+app.use((_req, _res, next) => {
+  next(new AppError("Rota nao encontrada", 404));
+});
 
 app.use(errorMiddleware);
 

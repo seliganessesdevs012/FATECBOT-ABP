@@ -1,6 +1,8 @@
-import mascotImg from "../../../assets/login_jacare.png";
 import type { ChatSidebarHistoryItem } from "../types/chatbot.types";
 import { QuestionForm } from "./QuestionForm";
+// Precisamos importar a imagem novamente para o desktop!
+// Ajuste o caminho da imagem se necessário, de acordo com as suas pastas
+import mascotImg from "@/assets/message_jacare.png";
 
 interface ChatSidebarProps {
   historyItems: ChatSidebarHistoryItem[];
@@ -15,9 +17,11 @@ export function ChatSidebar({
 }: ChatSidebarProps) {
   return (
     <aside className="flex h-full min-h-0 flex-col overflow-y-auto rounded-[28px] border border-[#D8D1C0] bg-[#FAFAFA] shadow-[0_20px_50px_rgba(92,53,12,0.08)]">
-      <div className="border-b-4 border-[#B20000] px-5 py-5">
+
+      {/* CABEÇALHO RESTAURADO: Escondido no mobile (hidden) e visível no desktop (lg:block) */}
+      <div className="hidden lg:block border-b-4 border-[#B20000] px-5 py-5">
         <div className="flex items-center gap-3">
-          <div className="flex h-16 w-16 items-center justify-center  overflow-hidden rounded-full border-4 border-[#6D9F84] bg-[#F3EEE2]">
+          <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-4 border-[#6D9F84] bg-[#F3EEE2]">
             <img
               src={mascotImg}
               alt="Mascote Caré"

@@ -40,7 +40,7 @@ export default function AdminNodesPage() {
     }
 
     const confirmed = window.confirm(
-      `Remover o no "${node.title}"? Esta acao nao pode ser desfeita.`,
+      `Remover o nó "${node.title}"? Esta ação não pode ser desfeita.`,
     );
 
     if (!confirmed) {
@@ -57,13 +57,13 @@ export default function AdminNodesPage() {
       setInspectorState(null);
       setFeedback({
         variant: "info",
-        title: "No removido",
-        message: `O no "${node.title}" foi removido com sucesso.`,
+        title: "Nó removido",
+        message: `O nó "${node.title}" foi removido com sucesso.`,
       });
     } catch (error) {
       setFeedback({
         variant: "error",
-        title: "Nao foi possivel remover o no",
+        title: "Não foi possível remover o nó",
         message: getApiErrorMessage(
           error,
           "Tente novamente em instantes.",
@@ -122,7 +122,7 @@ export default function AdminNodesPage() {
         onNodeSaved={message => {
           setFeedback({
             variant: "info",
-            title: "Alteracoes salvas",
+            title: "Alterações salvas",
             message,
           });
         }}

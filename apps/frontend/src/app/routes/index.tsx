@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Menu } from "lucide-react";
+import { ResponsiveMenuModal } from "@/components/shared/ResponsiveMenuModal";
 
 import logoImg from "../../assets/login_jacare.png";
 import jacareImg from "../../assets/home_jacare.png";
@@ -9,20 +11,42 @@ import { ChatWindow } from "../../features/chatbot/components/ChatWindow";
 const Home: React.FC = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   if (isChatOpen) {
-    return <ChatWindow />;
+    return <ChatWindow onBackHome={() => setIsChatOpen(false)} />;
   }
+
+  const handleOpenChat = () => {
+    setMobileMenuOpen(false);
+    setIsChatOpen(true);
+  };
+
+  const handleLogin = () => {
+    setMobileMenuOpen(false);
+    navigate("/login");
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-[#F1EDE2]">
       <header className="flex w-full items-center justify-between border-b-2 border-[#B20000] bg-[#FAFAFA] px-5 py-5 md:px-8">
         <div className="flex items-center gap-4">
+          {/* Mobile hamburger */}
+          <div className="mr-2 lg:hidden">
+            <button
+              type="button"
+              aria-label="Abrir menu"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-md bg-white text-[#454545] shadow-sm"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <Menu className="size-5" aria-hidden="true" />
+            </button>
+          </div>
           <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-green-800 md:h-14 md:w-14">
             <img
               src={logoImg}
               alt="Jacaré"
-              className="h-[60px] w-[60px] object-contain scale-x-[-1] md:h-[68px] md:w-[68px]"
+              className="h-15 w-15 object-contain scale-x-[-1] md:h-17 md:w-17"
             />
           </div>
           <h1 className="text-xl font-semibold md:text-2xl">FatecBot</h1>
@@ -36,6 +60,30 @@ const Home: React.FC = () => {
           Área Restrita <span>→</span>
         </button>
       </header>
+
+      <ResponsiveMenuModal
+        open={mobileMenuOpen}
+        title="Acessos rapidos"
+        onClose={() => setMobileMenuOpen(false)}
+      >
+        <div className="space-y-3">
+          <button
+            type="button"
+            onClick={handleOpenChat}
+            className="flex w-full items-center justify-center rounded-xl bg-[#B20000] px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-[#7D0000]"
+          >
+            Iniciar Atendimento
+          </button>
+
+          <button
+            type="button"
+            onClick={handleLogin}
+            className="flex w-full items-center justify-center rounded-xl border border-[#D7CBB9] bg-white px-4 py-3 text-base font-semibold text-[#454545] transition-colors hover:bg-[#F5F0E7]"
+          >
+            Area Restrita
+          </button>
+        </div>
+      </ResponsiveMenuModal>
 
       <main className="flex flex-1 flex-col md:flex-row">
         <div className="flex w-full flex-col justify-center px-8 py-14 md:w-1/2 md:px-20 xl:px-28">
@@ -77,9 +125,10 @@ const Home: React.FC = () => {
             <img
               src={jacareImg}
               alt="Jacaré grande"
-              className="w-[420px] object-contain md:w-[820px] xl:w-[920px]"
+              className="w-105 object-contain md:w-205 xl:w-230"
             />
           </div>
+
 
           <img
             src={fatecImg}

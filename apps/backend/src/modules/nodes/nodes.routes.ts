@@ -45,10 +45,14 @@ function validateUpdateNode(req: Request, res: Response, next: NextFunction) {
 }
 
 router.get('/', (req, res, next) => controller.listNodes(req, res, next));
-router.get('/:id/evidence', (req, res, next) => controller.downloadEvidence(req, res, next));
-router.post('/', validateCreateNode,(req, res, next) => controller.createNode(req, res, next));
-router.patch('/:id', validateUpdateNode, (req, res, next) => controller.updateNode(req, res, next));
-router.delete('/:id', (req, res, next) => controller.deleteNode(req, res, next)); 
+router.get('/:id/evidence', (req, res, next) =>
+      controller.downloadEvidence(req as Request<{ id: string }>, res, next));
+router.post('/', validateCreateNode, (req, res, next) =>
+      controller.createNode(req, res, next));
+router.patch('/:id', validateUpdateNode, (req, res, next) =>
+      controller.updateNode(req as Request<{ id: string }>, res, next));
+router.delete('/:id', (req, res, next) =>
+      controller.deleteNode(req as Request<{ id: string }>, res, next));
 
 
 export default router;

@@ -12,7 +12,7 @@ interface MetricCardProps {
   className?: string;
 }
 
-const getFirstName = (name: string): string => name.split(" ")[0] ?? "Usuario";
+const getFirstName = (name: string): string => name.split(" ")[0] ?? "Usuário";
 
 const getChartTicks = (percentages: number[]): number[] => {
   const highestValue = Math.max(...percentages, 5);
@@ -83,7 +83,7 @@ function ClickDistributionChart({
                 style={{
                   height: `${maxTick === 0 ? 0 : (point.percentage / maxTick) * 100}%`,
                 }}
-                title={`${point.sessions} sessoes`}
+                title={`${point.sessions} sessões`}
               />
               <span className="text-[0.78rem] font-black text-[#323232]">
                 {point.clicks}
@@ -107,7 +107,7 @@ function SatisfactionDonut({ percentage }: { percentage: number }) {
         style={{
           background: `conic-gradient(#08B61B 0 ${positivePercentage}%, #C44A23 ${positivePercentage}% 100%)`,
         }}
-        aria-label={`${positivePercentage}% de avaliacoes positivas e ${negativePercentage}% negativas`}
+        aria-label={`${positivePercentage}% de avaliações positivas e ${negativePercentage}% negativas`}
       >
         <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white text-3xl font-black text-[#1F1F1F]">
           {positivePercentage}%
@@ -134,7 +134,7 @@ export default function AdminDashboardOverview({
   const { stats, isLoading, isError, error, refetch } = useAdminDashboard();
 
   if (isLoading) {
-    return <LoadingSpinner message="Carregando metricas do dashboard..." />;
+    return <LoadingSpinner message="Carregando métricas do dashboard..." />;
   }
 
   if (isError) {
@@ -144,7 +144,7 @@ export default function AdminDashboardOverview({
         message={
           error instanceof Error
             ? error.message
-            : "Nao foi possivel consolidar os indicadores do painel."
+            : "Não foi possível consolidar os indicadores do painel."
         }
         onRetry={() => {
           void refetch();
@@ -157,17 +157,16 @@ export default function AdminDashboardOverview({
     <section className="space-y-6">
       <header className="px-2 pt-1 text-center">
         <h1 className="text-3xl font-black tracking-tight text-[#111111] lg:text-[2.3rem]">
-          Bem vindo, {getFirstName(userName)}!
+          Bem-vindo, {getFirstName(userName)}!
         </h1>
         <p className="mt-2 text-sm text-[#6E675E]">
-          Indicadores consolidados das sessoes do chatbot e da fila de
-          atendimento interno.
+          Indicadores consolidados das sessões do chatbot e da fila de atendimento interno.
         </p>
       </header>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(220px,0.9fr)_minmax(0,1.9fr)]">
         <MetricCard
-          title="Total de tickets nao respondidos"
+          title="Total de tickets não respondidos"
           className="flex min-h-[220px] flex-col justify-between"
         >
           <div className="flex flex-1 items-center justify-center">
@@ -177,11 +176,11 @@ export default function AdminDashboardOverview({
           </div>
         </MetricCard>
 
-        <MetricCard title="Cliques medios para obter uma resposta">
+        <MetricCard title="Cliques médios para obter uma resposta">
           <div className="mt-3 space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-[#6E675E]">
               <span>
-                Media recente:{" "}
+                Média recente:{" "}
                 <strong className="text-[#1F1F1F]">
                   {stats.averageClicks.toFixed(1)} cliques
                 </strong>
@@ -189,15 +188,14 @@ export default function AdminDashboardOverview({
               <span>
                 Base:{" "}
                 <strong className="text-[#1F1F1F]">
-                  {stats.recentSessionsAnalyzed} sessoes
+                  {stats.recentSessionsAnalyzed} sessões
                 </strong>
               </span>
             </div>
 
             {stats.recentSessionsAnalyzed === 0 ? (
               <div className="flex min-h-[176px] items-center justify-center rounded-[22px] bg-[#FBF8F2] px-6 text-center text-sm text-[#7C7468]">
-                Ainda nao existem sessoes avaliadas o suficiente para montar a
-                distribuicao de cliques.
+                Ainda não existem sessões avaliadas em quantidade suficiente para montar a distribuição de cliques.
               </div>
             ) : (
               <ClickDistributionChart points={stats.clickDistribution} />
@@ -208,7 +206,7 @@ export default function AdminDashboardOverview({
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.25fr)_minmax(260px,0.75fr)]">
         <MetricCard
-          title="% de avaliacoes positivas nos ultimos 7 dias"
+          title="% de avaliações positivas nos últimos 7 dias"
           className="flex min-h-[240px] flex-col justify-between"
         >
           <div className="flex flex-1 items-center justify-center">
@@ -217,14 +215,14 @@ export default function AdminDashboardOverview({
             </span>
           </div>
           <p className="text-center text-sm text-[#6E675E]">
-            Janela recente para leitura rapida da satisfacao do atendimento.
+            Janela recente para leitura rápida da satisfação do atendimento.
           </p>
         </MetricCard>
 
-        <MetricCard title="% de avaliacoes positivas desde o inicio">
+        <MetricCard title="% de avaliações positivas desde o início">
           <SatisfactionDonut percentage={stats.positiveRateAllTime} />
           <p className="text-center text-sm text-[#6E675E]">
-            {stats.totalSessions} sessoes avaliadas acumuladas no historico.
+            {stats.totalSessions} sessões avaliadas acumuladas no histórico.
           </p>
         </MetricCard>
       </div>

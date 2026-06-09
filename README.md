@@ -33,7 +33,7 @@
 
 ---
 
-> **Status do Projeto:** 🟡 Em Desenvolvimento — Kick-off: 27/03/2026
+> **Status do Projeto:** 🟢 Concluído — Kick-off: 27/03/2026
 >
 > [📄 Pasta de Documentação](./docs)
 >
@@ -275,7 +275,7 @@ Essa abordagem garante rastreabilidade, confiabilidade da informação e reduç�
 | ------ | --------------------------------------------------- | ----------------------------------------- | ---------- | ------------ |
 | 1      | Estrutura base, autenticação, navegação do chatbot  | [Sprint 1 Docs](./docs/sprint1/README.md) | Iteração 1 | 🟢 Entregue |
 | 2      | Painel Admin (CRUD nós), RBAC, perguntas            | [Sprint 2 Docs](./docs/sprint2/README.md) | Iteração 2 | 🟢 Entregue |
-| 3      | Painel Secretária, logs, satisfação, ajustes finais | [Sprint 3 Docs](./docs/sprint3/README.md) | Iteração 3 | 🟡 Em andamento |
+| 3      | Painel Secretária, logs, satisfação, ajustes finais | [Sprint 3 Docs](./docs/sprint3/README.md) | Iteração 3 | 🟢 Entregue |
 
 > 📝 Tasks detalhadas por sprint:
 > [Sprint 1 Tasks](./docs/sprint1/README.md) · [Sprint 2 Tasks](./docs/sprint2/README.md) · [Sprint 3 Tasks](./docs/sprint3/README.md)
