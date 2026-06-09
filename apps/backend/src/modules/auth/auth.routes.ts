@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from "express";
-import {z} from "zod";
+import { z } from "zod";
 import { AuthController } from "./auth.controller";
-
+import { authenticate } from "../../middlewares/auth.middleware";
 
 const router: Router = Router();
 const controller = new AuthController();
@@ -25,5 +25,13 @@ function validateLogin(req: Request, _res: Response, next: NextFunction): void {
   }
 }
 
-router.post("/login", validateLogin, (req, res,next)=> controller.login(req, res, next),);
+router.post("/login", validateLogin, (req, res, next) =>
+  controller.login(req, res, next),
+);
+router.patch(
+  "/change-password",
+  authenticate,
+  validateChangePassword,
+  (req, res, next) => controller.changePassword(req, res, next),
+);
 export default router;

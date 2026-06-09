@@ -69,7 +69,7 @@ Documentação canônica da árvore completa e responsabilidades por pasta:
 
 ## Protótipo (Figma) <a id="prototipo-figma"></a>
 
-- Link: [Protótipo no Figma](https://www.figma.com/proto/IE53nU5qlIVoaotNnZ448m/FATECBOT?node-id=4-2&starting-point-node-id=4%3A2&t=36TEScaZgAHTZuKT-1)  
+- Link: [Protótipo no Figma](https://www.figma.com/proto/IE53nU5qlIVoaotNnZ448m/FATECBOT?node-id=4-2&starting-point-node-id=4%3A2&t=36TEScaZgAHTZuKT-1)
 - Versão/obs: v1.0 — 2026-04-27.
 
 ---
@@ -165,7 +165,7 @@ VITE_API_URL=http://localhost:3000/api/v1
 
 # Habilita React Query Devtools (true em dev, false em produção)
 VITE_ENABLE_DEVTOOLS=true
- 
+
 # Ativa o backend mockado no frontend para desenvolver sem API real
 VITE_USE_MOCKS=false
 ```
@@ -178,19 +178,20 @@ VITE_USE_MOCKS=false
 
 ## 🗺️ Rotas da Aplicação <a id="rotas-da-aplicação"></a>
 
-> **Estado atual:** as rotas montadas no `router.tsx` são `/`, `/login`, `/admin`, `/admin/nodes`, `/admin/users`, `/admin/tickets`, `/admin/logs` e `/secretary`.
+> **Estado atual:** as rotas montadas no `router.tsx` são `/`, `/login`, `/admin`, `/admin/nodes`, `/admin/users`, `/admin/settings`, `/admin/tickets`, `/admin/logs` e `/secretary`.
 > A rota `/secretary` é mantida como legado e redireciona para `/admin`.
 
-| Rota                   |    Acesso    | Componente de página             | Descrição                        |
-| ---------------------- | :----------: | -------------------------------- | -------------------------------- |
-| `/`                    |   Público    | `routes/index.tsx`               | Chatbot conversacional           |
-| `/login`               |   Público    | `routes/login.tsx`               | Formulário de autenticação       |
-| `/admin`               | 🔒 ADMIN/SECRETARIA | `routes/admin/index.tsx`   | Dashboard do painel unificado |
-| `/admin/nodes`         |   🔒 ADMIN   | `routes/admin/nodes.tsx`         | CRUD de nós de navegação |
-| `/admin/users`         |   🔒 ADMIN   | `routes/admin/users.tsx`         | Gestão de usuários internos |
-| `/admin/tickets`       | 🔒 ADMIN/SECRETARIA | `routes/admin/tickets.tsx` | Gestão de perguntas recebidas |
-| `/admin/logs`          | 🔒 ADMIN/SECRETARIA | `routes/admin/logs.tsx`    | Visualização de logs |
-| `/secretary`           | 🔒 ADMIN/SECRETARIA | `routes/secretary/index.tsx` | Redireciona para `/admin` |
+| Rota              |       Acesso        | Componente de página         | Descrição                     |
+| ----------------- | :-----------------: | ---------------------------- | ----------------------------- |
+| `/`               |       Público       | `routes/index.tsx`           | Chatbot conversacional        |
+| `/login`          |       Público       | `routes/login.tsx`           | Formulário de autenticação    |
+| `/admin`          | 🔒 ADMIN/SECRETARIA | `routes/admin/index.tsx`     | Dashboard do painel unificado |
+| `/admin/nodes`    |      🔒 ADMIN       | `routes/admin/nodes.tsx`     | CRUD de nós de navegação      |
+| `/admin/users`    |      🔒 ADMIN       | `routes/admin/users.tsx`     | Gestão de usuários internos   |
+| `/admin/settings` | 🔒 ADMIN/SECRETARIA | `routes/admin/settings.tsx`  | Troca de senha da conta       |
+| `/admin/tickets`  | 🔒 ADMIN/SECRETARIA | `routes/admin/tickets.tsx`   | Gestão de perguntas recebidas |
+| `/admin/logs`     | 🔒 ADMIN/SECRETARIA | `routes/admin/logs.tsx`      | Visualização de logs          |
+| `/secretary`      | 🔒 ADMIN/SECRETARIA | `routes/secretary/index.tsx` | Redireciona para `/admin`     |
 
 > Rotas com 🔒 redirecionam para `/login` se o usuário não estiver autenticado
 > (`ProtectedRoute`) e retornam 403 se o role não tiver permissão (`RoleGuard`).

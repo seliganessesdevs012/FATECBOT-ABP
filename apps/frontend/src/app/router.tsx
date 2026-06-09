@@ -4,6 +4,7 @@ import LoginPage from "./routes/login";
 import AdminPage from "./routes/admin";
 import AdminLogsPage from "./routes/admin/logs";
 import AdminNodesPage from "./routes/admin/nodes";
+import AdminSettingsPage from "./routes/admin/settings";
 import AdminTicketsPage from "./routes/admin/tickets";
 import AdminUsersPage from "./routes/admin/users";
 import SecretaryPage from "./routes/secretary";
@@ -42,6 +43,14 @@ export const router = createBrowserRouter([
         element: (
           <RoleGuard allowedRoles={ADMIN_ONLY_ROLES}>
             <AdminNodesPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: PANEL_ROUTE_PATHS.settings,
+        element: (
+          <RoleGuard allowedRoles={SHARED_PANEL_ROLES}>
+            <AdminSettingsPage />
           </RoleGuard>
         ),
       },
