@@ -15,7 +15,9 @@ import jacareImg from "../../../assets/admin_jacare.png";
 import fatecImg from "../../../assets/login_fatec.png";
 
 const schema = z.object({
-  email: z.string().email(),
+  email: z.string().trim().refine((value) => value.includes("@"), {
+    message: "Necessita @",
+  }),
   password: z.string().min(6),
 });
 
@@ -31,13 +33,13 @@ export const LoginForm: React.FC = () => {
 
   const { login, isLoading, error } = useLogin();
 
-  const hasFormError = Object.keys(errors).length > 0;
+  const emailError = errors.email?.message;
+  const passwordError = errors.password?.message;
 
   const onSubmit = (values: LoginPayload) => {
     login(values);
   };
 
-  
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-[#F1EDE2] px-6 py-10">
       <button
@@ -67,42 +69,52 @@ export const LoginForm: React.FC = () => {
           </h1>
         </div>
 
-        <div
-          className={`
-            rounded-sm bg-[#F1EDE2] text-center text-base text-[#D4261A]
-            transition-all duration-200
-            ${
-              error || hasFormError
-                ? "mb-6 p-3 opacity-100"
-                : "mb-0 h-0 overflow-hidden p-0 opacity-0"
-            }
-          `}
-        >
-          {(error || hasFormError) && "Email ou senha inválida"}
-        </div>
+<div
+  className={`w-full max-w-[760px] rounded-sm bg-[#F1EDE2] text-center text-base text-[#D4261A] transition-all duration-200 ${
+    error ? "mb-6 p-3 opacity-100" : "mb-0 h-0 overflow-hidden p-0 opacity-0"
+  }`}
+>
+  {error && "Email ou senha inválida"}
+</div>
 
         <form
           onSubmit={handleSubmit(onSubmit)}
           noValidate
           className="space-y-4"
         >
-          <Input
-            id="email"
-            type="email"
-            placeholder="Email"
-            disabled={isLoading}
-            className="h-12 border border-[#7D0000] px-4 text-base focus-visible:ring-[#B20000] md:h-14 md:text-lg"
-            {...register("email")}
-          />
+          <div className="space-y-2">
+            <Input
+              id="email"
+              type="email"
+              placeholder="Email"
+              disabled={isLoading}
+              aria-invalid={Boolean(emailError)}
+              className="h-12 border border-[#7D0000] px-4 text-base focus-visible:ring-[#B20000] md:h-14 md:text-lg"
+              {...register("email")}
+            />
+            {emailError && (
+              <p className="text-sm font-medium text-[#D4261A]">
+                {emailError}
+              </p>
+            )}
+          </div>
 
-          <Input
-            id="password"
-            type="password"
-            placeholder="Senha"
-            disabled={isLoading}
-            className="h-12 border border-[#7D0000] px-4 text-base focus-visible:ring-[#B20000] md:h-14 md:text-lg"
-            {...register("password")}
-          />
+          <div className="space-y-2">
+            <Input
+              id="password"
+              type="password"
+              placeholder="Senha"
+              disabled={isLoading}
+              aria-invalid={Boolean(passwordError)}
+              className="h-12 border border-[#7D0000] px-4 text-base focus-visible:ring-[#B20000] md:h-14 md:text-lg"
+              {...register("password")}
+            />
+            {passwordError && (
+              <p className="text-sm font-medium text-[#D4261A]">
+                {passwordError}
+              </p>
+            )}
+          </div>
 
           <Button
             type="submit"
