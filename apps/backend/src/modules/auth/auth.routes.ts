@@ -25,13 +25,24 @@ function validateLogin(req: Request, _res: Response, next: NextFunction): void {
   }
 }
 
+function validateChangePassword(req: Request, _res: Response, next: NextFunction): void {
+  try {
+    req.body = changePasswordSchema.parse(req.body);
+    next();
+  } catch (error) {
+    next(error);
+  }
+}
+
 router.post("/login", validateLogin, (req, res, next) =>
   controller.login(req, res, next),
 );
+
 router.patch(
   "/change-password",
   authenticate,
-  validateChangePassword,
+  validateChangePassword, // Agora ela existe e vai funcionar!
   (req, res, next) => controller.changePassword(req, res, next),
 );
+
 export default router;
