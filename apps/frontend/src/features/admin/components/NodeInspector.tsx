@@ -58,11 +58,11 @@ const describeNode = (
   nodeMap: Map<number, NodeListItemDTO>,
 ): string => {
   if (node.parent_id === null) {
-    return "No raiz";
+    return "Nó raiz";
   }
 
   if (node.parent_id !== null && !nodeMap.has(node.parent_id)) {
-    return "No orfao";
+    return "Nó órfão";
   }
 
   if (node.childrenCount === 0) {
@@ -142,17 +142,17 @@ const NodeInspector = ({
                 {state.mode === "view"
                   ? "Detalhes"
                   : state.mode === "edit"
-                    ? "Editar no"
-                    : "Novo no"}
+                    ? "Editar nó"
+                    : "Novo nó"}
               </p>
               <h2 className="mt-1 truncate text-xl font-black text-[#1C1C1C]">
                 {state.mode === "view"
-                  ? selectedNode?.title ?? "No"
+                  ? selectedNode?.title ?? "Nó"
                   : state.mode === "edit"
-                    ? selectedNode?.title ?? "Editar no"
+                    ? selectedNode?.title ?? "Editar nó"
                     : state.parentNode
                       ? `Filho de ${state.parentNode.title}`
-                      : "No raiz"}
+                      : "Nó raiz"}
               </h2>
             </div>
 
@@ -278,7 +278,7 @@ const NodeInspector = ({
                           ))
                         ) : (
                           <span className="text-[#6F675D]">
-                            Este no encerra o fluxo.
+                            Este nó encerra o fluxo.
                           </span>
                         )}
                       </dd>
@@ -317,13 +317,13 @@ const NodeInspector = ({
                     disabled={selectedNode.childrenCount > 0 || isDeleting}
                     title={
                       selectedNode.childrenCount > 0
-                        ? "Remova os filhos antes de excluir este no."
-                        : undefined
+                          ? "Remova os filhos antes de excluir este nó."
+                          : undefined
                     }
                     onClick={() => onDeleteNode(selectedNode)}
                   >
                     <Trash2 className="size-4" aria-hidden="true" />
-                    {isDeleting ? "Removendo..." : "Excluir no"}
+                      {isDeleting ? "Removendo..." : "Excluir nó"}
                   </Button>
                 </section>
               </div>

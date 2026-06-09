@@ -862,7 +862,7 @@ const NodeEditor = ({
             >
               <p className="font-semibold">Menu de opcoes</p>
               <p className="mt-1 text-xs text-muted-foreground">
-                No que abre novas escolhas para o usuario.
+                Nó que abre novas escolhas para o usuário.
               </p>
             </button>
 
@@ -879,14 +879,14 @@ const NodeEditor = ({
             >
               <p className="font-semibold">Resposta final</p>
               <p className="mt-1 text-xs text-muted-foreground">
-                No que entrega a informacao final do chatbot.
+                Nó que entrega a informação final do chatbot.
               </p>
             </button>
           </div>
 
-          {isNodeKindLocked ? (
+            {isNodeKindLocked ? (
             <p className="text-xs text-muted-foreground">
-              Este no ja possui filhos, entao permanece como menu.
+              Este nó já possui filhos, então permanece como menu.
             </p>
           ) : null}
         </div>
@@ -894,10 +894,10 @@ const NodeEditor = ({
         {watchedNodeKind === "menu" ? (
           <div className="space-y-1">
             <Label htmlFor="node-prompt">Pergunta exibida</Label>
-            <textarea
+              <textarea
               id="node-prompt"
               rows={4}
-              placeholder="Ex.: O que voce deseja?"
+              placeholder="Ex.: O que você deseja?"
               aria-invalid={Boolean(errors.prompt)}
               disabled={isBusy}
               className={cn(textareaClasses, errors.prompt && "border-destructive")}
