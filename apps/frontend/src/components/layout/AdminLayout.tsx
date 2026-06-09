@@ -54,7 +54,7 @@ const DEFAULT_NAVIGATION_ITEMS: AdminNavigationItem[] = [
     icon: LayoutDashboard,
   },
   {
-    label: "Usuarios",
+    label: "Usuários",
     to: PANEL_ROUTE_PATHS.users,
     icon: Users,
     allowedRoles: ADMIN_ONLY_ROLES,
@@ -71,12 +71,12 @@ const DEFAULT_NAVIGATION_ITEMS: AdminNavigationItem[] = [
     icon: Ticket,
   },
   {
-    label: "Historico",
+    label: "Histórico",
     to: PANEL_ROUTE_PATHS.logs,
     icon: ScrollText,
   },
   {
-    label: "Configuracoes",
+    label: "Configurações",
     to: PANEL_ROUTE_PATHS.settings,
     icon: Settings,
     helperText: "Troca de senha da conta",
@@ -86,7 +86,7 @@ const DEFAULT_NAVIGATION_ITEMS: AdminNavigationItem[] = [
 
 const ROLE_COPY: Record<Role, string> = {
   ADMIN: "Administrador",
-  SECRETARIA: "Secretaria academica",
+  SECRETARIA: "Secretaria acadêmica",
 };
 
 const isItemActive = (pathname: string, itemPath: string): boolean => {
@@ -115,9 +115,9 @@ export function AdminLayout({
   );
   const toggleSidebar = useAdminShellStore((state) => state.toggleSidebar);
 
-  const roleLabel = user?.role ? ROLE_COPY[user.role] : "Area protegida";
-  const userName = user?.name ?? "Usuario autenticado";
-  const userEmail = user?.email ?? "Sessao ativa";
+  const roleLabel = user?.role ? ROLE_COPY[user.role] : "Área protegida";
+  const userName = user?.name ?? "Usuário autenticado";
+  const userEmail = user?.email ?? "Sessão ativa";
   const visibleNavigationItems = navigationItems.filter(
     (item) =>
       !item.allowedRoles || hasRoleAccess(user?.role, item.allowedRoles),
@@ -192,7 +192,7 @@ export function AdminLayout({
               "flex flex-1 flex-col justify-between py-8",
               isSidebarCollapsed ? "px-3" : "px-5",
             )}
-            aria-label="Navegacao do painel"
+            aria-label="Navegação do painel"
           >
             <div className="space-y-4">
               {visibleNavigationItems.map((item) => {

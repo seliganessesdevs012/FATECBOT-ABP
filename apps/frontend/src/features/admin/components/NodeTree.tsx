@@ -349,10 +349,10 @@ const NodeTree = ({
     }
   };
 
-  const actionButtonLabel = selectedNode ? "Adicionar opcao" : "Adicionar raiz";
+  const actionButtonLabel = selectedNode ? "Adicionar opção" : "Adicionar raiz";
 
   if (isLoading) {
-    return <LoadingSpinner message="Carregando estrutura de nos..." />;
+    return <LoadingSpinner message="Carregando estrutura de nós..." />;
   }
 
   if (isError) {
@@ -376,7 +376,7 @@ const NodeTree = ({
             <Input
               value={searchTerm}
               onChange={event => setSearchTerm(event.target.value)}
-              placeholder="Buscar no por titulo ou slug"
+              placeholder="Buscar nó por título ou slug"
               className="border-[var(--border)] bg-white pl-9 text-[var(--foreground)] placeholder:text-[var(--primary-dark)]/55 focus-visible:border-[var(--primary)] focus-visible:ring-[color:var(--ring)]"
             />
 
@@ -485,11 +485,11 @@ const NodeTree = ({
           </div>
         </div>
 
-        <p
+            <p
           className="px-6 pt-3 text-center italic tracking-[-0.02em] text-[var(--foreground)]"
           style={subtitleStyle}
         >
-          O que voce deseja?
+          O que você deseja?
         </p>
 
         <div
@@ -559,7 +559,7 @@ const NodeTree = ({
                   className="pt-8 text-right italic text-[var(--foreground)]"
                   style={bodyStyle}
                 >
-                  Nivel {row.level}
+                  Nível {row.level}
                 </div>
 
                 <div data-flow-scroll className="overflow-x-auto pb-2">
@@ -626,7 +626,7 @@ const NodeTree = ({
               disabled={!selectedNode || selectedNode.childrenCount > 0}
               title={
                 selectedNode && selectedNode.childrenCount > 0
-                  ? "Remova os filhos antes de excluir este no."
+                  ? "Remova os filhos antes de excluir este nó."
                   : undefined
               }
               onClick={() => {

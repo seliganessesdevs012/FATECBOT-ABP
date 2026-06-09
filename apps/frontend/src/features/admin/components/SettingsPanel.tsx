@@ -23,12 +23,12 @@ const changePasswordSchema = z
     currentPassword: z.string().min(6, "Informe sua senha atual"),
     newPassword: z
       .string()
-      .min(6, "A nova senha deve ter no minimo 6 caracteres"),
+      .min(6, "A nova senha deve ter no mínimo 6 caracteres"),
     confirmNewPassword: z.string().min(6, "Confirme a nova senha"),
   })
   .refine((data) => data.newPassword === data.confirmNewPassword, {
     path: ["confirmNewPassword"],
-    message: "A confirmacao da nova senha nao confere",
+    message: "A confirmação da nova senha não confere",
   });
 
 type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
@@ -70,7 +70,7 @@ export function SettingsPanel({ className = "" }: SettingsPanelProps) {
   const errorMessage = changePasswordMutation.isError
     ? getApiErrorMessage(
         changePasswordMutation.error,
-        "Nao foi possivel atualizar a senha.",
+        "Não foi possível atualizar a senha.",
       )
     : null;
 
@@ -81,20 +81,20 @@ export function SettingsPanel({ className = "" }: SettingsPanelProps) {
       <div className="mb-6 grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
         <PanelPageIntro
           icon={ShieldCheck}
-          badge="Configuracoes da conta"
+          badge="Configurações da conta"
           title="Atualize a senha do acesso atual"
-          description="A tela abaixo altera apenas a senha do usuario autenticado. Os demais dados da conta permanecem inalterados."
+          description="A tela abaixo altera apenas a senha do usuário autenticado. Os demais dados da conta permanecem inalterados."
           aside={
             <>
               <div className="rounded-[20px] bg-[#FCF8F2] px-4 py-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#7A6548]">
-                  Usuario logado
+                  Usuário logado
                 </p>
                 <p className="mt-1 text-sm font-semibold text-[#1C262E]">
-                  {user?.name ?? "Usuario autenticado"}
+                  {user?.name ?? "Usuário autenticado"}
                 </p>
                 <p className="text-xs text-[#6E6252]">
-                  {user?.email ?? "Sessao ativa"}
+                  {user?.email ?? "Sessão ativa"}
                 </p>
               </div>
               <div className="rounded-[20px] bg-[#FCF8F2] px-4 py-3">
@@ -117,10 +117,10 @@ export function SettingsPanel({ className = "" }: SettingsPanelProps) {
             <CheckCircle2 className="size-5" aria-hidden="true" />
           </div>
           <div className="space-y-1">
-            <p className="text-sm font-bold text-[#1C262E]">Boas praticas</p>
+            <p className="text-sm font-bold text-[#1C262E]">Boas práticas</p>
             <p className="text-sm leading-relaxed text-[#6E6252]">
               Use uma senha forte e guarde a nova credencial em local seguro. O
-              sistema nao mostra a senha atual em nenhum momento.
+              sistema não mostra a senha atual em nenhum momento.
             </p>
           </div>
         </PanelSectionCard>
@@ -214,8 +214,8 @@ export function SettingsPanel({ className = "" }: SettingsPanelProps) {
           </div>
 
           <div className="mt-4 flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-[#6E6252]">
-              A senha deve ter no minimo 6 caracteres.
+                <p className="text-sm text-[#6E6252]">
+              A senha deve ter no mínimo 6 caracteres.
             </p>
 
             <Button

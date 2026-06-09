@@ -4,8 +4,8 @@ import UserList from "@/features/admin/components/UserList";
 export default function AdminUsersPage() {
   return (
     <AdminLayout
-      title="Usuarios internos"
-      description="Gerencie os acessos internos de admin e secretaria em uma unica tabela."
+      title="Usuários internos"
+      description="Gerencie os acessos internos de admin e secretaria em uma única tabela."
       hidePageHeader
     >
       <UserList />

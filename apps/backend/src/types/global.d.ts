@@ -8,11 +8,6 @@ declare module "@prisma/adapter-pg" {
   export = anything;
 }
 
-declare module "@prisma/client" {
-  const anything: any;
-  export = anything;
-}
-
 declare module "pg" {
   const anything: any;
   export = anything;

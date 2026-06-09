@@ -3,7 +3,6 @@
 // Ambient module declarations to quiet editor TypeScript errors
 declare module "dotenv/config";
 declare module "@prisma/adapter-pg";
-declare module "@prisma/client";
 declare module "argon2";
 declare module "pg";
 

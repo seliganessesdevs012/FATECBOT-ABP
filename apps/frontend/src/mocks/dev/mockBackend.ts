@@ -112,9 +112,9 @@ let userIdSequence = 4;
 let mockNodes: MockNodeRecord[] = [
   {
     id: 1,
-    title: "O que voce deseja?",
+    title: "O que você deseja?",
     slug: "root",
-    prompt: "O que voce deseja?",
+    prompt: "O que você deseja?",
     answer_summary: null,
     evidence_excerpt: null,
     evidence_source: null,
@@ -124,9 +124,9 @@ let mockNodes: MockNodeRecord[] = [
   },
   {
     id: 2,
-    title: "Ainda nao sou aluno",
+    title: "Ainda não sou aluno",
     slug: "ainda-nao-sou-aluno",
-    prompt: "Qual informacao voce procura antes de ingressar?",
+    prompt: "Qual informação você procura antes de ingressar?",
     answer_summary: null,
     evidence_excerpt: null,
     evidence_source: null,
@@ -136,9 +136,9 @@ let mockNodes: MockNodeRecord[] = [
   },
   {
     id: 3,
-    title: "Ja sou aluno",
+    title: "Já sou aluno",
     slug: "ja-sou-aluno",
-    prompt: "Qual tema academico voce deseja consultar?",
+    prompt: "Qual tema acadêmico você deseja consultar?",
     answer_summary: null,
     evidence_excerpt: null,
     evidence_source: null,
@@ -150,7 +150,7 @@ let mockNodes: MockNodeRecord[] = [
     id: 4,
     title: "Cursos",
     slug: "cursos",
-    prompt: "Escolha um curso para continuar a navegacao.",
+    prompt: "Escolha um curso para continuar a navegação.",
     answer_summary: null,
     evidence_excerpt: null,
     evidence_source: null,
@@ -162,7 +162,7 @@ let mockNodes: MockNodeRecord[] = [
     id: 5,
     title: "Bolsas e auxilios",
     slug: "bolsas-e-auxilios",
-    prompt: "Veja as principais orientacoes sobre apoio estudantil.",
+    prompt: "Veja as principais orientações sobre apoio estudantil.",
     answer_summary:
       "A Fatec divulga editais especificos para bolsa permanencia e monitoria ao longo do semestre.",
     evidence_excerpt:
@@ -178,7 +178,7 @@ let mockNodes: MockNodeRecord[] = [
     slug: "vestibular",
     prompt: "Veja detalhes sobre o processo seletivo.",
     answer_summary:
-      "As inscricoes do vestibular seguem o calendario oficial divulgado pelo Centro Paula Souza.",
+      "As inscrições do vestibular seguem o calendário oficial divulgado pelo Centro Paula Souza.",
     evidence_excerpt:
       "O cronograma do vestibular e publicado em edital com datas de inscricao, prova e matricula.",
     evidence_source: "edital-vestibular-fatec.pdf",
@@ -192,7 +192,7 @@ let mockNodes: MockNodeRecord[] = [
     slug: "como-ingressar",
     prompt: null,
     answer_summary:
-      "Voce pode ingressar por vestibular, vagas remanescentes ou transferencia, conforme edital vigente.",
+      "Você pode ingressar por vestibular, vagas remanescentes ou transferência, conforme edital vigente.",
     evidence_excerpt:
       "As formas de ingresso dependem de edital especifico e de disponibilidade de vagas por curso.",
     evidence_source: "portal-institucional-ingresso.pdf",
@@ -246,7 +246,7 @@ let mockNodes: MockNodeRecord[] = [
     id: 11,
     title: "Estagio",
     slug: "estagio",
-    prompt: "Que informacao de estagio voce precisa?",
+    prompt: "Que informação de estágio você precisa?",
     answer_summary: null,
     evidence_excerpt: null,
     evidence_source: null,
@@ -514,7 +514,7 @@ const findNodeById = (id: number): MockNodeRecord => {
   const node = mockNodes.find((item) => item.id === id);
 
   if (!node) {
-    throw new Error("No nao encontrado.");
+    throw new Error("Nó não encontrado.");
   }
 
   return node;

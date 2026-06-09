@@ -94,7 +94,9 @@ export class DashboardService {
       }),
     ]);
 
-    const navigationFlows = latestLogsForChart.map(log => log.navigation_flow);
+    const navigationFlows = latestLogsForChart.map((log) =>
+      Array.isArray(log.navigation_flow) ? (log.navigation_flow as string[]) : [],
+    );
     const recentSessionsAnalyzed = navigationFlows.length;
     const clickDistribution = buildClickDistribution(navigationFlows);
     const averageClicks =
@@ -102,9 +104,8 @@ export class DashboardService {
         ? 0
         : Number(
             (
-              navigationFlows.reduce(
-                (total, navigationFlow) =>
-                  total + clampClicksCount(navigationFlow),
+              navigationFlows.reduce<number>(
+                (total, navigationFlow) => total + clampClicksCount(navigationFlow),
                 0,
               ) / recentSessionsAnalyzed
             ).toFixed(1),
